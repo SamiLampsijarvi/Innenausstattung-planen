@@ -1,0 +1,20 @@
+# Lokale Umgebungsvariablen und Geheimnisse
+.env
+.env.*
+!.env.example
+
+# Betriebssystem- und Editor-Dateien
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Protokolle und temporäre Dateien
+*.log
+tmp/
+temp/
+
+# Abhängigkeiten und Build-Ausgaben
+node_modules/
+dist/
+build/

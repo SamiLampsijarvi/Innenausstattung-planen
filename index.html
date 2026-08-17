@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="KI-gestützte Raumplanung passend zu Stil, Raum und Budget.">
+  <title>Raumly – Dein Zuhause, neu gedacht</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="utility-bar">
+      <button class="utility-location" id="location-trigger" type="button" aria-haspopup="dialog" aria-controls="location-dialog" aria-label="Sprache Deutsch und Standort auswählen">
+        <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18">
+          <circle cx="12" cy="12" r="9"></circle>
+          <path d="M3 12h18M12 3c3 3.3 3 14.7 0 18M12 3c-3 3.3-3 14.7 0 18"></path>
+        </svg>
+        <strong>DE</strong><span class="utility-divider"></span><span id="location-label">Standort</span>
+      </button>
+      <a class="brand" href="#top" aria-label="Raumly Startseite"><span>R</span> Raumly</a>
+      <label class="site-search" title="Produktsuche – bald verfügbar">
+        <svg aria-hidden="true" viewBox="0 0 24 24" width="19" height="19"><circle cx="11" cy="11" r="7"></circle><path d="m16.5 16.5 4 4"></path></svg>
+        <input type="search" placeholder="Wonach suchen Sie?" aria-label="Produktsuche – bald verfügbar" disabled>
+        <span>Bald verfügbar</span>
+      </label>
+      <div class="account-actions">
+        <button class="header-icon-button future-control" type="button" disabled title="Anmeldung – bald verfügbar" aria-label="Anmeldung – bald verfügbar">
+          <span aria-hidden="true">♙</span> Anmelden
+        </button>
+        <button class="header-icon-button future-control" type="button" disabled title="Favoriten – bald verfügbar" aria-label="Favoriten – bald verfügbar"><span aria-hidden="true">♡</span></button>
+      </div>
+      <details class="mobile-menu">
+        <summary aria-label="Menü öffnen"><span></span><span></span><span></span></summary>
+        <nav aria-label="Mobile Navigation">
+          <a href="#top">Homepage</a>
+          <a href="#planer">Wohnzimmer planen</a>
+          <span>Weitere Zimmer <small>Bald verfügbar</small></span>
+          <span>Produkte <small>Bald verfügbar</small></span>
+          <span>Preisgestaltung <small>Bald verfügbar</small></span>
+          <span>Services <small>Bald verfügbar</small></span>
+        </nav>
+      </details>
+    </div>
+
+    <div class="main-nav-row">
+      <nav class="desktop-nav" aria-label="Hauptnavigation">
+        <a class="nav-home" href="#top">Homepage</a>
+        <details class="nav-dropdown">
+          <summary>Zimmer</summary>
+          <div class="dropdown-panel room-menu">
+            <a href="#planer"><strong>Wohnzimmer Design</strong><small>Jetzt planen</small></a>
+            <span>Schlafzimmer Design <small>Bald verfügbar</small></span>
+            <span>Küche Design <small>Bald verfügbar</small></span>
+            <span>Badezimmer Design <small>Bald verfügbar</small></span>
+            <span>Eingang Design <small>Bald verfügbar</small></span>
+            <span>Kinderzimmer Design <small>Bald verfügbar</small></span>
+            <span>Garten <small>Bald verfügbar</small></span>
+            <span>Homeoffice <small>Bald verfügbar</small></span>
+            <span>Gaming Room <small>Bald verfügbar</small></span>
+            <span>Garage <small>Bald verfügbar</small></span>
+          </div>
+        </details>
+        <details class="nav-dropdown">
+          <summary>Produkte</summary>
+          <div class="dropdown-panel product-menu">
+            <span>Sofas &amp; Teppiche <small>Bald verfügbar</small></span>
+            <span>Betten &amp; Matratzen <small>Bald verfügbar</small></span>
+            <span>Tische &amp; Stühle <small>Bald verfügbar</small></span>
+            <span>Regale &amp; Hängemöbel <small>Bald verfügbar</small></span>
+            <span>Outdoor-Produkte <small>Bald verfügbar</small></span>
+          </div>
+        </details>
+      </nav>
+
+      <div class="nav-secondary">
+        <button class="nav-text-button future-control" type="button" disabled title="Preisgestaltung wird noch festgelegt">Preisgestaltung <small>Bald</small></button>
+        <details class="nav-dropdown services-menu">
+          <summary>Services</summary>
+          <div class="dropdown-panel dropdown-panel-right">
+            <span>Individuelle Designs <small>Bald verfügbar</small></span>
+          </div>
+        </details>
+      </div>
+
+    </div>
+  </header>
+
+  <dialog class="location-dialog" id="location-dialog" aria-labelledby="location-title">
+    <form method="dialog" class="location-dialog-card">
+      <div class="location-dialog-heading">
+        <div><p class="eyebrow">REGIONALE EMPFEHLUNGEN</p><h2 id="location-title">Deinen Standort festlegen</h2></div>
+        <button class="dialog-close" value="cancel" aria-label="Fenster schließen">×</button>
+      </div>
+      <p class="location-purpose">Raumly verwendet deinen ungefähren Standort, um später passende Produkte in deiner Region anzuzeigen. Der Standort wird nicht gespeichert oder übertragen.</p>
+      <div class="location-options">
+        <button class="button button-primary" id="detect-location" type="button">Standort automatisch erkennen</button>
+        <button class="button button-outline" id="show-postcode" type="button">Postleitzahl eingeben</button>
+      </div>
+      <div class="postcode-entry" id="postcode-entry" hidden>
+        <label for="postcode">Deutsche Postleitzahl</label>
+        <div><input id="postcode" name="postcode" inputmode="numeric" autocomplete="postal-code" maxlength="5" pattern="[0-9]{5}" placeholder="z. B. 10115"><button class="button button-primary" id="save-postcode" type="button">Übernehmen</button></div>
+      </div>
+      <p class="location-status" id="location-status" aria-live="polite"></p>
+      <small class="location-privacy">Die Freigabe ist freiwillig. Du kannst die Website auch ohne Standortangabe verwenden.</small>
+    </form>
+  </dialog>
+
+  <main id="top">
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">KI-RAUMPLANUNG IN WENIGEN MINUTEN</p>
+        <p class="hero-text">Erhalte ein persönliches Einrichtungskonzept, das zu deinem Raum, deinem Stil und vor allem zu deinem Budget passt.</p>
+        <a class="button button-primary" href="#planer">Jetzt kostenlos planen <span aria-hidden="true">→</span></a>
+      </div>
+      <div class="hero-visual" aria-label="Stilvolle Wohnzimmerszene">
+        <div class="sun"></div><div class="window"></div><div class="plant">♧</div>
+        <div class="picture picture-one"></div><div class="picture picture-two"></div>
+        <div class="sofa"><i></i><i></i><i></i></div><div class="table"></div><div class="rug"></div>
+        <div class="ai-label"><span>✦</span><div><b>KI-Konzept erstellt</b><small>Abgestimmt auf dein Budget</small></div></div>
+      </div>
+    </section>
+
+    <section class="planner-section" id="planer">
+      <div class="section-heading">
+        <p class="eyebrow">DEIN PERSÖNLICHER PLANER</p>
+        <h2>In 4 Schritten zum neuen Raum</h2>
+        <p>Wähle deine Wünsche aus – unsere KI kümmert sich um den Rest.</p>
+      </div>
+
+      <div class="planner-shell">
+        <ol class="progress" aria-label="Fortschritt">
+          <li class="active"><span>1</span><b>Raum</b></li><li><span>2</span><b>Stil</b></li><li><span>3</span><b>Fotos</b></li><li><span>4</span><b>Budget</b></li>
+        </ol>
+
+        <form id="planner-form">
+          <section class="step active" data-step="1">
+            <div class="step-title"><span>01</span><div><h3>Gestalte dein Wohnzimmer</h3><p>Der erste Raumly-MVP konzentriert sich vollständig auf dein Wohnzimmer.</p></div></div>
+            <div class="choice-grid room-grid" id="room-options"></div>
+          </section>
+
+          <section class="step" data-step="2">
+            <div class="step-title"><span>02</span><div><h3>Welcher Designstil gefällt dir?</h3><p>Wähle die Richtung, die sich nach dir anfühlt.</p></div></div>
+            <div class="choice-grid style-grid" id="style-options"></div>
+          </section>
+
+          <section class="step" data-step="3">
+            <div class="step-title"><span>03</span><div><h3>Zeig uns deinen Raum</h3><p>Lade bis zu 5 gut beleuchtete Fotos aus verschiedenen Winkeln hoch.</p></div></div>
+            <label class="upload-zone" for="room-images">
+              <span class="upload-icon">↑</span><b>Fotos hier ablegen oder auswählen</b><small>JPG, PNG oder WEBP · maximal 10 MB pro Bild</small>
+              <input id="room-images" type="file" accept="image/jpeg,image/png,image/webp" multiple>
+            </label>
+            <div class="preview-grid" id="preview-grid"></div>
+          </section>
+
+          <section class="step" data-step="4">
+            <div class="step-title"><span>04</span><div><h3>Wie hoch ist dein Budget?</h3><p>So empfehlen wir nur Ideen und Produkte, die wirklich passen.</p></div></div>
+            <div class="budget-display"><span>Dein Budget</span><strong id="budget-value">1.500 €</strong></div>
+            <input class="budget-range" id="budget" type="range" min="100" max="10000" value="1500" step="100">
+            <div class="range-labels"><span>100 €</span><span>10.000 €+</span></div>
+            <div class="budget-presets">
+              <button type="button" data-budget="300">Bis 300 €</button><button type="button" data-budget="1000">Bis 1.000 €</button><button type="button" data-budget="2500">Bis 2.500 €</button><button type="button" data-budget="5000">Bis 5.000 €</button>
+            </div>
+            <label class="country-label" for="country">Wo möchtest du einkaufen?</label>
+            <select id="country"><option>Deutschland</option><option>Österreich</option><option>Schweiz</option><option>Finnland</option><option>Anderes EU-Land</option></select>
+          </section>
+
+          <p class="form-error" id="form-error" role="alert"></p>
+          <div class="planner-actions"><button class="button button-ghost" id="back-button" type="button">← Zurück</button><button class="button button-primary" id="next-button" type="button">Weiter →</button></div>
+        </form>
+
+        <section class="result" id="result" aria-live="polite">
+          <span class="result-icon">✦</span><p class="eyebrow">DEIN BRIEFING IST BEREIT</p><h3>Dein persönliches Raumkonzept kann erstellt werden</h3>
+          <p id="result-summary"></p>
+          <div class="result-columns"><div><b>Das erhältst du</b><ul><li>Visualisierte Einrichtungsidee</li><li>Grundriss- und Farbempfehlungen</li><li>Einkaufsliste innerhalb deines Budgets</li><li>Links zu passenden Händlern in deiner Region</li></ul></div><div class="result-note"><b>MVP-Hinweis</b><p>Die echte KI-Generierung und Live-Produktsuche werden im nächsten Entwicklungsschritt angebunden.</p></div></div>
+          <button class="button button-primary" id="restart-button" type="button">Noch einen Raum planen</button>
+        </section>
+      </div>
+    </section>
+
+    <section class="benefits" id="vorteile">
+      <article><span>✦</span><h3>Auf dich zugeschnitten</h3><p>Keine Standardvorschläge, sondern Ideen passend zu deinem echten Raum.</p></article>
+      <article><span>€</span><h3>Budget im Mittelpunkt</h3><p>Jede Empfehlung berücksichtigt, wie viel du wirklich ausgeben möchtest.</p></article>
+      <article><span>⌖</span><h3>Produkte in deiner Nähe</h3><p>Finde passende Möbel bei verfügbaren Händlern in deiner Region.</p></article>
+    </section>
+  </main>
+
+  <footer><a class="brand" href="#top"><span>R</span> Raumly</a><p>Dein Raum. Dein Stil. Dein Budget.</p><small>© 2026 Raumly · Prototyp</small></footer>
+  <script src="app.js"></script>
+</body>
+</html>
