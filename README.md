@@ -4,6 +4,15 @@ Raumly ist ein erster interaktiver MVP für eine Innenausstattungs-Plattform. Nu
 
 Der erste MVP richtet sich an deutschsprachige Mieter und Wohnungseigentümer, die ein Wohnzimmer innerhalb eines festen Budgets neu einrichten möchten. Deutschland ist das erste unterstützte Einkaufsland.
 
+Das Wohnzimmer ist der erste MVP-Raum. Langfristig soll Raumly alle Räume eines Zuhauses planen und mehrere Wohnungen oder Häuser unter „Meine Projekte“ verwalten können.
+
+## Projektdokumentation
+
+- `PRD.md`: bestätigte Produktanforderungen und MVP-Grenzen
+- `TECHNICAL_PLAN.md`: bestätigte technische Richtung, Risiken, Tests und Entwicklungsphasen
+- `DECISIONS.md`: dauerhafte Produkt- und Architekturentscheidungen
+- `AGENTS.md`: verbindliche Regeln für die Arbeit am Projekt
+
 ## Lokal starten
 
 Die aktuelle Version benötigt keine Installation. `index.html` kann direkt im Browser geöffnet werden. Komfortabler ist ein lokaler Webserver, zum Beispiel mit VS Code Live Server.
