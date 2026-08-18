@@ -18,3 +18,10 @@ temp/
 node_modules/
 dist/
 build/
+.next/
+out/
+coverage/
+
+# Lokale Werkzeugausgaben
+.vercel/
+*.tsbuildinfo
