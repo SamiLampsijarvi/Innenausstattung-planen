@@ -6,8 +6,8 @@ Diese Regeln gelten für alle Arbeiten an diesem Projekt. Ziel ist, das Projekt 
 
 - Keine Anforderungen, Funktionen, Zielgruppen oder Geschäftsregeln erfinden.
 - Neue Ideen klar als Vorschlag kennzeichnen und nicht ohne Zustimmung als Anforderung behandeln oder umsetzen.
-- Fakten, belegte Informationen, Annahmen und Empfehlungen sprachlich eindeutig voneinander unterscheiden.
-- Bei relevanter Unsicherheit nachfragen, wenn eine Annahme das Ergebnis, den Umfang, die Kosten, die Architektur oder die Nutzererfahrung wesentlich verändern könnte.
+- Fakten, belegte Informationen, unbestätigte Annahmen und Empfehlungen sprachlich eindeutig voneinander unterscheiden. Unbestätigte Annahmen immer ausdrücklich als solche kennzeichnen.
+- Wenn eine Anforderung oder Entscheidung unklar ist, nachfragen. Das gilt besonders, wenn eine Annahme das Ergebnis, den Umfang, die Kosten, die Architektur oder die Nutzererfahrung wesentlich verändern könnte.
 - Kleine, leicht rückgängig zu machende Detailentscheidungen dürfen getroffen werden, müssen bei Bedeutung aber transparent genannt werden.
 - Bestehende Entscheidungen in `DECISIONS.md`, `README.md`, Aufgabenbeschreibungen und vorherigen Nutzeranweisungen berücksichtigen.
 - Bei widersprüchlichen Anforderungen den Widerspruch benennen und vor der Umsetzung klären.
@@ -19,7 +19,7 @@ Diese Regeln gelten für alle Arbeiten an diesem Projekt. Ziel ist, das Projekt 
 - Funktionierenden Code nicht unnötig umschreiben, umformatieren oder abstrahieren.
 - Änderungen möglichst klein, lokal und auf die aktuelle Aufgabe begrenzt halten.
 - Vorhandene Nutzeränderungen und nicht zur Aufgabe gehörende Dateien nicht überschreiben oder zurücksetzen.
-- Neue Produktionsabhängigkeiten nur hinzufügen, wenn sie einen klaren Nutzen haben. Größere oder kostenpflichtige Abhängigkeiten vorher abstimmen.
+- Keine unnötigen Technologien oder Abhängigkeiten einführen. Neue Produktionsabhängigkeiten nur hinzufügen, wenn sie einen klaren Nutzen haben. Größere oder kostenpflichtige Abhängigkeiten vorher abstimmen.
 
 ## 3. Planung und Zustimmung
 
@@ -32,9 +32,10 @@ Diese Regeln gelten für alle Arbeiten an diesem Projekt. Ziel ist, das Projekt 
 - Nach der Zustimmung nur den freigegebenen Umfang umsetzen. Erforderliche Abweichungen erneut erklären und abstimmen.
 - Größere Änderungen vor der Umsetzung kurz planen. Der Plan nennt Ziel, betroffene Bereiche, Risiken und eine Prüfmöglichkeit.
 - Als größere Änderung gelten insbesondere Architekturwechsel, neue externe Dienste, Authentifizierung, Bezahlung, Datenmigrationen, umfangreiche UI-Neugestaltungen und Änderungen an Datenschutz oder Sicherheitslogik.
+- Bei wichtigen Produkt- oder Architekturentscheidungen vor der Umsetzung die ausdrückliche Zustimmung des Nutzers abwarten.
 - Vor riskanten, destruktiven, kostenpflichtigen oder schwer rückgängig zu machenden Aktionen die ausdrückliche Zustimmung des Nutzers einholen.
 - Dazu zählen insbesondere Löschen von Daten, Überschreiben größerer Arbeitsstände, Deployment in Produktion, Datenbankmigrationen mit Datenverlust-Risiko, Veröffentlichung, Käufe sowie Änderungen an externen Konten oder Diensten.
-- Größere Änderungen grundsätzlich in einem eigenen Git-Branch oder einem separaten Git-Worktree durchführen. Der funktionierende Hauptbranch bleibt währenddessen unverändert.
+- Nicht direkt auf `main` arbeiten. Änderungen in einem eigenen Git-Branch oder bei größeren Arbeiten in einem separaten Git-Worktree durchführen. Der funktionierende Hauptbranch bleibt währenddessen unverändert.
 
 ## 4. Qualität und Tests
 
