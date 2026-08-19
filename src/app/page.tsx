@@ -77,9 +77,17 @@ export default function Home() {
       </header>
 
       <main id="top">
-        <p className="eyebrow">TECHNISCHE GRUNDLAGE</p>
-        <h1>Raumly</h1>
-        <p>Der Wohnzimmer-Planer wird im nächsten kleinen Schritt übertragen.</p>
+        <section className="home-intro" aria-labelledby="home-intro-title">
+          <h1 id="home-intro-title">
+            Gestalten Sie Ihr Zuhause – passend zu Ihrem Raum, Ihrem Stil und Ihrem Budget.
+          </h1>
+          <ol className="planning-steps" aria-label="So funktioniert Raumly">
+            <li><span>1</span><strong>Wohnzimmer planen</strong></li>
+            <li><span>2</span><strong>Designstil wählen</strong></li>
+            <li><span>3</span><strong>Bilder Ihres Wohnzimmers hochladen</strong></li>
+            <li><span>4</span><strong>Budget festlegen</strong></li>
+          </ol>
+        </section>
         <div id="planer" aria-hidden="true" />
       </main>
     </>
