@@ -8,6 +8,11 @@ const futureProducts = [
   "Regale & Hängemöbel", "Outdoor-Produkte",
 ];
 
+const futureRoomOptions = [
+  "Schlafzimmer", "Küche", "Badezimmer", "Kinderzimmer", "Esszimmer", "Eingang",
+  "Garten", "Homeoffice", "Gaming Room", "Ankleidezimmer", "Garage",
+];
+
 function Soon() {
   return <small>Bald verfügbar</small>;
 }
@@ -82,10 +87,24 @@ export default function Home() {
             Gestalten Sie Ihr Zuhause – passend zu Ihrem Raum, Ihrem Stil und Ihrem Budget.
           </h1>
           <ol className="planning-steps" aria-label="So funktioniert Raumly">
-            <li><span>1</span><strong>Wohnzimmer planen</strong></li>
-            <li><span>2</span><strong>Designstil wählen</strong></li>
-            <li><span>3</span><strong>Bilder Ihres Wohnzimmers hochladen</strong></li>
-            <li><span>4</span><strong>Budget festlegen</strong></li>
+            <li className="planning-step-detailed">
+              <div className="step-heading"><span>1</span><strong>Wohnzimmer planen</strong></div>
+              <ul className="room-options" aria-label="Verfügbare und zukünftige Zimmer">
+                <li className="room-option-selected"><strong>Wohnzimmer</strong><small>Ausgewählt</small></li>
+                {futureRoomOptions.map((room) => (
+                  <li key={room}><strong>{room}</strong><small>Bald verfügbar</small></li>
+                ))}
+              </ul>
+            </li>
+            <li><div className="step-heading"><span>2</span><strong>Designstil wählen</strong></div></li>
+            <li className="planning-step-detailed">
+              <div className="step-heading"><span>3</span><strong>Bilder Ihres Wohnzimmers hochladen</strong></div>
+              <div className="image-placeholders" aria-label="Zwei zukünftige Plätze für Zimmerbilder">
+                <div><span>Bild 1</span><small>Bald verfügbar</small></div>
+                <div><span>Bild 2</span><small>Bald verfügbar</small></div>
+              </div>
+            </li>
+            <li><div className="step-heading"><span>4</span><strong>Budget festlegen</strong></div></li>
           </ol>
         </section>
         <div id="planer" aria-hidden="true" />
