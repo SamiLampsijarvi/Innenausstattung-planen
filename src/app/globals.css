@@ -1,27 +1,82 @@
 :root {
-  color: #18332e;
-  background: #f6f2e9;
-  font-family: Arial, Helvetica, sans-serif;
+  --forest: #18332e; --ink: #1e2d29; --muted: #66736f; --paper: #fffdfa;
+  --cream: #f6f2e9; --mint: #eaf1ed; --terracotta: #b65f42; --line: #dfe5e1;
+  --shadow: 0 16px 40px rgba(24, 51, 46, .14);
+  color: var(--ink); background: var(--cream); font-family: Arial, Helvetica, sans-serif;
 }
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; }
+a { color: inherit; text-decoration: none; }
+button, input { font: inherit; }
 
-* {
-  box-sizing: border-box;
+.site-header { position: relative; z-index: 10; background: rgba(255, 253, 250, .97); border-bottom: 1px solid var(--line); }
+.utility-bar, .main-nav-row { display: flex; align-items: center; padding: 0 max(3vw, 24px); }
+.utility-bar { min-height: 66px; display: grid; grid-template-columns: minmax(160px, 1fr) auto minmax(240px, 1.4fr) minmax(160px, 1fr); gap: 24px; border-bottom: 1px solid var(--line); }
+.utility-location, .account-actions, .account-actions button { display: flex; align-items: center; }
+.utility-location { gap: 7px; width: max-content; padding: 6px 0; color: var(--muted); background: transparent; border: 0; font-size: 12px; }
+.utility-location:disabled, .account-actions button:disabled, .nav-secondary button:disabled { opacity: 1; cursor: not-allowed; }
+.utility-location svg, .site-search svg { fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; }
+.utility-divider { width: 1px; height: 16px; background: var(--line); }
+
+.brand { display: inline-flex; align-items: center; gap: 9px; color: var(--forest); font-family: Georgia, "Times New Roman", serif; font-size: 21px; font-weight: 700; }
+.brand > span { display: grid; width: 31px; height: 31px; place-items: center; color: var(--paper); background: var(--forest); border-radius: 50%; }
+.site-search { display: flex; align-items: center; gap: 10px; min-width: 240px; height: 42px; padding: 0 13px; color: var(--muted); background: white; border: 1px solid var(--line); border-radius: 9px; }
+.site-search input { min-width: 0; flex: 1; border: 0; outline: 0; background: transparent; }
+.site-search > span { color: var(--terracotta); font-size: 10px; white-space: nowrap; }
+.account-actions { justify-content: flex-end; gap: 10px; }
+.account-actions button { gap: 6px; padding: 7px; color: var(--ink); background: transparent; border: 0; font-size: 13px; }
+.account-actions button span { font-size: 19px; }
+
+.main-nav-row { min-height: 64px; gap: 24px; }
+.desktop-nav, .nav-secondary { display: flex; align-items: center; gap: 22px; white-space: nowrap; font-size: 14px; }
+.nav-home, .nav-dropdown summary { font-weight: 600; }
+.nav-dropdown { position: relative; }
+.nav-dropdown summary { padding: 18px 0; list-style: none; cursor: pointer; }
+.nav-dropdown summary::-webkit-details-marker, .mobile-menu summary::-webkit-details-marker { display: none; }
+.nav-dropdown summary::after { content: "⌄"; margin-left: 7px; font-size: 13px; }
+.nav-dropdown[open] summary::after { content: "⌃"; }
+.dropdown-panel { position: absolute; top: calc(100% - 5px); left: -12px; min-width: 290px; padding: 10px; background: white; border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); }
+.dropdown-panel a, .dropdown-panel > span, .mobile-menu nav a, .mobile-menu nav > span { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 10px 12px; border-radius: 8px; font-size: 13px; }
+.dropdown-panel a:hover, .mobile-menu nav a:hover { background: var(--mint); }
+.dropdown-panel > span, .mobile-menu nav > span { color: var(--muted); }
+.dropdown-panel small, .mobile-menu small { color: var(--terracotta); font-size: 10px; white-space: nowrap; }
+.room-menu { min-width: 330px; }
+.dropdown-panel-right { right: -10px; left: auto; }
+.nav-secondary { margin-left: auto; }
+.nav-secondary > button { padding: 18px 0; color: var(--ink); background: transparent; border: 0; font-weight: 600; }
+.nav-secondary > button small { display: block; color: var(--terracotta); font-size: 9px; }
+
+.mobile-menu { display: none; position: relative; margin-left: auto; }
+.mobile-menu > summary { display: grid; width: 40px; height: 40px; align-content: center; gap: 5px; padding: 9px; list-style: none; cursor: pointer; }
+.mobile-menu > summary span { height: 2px; background: var(--forest); border-radius: 2px; }
+.mobile-menu nav { position: absolute; top: 48px; right: 0; width: min(310px, calc(100vw - 24px)); padding: 12px; background: white; border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); }
+
+main { min-height: calc(100vh - 131px); display: grid; place-content: center; gap: 1rem; padding: 2rem; text-align: center; }
+main h1, main p { margin: 0; }
+main h1 { color: var(--forest); font: 700 clamp(3rem, 8vw, 5.5rem) Georgia, serif; }
+.eyebrow { color: var(--terracotta); font-size: 12px; font-weight: 700; letter-spacing: .14em; }
+
+@media (max-width: 1050px) {
+  .utility-bar { grid-template-columns: minmax(130px, 1fr) auto minmax(210px, 1.2fr) auto; gap: 16px; }
+  .desktop-nav, .nav-secondary { gap: 14px; }
+  .nav-secondary > button { display: none; }
 }
-
-body {
-  margin: 0;
+@media (max-width: 800px) {
+  .utility-bar { grid-template-columns: auto 1fr auto; grid-template-rows: auto auto; gap: 10px 14px; padding: 10px 18px; }
+  .utility-location { grid-column: 1; grid-row: 1; }
+  .location-label, .utility-divider { display: none; }
+  .brand { grid-column: 2; grid-row: 1; justify-self: center; }
+  .site-search { grid-column: 1 / -1; grid-row: 2; min-width: 0; }
+  .account-actions { display: none; }
+  .mobile-menu { display: block; grid-column: 3; grid-row: 1; }
+  .main-nav-row { display: none; }
+  main { min-height: calc(100vh - 121px); }
 }
-
-main {
-  min-height: 100vh;
-  display: grid;
-  place-content: center;
-  gap: 1rem;
-  padding: 2rem;
-  text-align: center;
-}
-
-h1,
-p {
-  margin: 0;
+@media (max-width: 520px) {
+  .utility-bar { padding: 9px 12px; }
+  .brand { font-size: 19px; }
+  .site-search { height: 39px; }
+  .site-search > span { display: none; }
+  main { padding: 1.25rem; }
 }
