@@ -63,6 +63,9 @@ main { min-height: calc(100vh - 131px); padding: clamp(4rem, 9vw, 8rem) max(3vw,
 @media (min-width: 801px) {
   main { padding-top: clamp(3rem, 6vw, 5.5rem); }
   .home-intro h1 { font-size: clamp(2.35rem, 4.15vw, 3.9rem); }
+  .planning-steps { width: 58%; grid-template-columns: 1fr; gap: 14px; transform: translateX(min(calc((100vw - 1180px) * -.1), -.6vw)); }
+  .planning-steps li { display: flex; min-height: 0; align-items: center; gap: 20px; padding: 20px 24px; }
+  .planning-steps span { flex: 0 0 auto; margin: 0; }
 }
 
 @media (max-width: 1050px) {
