@@ -86,6 +86,8 @@ export default function Home() {
           <h1 id="home-intro-title">
             Gestalten Sie Ihr Zuhause – passend zu Ihrem Raum, Ihrem Stil und Ihrem Budget.
           </h1>
+          <div className="planning-workspace">
+          <div className="planning-controls-column">
           <ol className="planning-steps" aria-label="So funktioniert Raumly">
             <li className="planning-step-detailed">
               <div className="step-heading"><span>1</span><strong>Wohnzimmer planen</strong></div>
@@ -106,6 +108,18 @@ export default function Home() {
             </li>
             <li><div className="step-heading"><span>4</span><strong>Budget festlegen</strong></div></li>
           </ol>
+          <div className="generate-panel">
+            <button type="button" disabled>Generieren</button>
+            <small>Füllen Sie zuerst alle vier Schritte aus.</small>
+          </div>
+          </div>
+          <aside className="design-results" aria-labelledby="design-results-title">
+            <div>
+              <h2 id="design-results-title">Ihre Entwürfe</h2>
+              <p>Ihre generierten Raumkonzepte erscheinen später hier.</p>
+            </div>
+          </aside>
+          </div>
         </section>
         <div id="planer" aria-hidden="true" />
       </main>

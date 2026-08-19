@@ -55,7 +55,8 @@ button, input { font: inherit; }
 main { min-height: calc(100vh - 131px); padding: clamp(4rem, 9vw, 8rem) max(3vw, 24px); }
 .home-intro { width: min(1180px, 100%); margin: 0 auto; text-align: center; }
 .home-intro h1 { max-width: 950px; margin: 0 auto; color: var(--forest); font: 700 clamp(2.35rem, 4.5vw, 4.25rem)/1.08 Georgia, serif; text-wrap: balance; }
-.planning-steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin: clamp(3rem, 6vw, 5rem) 0 0; padding: 0; list-style: none; text-align: left; }
+.planning-workspace { margin-top: clamp(3rem, 6vw, 5rem); text-align: left; }
+.planning-steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin: 0; padding: 0; list-style: none; }
 .planning-steps li { min-height: 150px; padding: 24px; background: var(--paper); border: 1px solid var(--line); border-radius: 14px; }
 .step-heading { display: flex; align-items: center; gap: 20px; }
 .step-heading > span { display: grid; width: 34px; height: 34px; flex: 0 0 auto; place-items: center; color: var(--paper); background: var(--forest); border-radius: 50%; font-weight: 700; }
@@ -70,12 +71,20 @@ main { min-height: calc(100vh - 131px); padding: clamp(4rem, 9vw, 8rem) max(3vw,
 .image-placeholders > div { aspect-ratio: 4 / 3; display: grid; place-content: center; gap: 5px; text-align: center; color: var(--muted); background: var(--cream); border: 2px dashed var(--line); border-radius: 10px; }
 .image-placeholders span { font-weight: 700; }
 .image-placeholders small { color: var(--terracotta); font-size: 10px; }
+.generate-panel { display: grid; gap: 8px; margin-top: 14px; padding: 20px 24px; background: var(--paper); border: 1px solid var(--line); border-radius: 14px; }
+.generate-panel button { min-height: 46px; color: var(--paper); background: var(--forest); border: 0; border-radius: 9px; font-weight: 700; opacity: .45; cursor: not-allowed; }
+.generate-panel small { color: var(--muted); font-size: 11px; line-height: 1.4; }
+.design-results { min-height: 420px; padding: 28px; overflow-y: auto; background: var(--paper); border: 1px solid var(--line); border-radius: 14px; }
+.design-results h2 { margin: 0; color: var(--forest); font: 700 28px/1.2 Georgia, serif; }
+.design-results p { max-width: 32ch; margin: 12px 0 0; color: var(--muted); line-height: 1.6; }
 
 @media (min-width: 801px) {
   main { padding-top: clamp(3rem, 6vw, 5.5rem); }
   .home-intro h1 { font-size: clamp(2.35rem, 4.15vw, 3.9rem); }
-  .planning-steps { width: 58%; grid-template-columns: 1fr; gap: 14px; transform: translateX(min(calc((100vw - 1180px) * -.3), -1.8vw)); }
+  .planning-workspace { --workspace-shift: min(calc((100vw - 1180px) * -.3), -1.8vw); display: grid; width: calc(100% - var(--workspace-shift) - var(--workspace-shift)); grid-template-columns: min(58%, 684px) minmax(0, 1fr); gap: 20px; align-items: stretch; transform: translateX(var(--workspace-shift)); }
+  .planning-steps { grid-template-columns: 1fr; gap: 14px; }
   .planning-steps > li { min-height: 0; padding: 20px 24px; }
+  .design-results { height: 100%; max-height: 100%; }
 }
 
 @media (max-width: 1050px) {
@@ -93,10 +102,12 @@ main { min-height: calc(100vh - 131px); padding: clamp(4rem, 9vw, 8rem) max(3vw,
   .mobile-menu { display: block; grid-column: 3; grid-row: 1; }
   .main-nav-row { display: none; }
   main { min-height: calc(100vh - 121px); }
+  .planning-workspace { display: block; }
   .planning-steps { grid-template-columns: 1fr; gap: 12px; }
   .planning-steps > li { min-height: 0; padding: 18px; }
   .room-options { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
   .image-placeholders { grid-template-columns: 1fr; }
+  .design-results { margin-top: 12px; }
 }
 @media (max-width: 520px) {
   .utility-bar { padding: 9px 12px; }
@@ -105,5 +116,5 @@ main { min-height: calc(100vh - 131px); padding: clamp(4rem, 9vw, 8rem) max(3vw,
   .site-search > span { display: none; }
   main { padding: 3.5rem 12px; }
   .home-intro h1 { font-size: clamp(2rem, 10vw, 2.75rem); }
-  .planning-steps { margin-top: 2.5rem; }
+  .planning-workspace { margin-top: 2.5rem; }
 }
