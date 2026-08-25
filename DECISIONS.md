@@ -145,6 +145,14 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 - **KI-Qualität:** zentrale Möbel zuverlässig erkennen; kleine Fehler sind nur bei einfacher Korrekturmöglichkeit zulässig.
 - **Veröffentlichung:** Testpersonen oder Öffentlichkeit erst nach Datenschutzprüfung und gesonderter Zustimmung.
 
+### D-021: Lokale Projekte in Phase 4A
+
+- **Status:** Bestätigt und umgesetzt
+- **Entscheidung:** Zuhause-Projekte werden in Phase 4A ausschließlich lokal und versioniert im Browserspeicher abgelegt.
+- **Gespeichert:** Projektname, Wohnzimmerstil, deutsche Postleitzahl und Budget.
+- **Fotos:** Bilddateien und Bildvorschauen werden nicht dauerhaft gespeichert und müssen nach einem Neuladen oder Browser-Neustart erneut ausgewählt werden.
+- **Grenze:** Die lokale Speicherung ist ein Teststand und kein Ersatz für die später vorgesehene private Speicherung mit Konten und Supabase.
+
 ## Offene Entscheidungen
 
 - Markenname und visuelle Identität

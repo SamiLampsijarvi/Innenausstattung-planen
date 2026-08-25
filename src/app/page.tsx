@@ -1,6 +1,12 @@
 "use client";
 
-import { ChangeEvent, useMemo, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useState } from "react";
+import {
+  createLocalProject,
+  readLocalProjects,
+  writeLocalProjects,
+} from "@/lib/local-projects";
+import type { LocalProject } from "@/lib/local-projects";
 
 const futureRooms = [
   "Schlafzimmer Design", "Küche Design", "Badezimmer Design", "Eingang Design",
@@ -36,6 +42,13 @@ function Soon() {
 }
 
 export default function Home() {
+  const [projects, setProjects] = useState<LocalProject[]>([]);
+  const [projectsLoaded, setProjectsLoaded] = useState(false);
+  const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
+  const [newProjectName, setNewProjectName] = useState("");
+  const [projectError, setProjectError] = useState("");
+  const [renamingProjectId, setRenamingProjectId] = useState<string | null>(null);
+  const [renamingProjectName, setRenamingProjectName] = useState("");
   const [style, setStyle] = useState("");
   const [images, setImages] = useState<RoomImage[]>([]);
   const [postcode, setPostcode] = useState("");
@@ -46,6 +59,84 @@ export default function Home() {
   const postcodeIsValid = /^\d{5}$/.test(postcode);
   const briefingIsComplete = Boolean(style && images.length && postcodeIsValid);
   const budgetLabel = useMemo(() => budget.toLocaleString("de-DE"), [budget]);
+  const activeProject = projects.find((project) => project.id === activeProjectId) ?? null;
+
+  useEffect(() => {
+    const loadProjects = window.setTimeout(() => {
+      setProjects(readLocalProjects(window.localStorage));
+      setProjectsLoaded(true);
+    }, 0);
+    return () => window.clearTimeout(loadProjects);
+  }, []);
+
+  function commitProjects(nextProjects: LocalProject[]) {
+    setProjects(nextProjects);
+    writeLocalProjects(window.localStorage, nextProjects);
+  }
+
+  function createProject() {
+    const name = newProjectName.trim();
+    if (!name) {
+      setProjectError("Bitte geben Sie Ihrem Zuhause einen Namen.");
+      return;
+    }
+    const project = createLocalProject(name);
+    commitProjects([...projects, project]);
+    setNewProjectName("");
+    setProjectError("");
+    openProject(project);
+  }
+
+  function openProject(project: LocalProject) {
+    images.forEach(({ previewUrl }) => URL.revokeObjectURL(previewUrl));
+    setImages([]);
+    setStyle(project.livingRoom.style);
+    setPostcode(project.livingRoom.postcode);
+    setBudget(project.livingRoom.budget);
+    setShowSummary(false);
+    setError("");
+    setActiveProjectId(project.id);
+    requestAnimationFrame(() => document.querySelector("#planer")?.scrollIntoView());
+  }
+
+  function updateActivePlan(changes: Partial<LocalProject["livingRoom"]>) {
+    if (!activeProjectId) return;
+    const now = new Date().toISOString();
+    commitProjects(projects.map((project) => project.id === activeProjectId
+      ? { ...project, updatedAt: now, livingRoom: { ...project.livingRoom, ...changes } }
+      : project));
+  }
+
+  function startRenaming(project: LocalProject) {
+    setRenamingProjectId(project.id);
+    setRenamingProjectName(project.name);
+    setProjectError("");
+  }
+
+  function saveProjectName(projectId: string) {
+    const name = renamingProjectName.trim();
+    if (!name) {
+      setProjectError("Der Projektname darf nicht leer sein.");
+      return;
+    }
+    commitProjects(projects.map((project) => project.id === projectId
+      ? { ...project, name, updatedAt: new Date().toISOString() }
+      : project));
+    setRenamingProjectId(null);
+    setProjectError("");
+  }
+
+  function deleteProject(project: LocalProject) {
+    if (!window.confirm(`Möchten Sie „${project.name}“ wirklich löschen? Diese lokale Löschung kann nicht rückgängig gemacht werden.`)) return;
+    const remainingProjects = projects.filter(({ id }) => id !== project.id);
+    commitProjects(remainingProjects);
+    if (activeProjectId === project.id) {
+      setActiveProjectId(null);
+      images.forEach(({ previewUrl }) => URL.revokeObjectURL(previewUrl));
+      setImages([]);
+      setShowSummary(false);
+    }
+  }
 
   function handleImages(event: ChangeEvent<HTMLInputElement>) {
     const selectedFiles = Array.from(event.target.files ?? []);
@@ -123,7 +214,7 @@ export default function Home() {
           <details className="mobile-menu">
             <summary aria-label="Menü öffnen"><span /><span /><span /></summary>
             <nav aria-label="Mobile Navigation">
-              <a href="#top">Homepage</a><a href="#planer">Wohnzimmer planen</a>
+              <a href="#top">Homepage</a><a href="#projekte">Meine Projekte</a><a href="#planer">Wohnzimmer planen</a>
               <span>Weitere Zimmer <Soon /></span><span>Produkte <Soon /></span>
               <span>Preisgestaltung <Soon /></span><span>Services <Soon /></span>
             </nav>
@@ -133,6 +224,7 @@ export default function Home() {
         <div className="main-nav-row">
           <nav className="desktop-nav" aria-label="Hauptnavigation">
             <a className="nav-home" href="#top">Homepage</a>
+            <a href="#projekte">Meine Projekte</a>
             <details className="nav-dropdown">
               <summary>Zimmer</summary>
               <div className="dropdown-panel room-menu">
@@ -163,7 +255,49 @@ export default function Home() {
           <h1 id="home-intro-title">
             Gestalten Sie Ihr Zuhause – passend zu Ihrem Raum, Ihrem Stil und Ihrem Budget.
           </h1>
-          <div className="planning-workspace">
+          <section className="projects-panel" id="projekte" aria-labelledby="projects-title">
+            <div className="projects-heading">
+              <div><small>LOKAL IN DIESEM BROWSER</small><h2 id="projects-title">Meine Projekte</h2></div>
+              <p>Ihre Projektdaten bleiben auf diesem Gerät. Fotos werden nicht dauerhaft gespeichert.</p>
+            </div>
+            <form className="new-project-form" onSubmit={(event) => { event.preventDefault(); createProject(); }}>
+              <label htmlFor="new-project-name">Neues Zuhause</label>
+              <div>
+                <input id="new-project-name" value={newProjectName} onChange={(event) => setNewProjectName(event.target.value)} maxLength={60} placeholder="z. B. Meine Wohnung" />
+                <button type="submit">Zuhause anlegen</button>
+              </div>
+            </form>
+            {projectError && <p className="form-error" role="alert">{projectError}</p>}
+            {!projectsLoaded ? <p className="projects-status">Projekte werden geladen …</p> : projects.length === 0 ? (
+              <p className="projects-status">Noch kein Zuhause angelegt. Beginnen Sie mit einem Namen.</p>
+            ) : (
+              <div className="project-grid">
+                {projects.map((project) => (
+                  <article className={activeProjectId === project.id ? "active" : ""} key={project.id}>
+                    {renamingProjectId === project.id ? (
+                      <form className="rename-project-form" onSubmit={(event) => { event.preventDefault(); saveProjectName(project.id); }}>
+                        <label htmlFor={`rename-${project.id}`}>Projektname</label>
+                        <input id={`rename-${project.id}`} value={renamingProjectName} onChange={(event) => setRenamingProjectName(event.target.value)} maxLength={60} />
+                        <div><button type="submit">Speichern</button><button type="button" onClick={() => setRenamingProjectId(null)}>Abbrechen</button></div>
+                      </form>
+                    ) : (
+                      <>
+                        <div><small>ZUHAUSE</small><h3>{project.name}</h3><p>Wohnzimmer · {project.livingRoom.style || "Planung begonnen"}</p></div>
+                        <div className="project-actions">
+                          <button type="button" onClick={() => openProject(project)}>{activeProjectId === project.id ? "Geöffnet" : "Öffnen"}</button>
+                          <button type="button" onClick={() => startRenaming(project)}>Umbenennen</button>
+                          <button className="delete-action" type="button" onClick={() => deleteProject(project)}>Löschen</button>
+                        </div>
+                      </>
+                    )}
+                  </article>
+                ))}
+              </div>
+            )}
+          </section>
+          {activeProject && <div className="active-project-banner"><span>Aktives Zuhause</span><strong>{activeProject.name}</strong><small>Änderungen an Stil, Postleitzahl und Budget werden automatisch lokal gespeichert.</small></div>}
+          <div className={`planning-workspace${activeProject ? "" : " no-project"}`} id="planer">
+          {activeProject ? <>
           <div className="planning-controls-column">
           <ol className="planning-steps" aria-label="So funktioniert Raumly">
             <li className="planning-step-detailed">
@@ -184,7 +318,7 @@ export default function Home() {
                     key={name}
                     type="button"
                     aria-pressed={style === name}
-                    onClick={() => { setStyle(name); setShowSummary(false); }}
+                    onClick={() => { setStyle(name); updateActivePlan({ style: name }); setShowSummary(false); }}
                   >
                     <strong>{name}</strong><small>{description}</small>
                   </button>
@@ -219,6 +353,7 @@ export default function Home() {
                   value={postcode}
                   onChange={(event) => {
                     setPostcode(event.target.value.replace(/\D/g, "").slice(0, 5));
+                    updateActivePlan({ postcode: event.target.value.replace(/\D/g, "").slice(0, 5) });
                     setShowSummary(false);
                   }}
                   inputMode="numeric"
@@ -236,7 +371,7 @@ export default function Home() {
                   max="10000"
                   step="100"
                   value={budget}
-                  onChange={(event) => { setBudget(Number(event.target.value)); setShowSummary(false); }}
+                  onChange={(event) => { const nextBudget = Number(event.target.value); setBudget(nextBudget); updateActivePlan({ budget: nextBudget }); setShowSummary(false); }}
                 />
                 <div className="range-labels"><span>100 €</span><span>10.000 €</span></div>
               </div>
@@ -270,9 +405,9 @@ export default function Home() {
               </div>
             )}
           </aside>
+          </> : <div className="no-project-message"><h2>Wählen Sie zuerst ein Zuhause</h2><p>Legen Sie oben ein Projekt an oder öffnen Sie ein vorhandenes Zuhause, um das Wohnzimmer zu planen.</p></div>}
           </div>
         </section>
-        <div id="planer" aria-hidden="true" />
       </main>
     </>
   );
