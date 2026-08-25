@@ -23,6 +23,8 @@ Die aktuelle Anwendung basiert auf Next.js und TypeScript. Nach der Installation
 - `pnpm lint`: statische Codeprüfung
 - `pnpm test:e2e`: vollständiger Planungsablauf in Desktop- und Mobilgröße
 
+Bei Pull Requests nach `main` und Änderungen an `main` führt GitHub Actions diese Prüfungen automatisch aus. Ein Playwright-Bericht wird nur bei einem Fehler für sieben Tage als GitHub-Artefakt gespeichert.
+
 ## Was bereits funktioniert
 
 - Responsive Landingpage

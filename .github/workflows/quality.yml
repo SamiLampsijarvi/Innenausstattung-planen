@@ -1,0 +1,56 @@
+name: Qualität
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Build, Lint und Browsertests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Quellcode laden
+        uses: actions/checkout@v6
+
+      - name: pnpm einrichten
+        uses: pnpm/action-setup@v6
+
+      - name: Node.js einrichten
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Abhängigkeiten installieren
+        run: pnpm install --frozen-lockfile
+
+      - name: Produktions-Build prüfen
+        run: pnpm build
+
+      - name: Codequalität prüfen
+        run: pnpm lint
+
+      - name: Chromium für Browsertests installieren
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Desktop- und Mobilabläufe prüfen
+        run: pnpm test:e2e
+
+      - name: Fehlerbericht sichern
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v5
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
