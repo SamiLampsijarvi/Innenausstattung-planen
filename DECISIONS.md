@@ -153,6 +153,13 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 - **Fotos:** Bilddateien und Bildvorschauen werden nicht dauerhaft gespeichert und müssen nach einem Neuladen oder Browser-Neustart erneut ausgewählt werden.
 - **Grenze:** Die lokale Speicherung ist ein Teststand und kein Ersatz für die später vorgesehene private Speicherung mit Konten und Supabase.
 
+### D-022: Automatische Qualitätsprüfungen auf GitHub
+
+- **Status:** Bestätigt und umgesetzt
+- **Entscheidung:** Pull Requests nach `main` und Änderungen an `main` führen automatisch Produktions-Build, ESLint und die Playwright-Abläufe für Desktop und Mobil aus.
+- **Sicherheit:** Der Workflow besitzt nur Lesezugriff auf Repository-Inhalte, verwendet keine Geheimnisse und führt kein Deployment aus.
+- **Kostenbegrenzung:** Gleichartige veraltete Läufe werden abgebrochen; Playwright-Fehlerberichte werden nur bei Fehlschlägen und höchstens sieben Tage gespeichert.
+
 ## Offene Entscheidungen
 
 - Markenname und visuelle Identität

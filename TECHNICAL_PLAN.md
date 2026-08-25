@@ -51,6 +51,7 @@ Ein zusätzlicher Warteschlangendienst wird erst eingeführt, wenn die interne L
 - **Playwright:** vollständige Abläufe auf Desktop und Mobilgerät
 - **KI-Testbestand:** freigegebene Zimmerfotos mit menschlicher Qualitätsbewertung
 - **Sentry:** erst vor einem geschlossenen Testbetrieb zur Fehlerüberwachung; private Inhalte müssen aus Fehlerberichten entfernt werden
+- **GitHub Actions:** Build, Lint und Playwright laufen automatisch bei Pull Requests nach `main` und Änderungen an `main`; keine Veröffentlichung und keine Geheimnisse
 
 ## 2. Zusammenspiel der Systemteile
 
