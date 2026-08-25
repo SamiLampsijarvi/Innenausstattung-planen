@@ -8,6 +8,7 @@ import {
 } from "@/lib/local-projects";
 import type { LocalProject } from "@/lib/local-projects";
 import FurniturePlanner from "./furniture-planner";
+import DraftResults from "./draft-results";
 
 const futureRooms = [
   "Schlafzimmer Design", "Küche Design", "Badezimmer Design", "Eingang Design",
@@ -408,9 +409,10 @@ export default function Home() {
             ) : (
               <div>
                 <h2 id="design-results-title">Ihre Planung</h2>
-                <p>Vervollständigen Sie links die Angaben. Danach erscheint hier Ihr lokales Planungsbriefing.</p>
+                <p>Vervollständigen Sie links die Angaben. Danach können Sie hier lokale Testentwürfe erstellen.</p>
               </div>
             )}
+            <DraftResults plan={activeProject.livingRoom} canCreate={briefingIsComplete} onChange={(drafts) => updateActivePlan({ drafts })} />
           </aside>
           </> : <div className="no-project-message"><h2>Wählen Sie zuerst ein Zuhause</h2><p>Legen Sie oben ein Projekt an oder öffnen Sie ein vorhandenes Zuhause, um das Wohnzimmer zu planen.</p></div>}
           </div>
