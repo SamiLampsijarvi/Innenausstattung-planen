@@ -7,6 +7,7 @@ import {
   writeLocalProjects,
 } from "@/lib/local-projects";
 import type { LocalProject } from "@/lib/local-projects";
+import FurniturePlanner from "./furniture-planner";
 
 const futureRooms = [
   "Schlafzimmer Design", "Küche Design", "Badezimmer Design", "Eingang Design",
@@ -377,6 +378,11 @@ export default function Home() {
               </div>
             </li>
           </ol>
+          <FurniturePlanner
+            review={activeProject.livingRoom.furnitureReview}
+            imageCount={images.length}
+            onChange={(furnitureReview) => updateActivePlan({ furnitureReview })}
+          />
           <div className="generate-panel">
             <button type="button" disabled={!briefingIsComplete} onClick={createSummary}>Planung zusammenfassen</button>
             <small>{briefingIsComplete ? "Alle Angaben sind vollständig." : "Wählen Sie einen Stil, mindestens ein Foto und eine gültige Postleitzahl."}</small>
@@ -394,6 +400,7 @@ export default function Home() {
                   <div><dt>Fotos</dt><dd>{images.length}</dd></div>
                   <div><dt>Postleitzahl</dt><dd>{postcode}</dd></div>
                   <div><dt>Budget</dt><dd>{budgetLabel} €</dd></div>
+                  <div><dt>Möbelangaben</dt><dd>{activeProject.livingRoom.furnitureReview.items.length || "Keine Vorgabe"}</dd></div>
                 </dl>
                 <div className="prototype-note"><strong>Noch keine KI-Ausführung</strong><p>Die Fotos bleiben lokal in diesem Browserfenster. Eine KI-Erstellung und dauerhafte Speicherung sind in dieser Phase nicht aktiv.</p></div>
                 <button type="button" onClick={() => setShowSummary(false)}>Angaben bearbeiten</button>
