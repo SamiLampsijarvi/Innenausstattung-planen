@@ -173,7 +173,7 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 
 ### D-024: Lokale Testentwürfe und Vergleich in Phase 4C
 
-- **Status:** Bestätigt, technisch umgesetzt und automatisiert geprüft; visuelle Nutzerfreigabe offen
+- **Status:** Bestätigt, umgesetzt, automatisiert geprüft und visuell freigegeben
 - **Testgrenze:** Lokale Testprojekte dürfen vor Einführung der Konten bis zu drei Testentwürfe pro Wohnzimmer speichern, damit Grenze und Vergleich geprüft werden können. Die spätere Regel bleibt ein Gastentwurf beziehungsweise höchstens drei gespeicherte Kontoentwürfe.
 - **Inhalt:** Ein Testentwurf speichert den Planungsstand zum Erstellungszeitpunkt und ergänzt eine vorbereitete Farbpalette sowie Konzeptbeschreibung. Er ist ausdrücklich keine KI-Ausführung und enthält noch kein erzeugtes Raumbild.
 - **Beständigkeit:** Spätere Änderungen an Stil, Budget oder Möbelangaben verändern vorhandene Entwürfe nicht.
