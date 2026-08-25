@@ -17,6 +17,12 @@ Das Wohnzimmer ist der erste MVP-Raum. Langfristig soll Raumly alle Räume eines
 
 Die aktuelle Anwendung basiert auf Next.js und TypeScript. Nach der Installation der Abhängigkeiten startet `pnpm dev` den lokalen Entwicklungsserver. Der frühere Stand bleibt im Ordner `prototype` als Referenz erhalten.
 
+## Prüfen
+
+- `pnpm build`: Produktions-Build und TypeScript-Prüfung
+- `pnpm lint`: statische Codeprüfung
+- `pnpm test:e2e`: vollständiger Planungsablauf in Desktop- und Mobilgröße
+
 ## Was bereits funktioniert
 
 - Responsive Landingpage

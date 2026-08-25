@@ -21,6 +21,9 @@ build/
 .next/
 out/
 coverage/
+test-results/
+playwright-report/
+.playwright-browsers/
 
 # Lokale Werkzeugausgaben
 .vercel/

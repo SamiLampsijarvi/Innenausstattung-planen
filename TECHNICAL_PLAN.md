@@ -202,7 +202,7 @@ Zentrale Möbel müssen zuverlässig erkannt werden. Kleine Fehler sind nur akze
 - Wohnzimmerablauf ohne echte KI nachbilden
 - Desktop und Mobilgerät vergleichen
 
-**Status:** Abgeschlossen am 25. August 2026. Der lokale Wohnzimmerablauf umfasst Designstil, bis zu fünf Bildvorschauen, deutsche Postleitzahl, Budget und ein lokales Planungsbriefing. Es erfolgt noch keine KI-Ausführung oder dauerhafte Speicherung.
+**Status:** Abgeschlossen am 25. August 2026. Der lokale Wohnzimmerablauf umfasst Designstil, bis zu fünf Bildvorschauen, deutsche Postleitzahl, Budget und ein lokales Planungsbriefing. Es erfolgt noch keine KI-Ausführung oder dauerhafte Speicherung. Ein Playwright-Regressionstest prüft den Hauptablauf in Desktop- und Mobilgröße.
 
 **Freigabekriterium:** vorhandenes bestätigtes Verhalten bleibt erhalten.
 
