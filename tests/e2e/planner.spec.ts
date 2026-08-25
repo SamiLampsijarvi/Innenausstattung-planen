@@ -154,29 +154,31 @@ test("erstellt höchstens drei unveränderliche Testentwürfe und vergleicht sie
   await page.getByLabel("Neues Zuhause").fill("Entwurfstest");
   await page.getByRole("button", { name: "Zuhause anlegen" }).click();
 
-  const createDraftButton = page.getByRole("button", { name: "Testentwurf erstellen" });
+  const createDraftButton = page.getByRole("button", { name: "3 Testentwürfe erstellen" });
   await expect(createDraftButton).toBeDisabled();
   await page.getByRole("button", { name: /Japandi/ }).click();
   await page.getByLabel("Postleitzahl des Zuhauses").fill("10115");
   await page.locator('input[type="file"]').setInputFiles({ name: "entwurf.png", mimeType: "image/png", buffer: onePixelPng });
   await createDraftButton.click();
 
-  await page.getByRole("button", { name: /Modern/ }).click();
-  await page.getByLabel(/Budget:/).fill("3000");
-  await createDraftButton.click();
-  await page.getByRole("button", { name: /Boho/ }).click();
-  await createDraftButton.click();
-
   await expect(page.locator(".draft-card")).toHaveCount(3);
-  await expect(createDraftButton).toBeDisabled();
+  await expect(page.locator(".draft-card").nth(0)).toContainText("Ruhige Basis");
+  await expect(page.locator(".draft-card").nth(1)).toContainText("Warme Akzente");
+  await expect(page.locator(".draft-card").nth(2)).toContainText("Klare Kontraste");
+  await expect(page.getByRole("button", { name: "Fehlenden Testentwurf ergänzen" })).toBeDisabled();
   await expect(page.getByText("Die Grenze von drei Testentwürfen ist erreicht.")).toBeVisible();
 
+  await page.getByRole("button", { name: /Modern/ }).click();
+  await page.getByLabel(/Budget:/).fill("3000");
   const firstDraft = page.locator(".draft-card").nth(0);
   const secondDraft = page.locator(".draft-card").nth(1);
   await firstDraft.getByRole("button", { name: "Entwurf öffnen" }).click();
-  const selectedDetail = page.locator(".draft-detail").filter({ has: page.getByRole("heading", { name: "Ausgewählter Entwurf", exact: true }) });
+  const selectedDetail = firstDraft.locator(".draft-detail");
   await expect(selectedDetail).toContainText("Japandi");
   await expect(selectedDetail).toContainText("1.500 €");
+  await secondDraft.getByRole("button", { name: "Entwurf öffnen" }).click();
+  await expect(firstDraft.locator(".draft-detail")).toHaveCount(0);
+  await expect(secondDraft.locator(".draft-detail")).toContainText("Warme Akzente");
 
   await firstDraft.getByLabel("Für Vergleich auswählen").check();
   await secondDraft.getByLabel("Für Vergleich auswählen").check();
@@ -186,6 +188,9 @@ test("erstellt höchstens drei unveränderliche Testentwürfe und vergleicht sie
   await firstDraft.getByRole("button", { name: "Entwurf löschen" }).click();
   await expect(page.locator(".draft-card")).toHaveCount(2);
   await page.locator(".draft-undo").getByRole("button", { name: "Rückgängig" }).click();
+  await expect(page.locator(".draft-card")).toHaveCount(3);
+  await page.locator(".draft-card").first().getByRole("button", { name: "Entwurf löschen" }).click();
+  await page.getByRole("button", { name: "Fehlenden Testentwurf ergänzen" }).click();
   await expect(page.locator(".draft-card")).toHaveCount(3);
 
   await page.reload();

@@ -178,6 +178,7 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 - **Inhalt:** Ein Testentwurf speichert den Planungsstand zum Erstellungszeitpunkt und ergänzt eine vorbereitete Farbpalette sowie Konzeptbeschreibung. Er ist ausdrücklich keine KI-Ausführung und enthält noch kein erzeugtes Raumbild.
 - **Beständigkeit:** Spätere Änderungen an Stil, Budget oder Möbelangaben verändern vorhandene Entwürfe nicht.
 - **Darstellung:** Entwürfe werden in der rechten Spalte „Ihre Planung“ auf Desktop und unterhalb der Planung auf Mobilgeräten immer untereinander angezeigt. Auch ausgewählte Vergleichsentwürfe stehen untereinander.
+- **Erstellung und Details:** Eine Aktion erzeugt alle drei unterschiedlichen Testvarianten. Nach dem Löschen ergänzt dieselbe Aktion ausschließlich die fehlende Variante. Die Zusammenfassung eines geöffneten Entwurfs erscheint direkt unter seiner Karte; beim Öffnen eines anderen Entwurfs wird die vorherige Zusammenfassung nur eingeklappt, nicht gelöscht.
 - **Grenze:** Ein vierter Testentwurf wird blockiert. Es wird kein vorhandener Entwurf automatisch überschrieben.
 - **Löschen:** Einzelne Entwürfe werden sofort entfernt und können unmittelbar über „Rückgängig“ wiederhergestellt werden.
 - **Speicherung:** Testentwürfe werden im lokalen Datenformat Version 3 gespeichert. Projekte aus Version 1 und 2 werden ohne Verlust ihrer bisherigen Daten übernommen.

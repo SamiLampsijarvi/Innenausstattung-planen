@@ -29,16 +29,16 @@ export default function DraftResults({ plan, canCreate, onChange }: Props) {
 
   function createDraft() {
     if (!canCreate || limitReached) return;
-    const variant = variants.find((entry) => !plan.drafts.some((draft) => draft.variant === entry.variant)) ?? variants[plan.drafts.length % variants.length];
-    const draft: DesignDraft = {
+    const missingVariants = variants.filter((entry) => !plan.drafts.some((draft) => draft.variant === entry.variant));
+    const createdDrafts = missingVariants.map((variant): DesignDraft => ({
       id: crypto.randomUUID(), createdAt: new Date().toISOString(), variant: variant.variant,
       title: variant.title, style: plan.style, postcode: plan.postcode, budget: plan.budget,
       palette: variant.palette, concept: `${variant.concept} Der gewählte Stil „${plan.style}“ bildet die gestalterische Grundlage.`,
       generalNote: plan.furnitureReview.generalNote,
       furniture: plan.furnitureReview.items.map(({ label, preference, comment, quantity }) => ({ label, preference, comment, quantity })),
-    };
-    onChange([...plan.drafts, draft]);
-    setSelectedDraftId(draft.id);
+    }));
+    onChange([...plan.drafts, ...createdDrafts]);
+    setSelectedDraftId(createdDrafts[0]?.id ?? selectedDraftId);
     setRemovedDraft(null);
   }
 
@@ -68,7 +68,7 @@ export default function DraftResults({ plan, canCreate, onChange }: Props) {
     <section className="draft-results" aria-labelledby="drafts-title">
       <div className="drafts-heading"><div><small>LOKALE TESTDATEN</small><h3 id="drafts-title">Ihre Testentwürfe</h3></div><strong>{plan.drafts.length} von 3</strong></div>
       <p className="drafts-explanation">Diese Varianten wurden nicht durch eine KI erzeugt. Sie testen ausschließlich den späteren Entwurfsablauf.</p>
-      <button className="create-draft-button" type="button" onClick={createDraft} disabled={!canCreate || limitReached}>Testentwurf erstellen</button>
+      <button className="create-draft-button" type="button" onClick={createDraft} disabled={!canCreate || limitReached}>{plan.drafts.length === 0 ? "3 Testentwürfe erstellen" : "Fehlenden Testentwurf ergänzen"}</button>
       {!canCreate && <small className="draft-help">Vervollständigen Sie Stil, Foto und Postleitzahl, um einen Testentwurf zu erstellen.</small>}
       {limitReached && <small className="draft-help">Die Grenze von drei Testentwürfen ist erreicht. Löschen Sie zuerst einen Entwurf.</small>}
 
@@ -83,11 +83,10 @@ export default function DraftResults({ plan, canCreate, onChange }: Props) {
             <div className="palette" aria-label={`Farbpalette für Entwurf ${index + 1}`}>{draft.palette.map((color) => <span style={{ backgroundColor: color }} key={color} />)}</div>
             <div className="draft-card-actions"><button type="button" onClick={() => setSelectedDraftId(draft.id)}>Entwurf öffnen</button><button className="delete-draft" type="button" onClick={() => removeDraft(draft)}>Entwurf löschen</button></div>
             <label><input type="checkbox" checked={comparisonIds.includes(draft.id)} onChange={() => toggleComparison(draft.id)} /> Für Vergleich auswählen</label>
+            {selectedDraft?.id === draft.id && <DraftDetail draft={draft} title="Zusammenfassung" />}
           </article>
         ))}
       </div>
-
-      {selectedDraft && <DraftDetail draft={selectedDraft} title="Ausgewählter Entwurf" />}
 
       {comparisonDrafts.length > 0 && <section className="draft-comparison" aria-labelledby="comparison-title"><h3 id="comparison-title">Vergleichsauswahl</h3><p>{comparisonDrafts.length < 2 ? "Wählen Sie mindestens einen weiteren Entwurf aus." : `${comparisonDrafts.length} Entwürfe werden untereinander verglichen.`}</p>{comparisonDrafts.length >= 2 && comparisonDrafts.map((draft) => <DraftDetail draft={draft} title={draft.title} key={draft.id} />)}</section>}
     </section>
