@@ -3,7 +3,7 @@
 ## Dokumentstatus
 
 - **Status:** Technische Richtung mit dem Nutzer schrittweise abgestimmt
-- **Umsetzung:** Phasen 1 bis 3 abgeschlossen; Phase 4 noch nicht begonnen
+- **Umsetzung:** Phasen 1 bis 3 und Phase 4A abgeschlossen; weitere Teile von Phase 4 noch nicht begonnen
 - **Veröffentlichung:** Nicht freigegeben
 
 ## 1. Bestätigte technische Grundlage
@@ -213,6 +213,8 @@ Zentrale Möbel müssen zuverlässig erkannt werden. Kleine Fehler sind nur akze
 - Stil, Hinweise, Gesamt- und Teilbudgets
 - Entwurfsgrenzen und Vergleichsansicht
 - noch keine echte KI oder externe Speicherung
+
+**Teilstatus Phase 4A:** Abgeschlossen am 25. August 2026. Mehrere Zuhause-Projekte können lokal angelegt, geöffnet, umbenannt und nach Bestätigung gelöscht werden. Projektname, Wohnzimmerstil, Postleitzahl und Budget werden in einem versionierten Browserformat gespeichert. Fotos bleiben sitzungsgebunden und werden nicht dauerhaft gespeichert. Möbelentscheidungen, Entwurfsgrenzen und Vergleichsansicht bleiben offen.
 
 **Freigabekriterium:** vollständiger Ablauf mit Testdaten besteht automatische Tests.
 

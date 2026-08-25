@@ -33,10 +33,13 @@ Die aktuelle Anwendung basiert auf Next.js und TypeScript. Nach der Installation
 - Budgetregler von 100 bis 10.000 Euro
 - Deutsche Postleitzahleingabe ohne vollständige Adresse
 - Lokale Zusammenfassung des Planungsbriefings ohne Übertragung oder Speicherung
+- Mehrere lokal gespeicherte Zuhause-Projekte anlegen, öffnen, umbenennen und löschen
+- Stil, Postleitzahl und Budget versioniert im Browser speichern und nach einem Neuladen weiterbearbeiten
 
 ## Bewusste MVP-Grenzen
 
-- Noch keine Benutzerkonten oder Datenspeicherung
+- Noch keine Benutzerkonten oder externe Datenspeicherung
+- Noch keine dauerhafte Fotospeicherung; Bilder müssen nach einem Neuladen erneut ausgewählt werden
 - Noch keine echte KI-Bildgenerierung
 - Noch keine Live-Produktpreise oder Händlerverfügbarkeit
 - Noch keine Bezahlung
