@@ -17,13 +17,16 @@ export default function FurniturePlanner({ review, imageCount, onChange }: Props
   const [catalogId, setCatalogId] = useState(furnitureCatalog[0].id);
   const [quantity, setQuantity] = useState(1);
   const [removedItem, setRemovedItem] = useState<RemovedItem>(null);
+  const [selectedItemId, setSelectedItemId] = useState<string | null>(review.items[0]?.id ?? null);
   const catalogGroups = useMemo(() => [...new Set(furnitureCatalog.map(({ group }) => group))], []);
+  const selectedItem = review.items.find((item) => item.id === selectedItemId) ?? review.items[0] ?? null;
 
   function startSimulation() {
     const items = simulatedFurnitureIds.map((id) => {
       const catalogItem = furnitureCatalog.find((item) => item.id === id)!;
       return { id: crypto.randomUUID(), catalogId: id, label: catalogItem.label, source: "simulated", preference: "none", comment: "", quantity: 1 } satisfies FurnitureItem;
     });
+    setSelectedItemId(items[0]?.id ?? null);
     onChange({ ...review, status: "ready", items });
   }
 
@@ -40,7 +43,9 @@ export default function FurniturePlanner({ review, imageCount, onChange }: Props
     const index = review.items.findIndex((item) => item.id === id);
     if (index < 0) return;
     setRemovedItem({ item: review.items[index], index });
-    onChange({ ...review, items: review.items.filter((item) => item.id !== id) });
+    const items = review.items.filter((item) => item.id !== id);
+    if (selectedItem?.id === id) setSelectedItemId(items[Math.min(index, items.length - 1)]?.id ?? null);
+    onChange({ ...review, items });
   }
 
   function undoRemove() {
@@ -48,21 +53,24 @@ export default function FurniturePlanner({ review, imageCount, onChange }: Props
     const items = [...review.items];
     items.splice(Math.min(removedItem.index, items.length), 0, removedItem.item);
     onChange({ ...review, items });
+    setSelectedItemId(removedItem.item.id);
     setRemovedItem(null);
   }
 
   function addFurniture() {
     const catalogItem = furnitureCatalog.find((item) => item.id === catalogId);
     if (!catalogItem) return;
+    const item = {
+      id: crypto.randomUUID(), catalogId: catalogItem.id, label: catalogItem.label,
+      source: "manual", preference: "add", comment: "",
+      quantity: catalogItem.supportsQuantity ? quantity : 1,
+    } satisfies FurnitureItem;
     onChange({
       ...review,
       status: "ready",
-      items: [...review.items, {
-        id: crypto.randomUUID(), catalogId: catalogItem.id, label: catalogItem.label,
-        source: "manual", preference: "add", comment: "",
-        quantity: catalogItem.supportsQuantity ? quantity : 1,
-      }],
+      items: [...review.items, item],
     });
+    setSelectedItemId(item.id);
   }
 
   if (review.status === "not_started") return (
@@ -83,19 +91,19 @@ export default function FurniturePlanner({ review, imageCount, onChange }: Props
       {removedItem && <div className="undo-banner" role="status"><span>„{removedItem.item.label}“ wurde entfernt.</span><button type="button" onClick={undoRemove}>Rückgängig</button></div>}
       {review.items.length === 0 && <p className="empty-furniture">Keine Möbel in der Planung. Sie können unten Möbel ergänzen oder den Ablauf ohne Vorgaben fortsetzen.</p>}
 
-      <div className="furniture-list">
-        {review.items.map((item) => (
-          <article className="furniture-card" key={item.id}>
-            <div className="furniture-card-heading"><div><small>{sourceLabels[item.source]}</small><h3>{item.label}{item.quantity > 1 ? ` (${item.quantity}×)` : ""}</h3></div><button type="button" onClick={() => removeItem(item.id)}>{item.source === "manual" ? "Aus Planung entfernen" : "Falsch erkannt – entfernen"}</button></div>
-            {item.source !== "manual" ? (
-              <fieldset><legend>Ihre freiwillige Vorgabe</legend>{(["none", "keep", "replace"] as FurniturePreference[]).map((preference) => <label key={preference}><input type="radio" name={`preference-${item.id}`} checked={item.preference === preference} onChange={() => updateItem(item.id, { preference })} />{{ none: "Keine Vorgabe", keep: "Behalten", replace: "Ersetzen", add: "Ergänzen" }[preference]}</label>)}</fieldset>
-            ) : <p className="added-status">Vorgabe: Ergänzen</p>}
-            <label htmlFor={`comment-${item.id}`}>Freiwilliger Kommentar <small>{item.comment.length}/300</small></label>
-            <textarea id={`comment-${item.id}`} maxLength={300} value={item.comment} onChange={(event) => updateItem(item.id, { comment: event.target.value })} placeholder="Optionaler Hinweis zu diesem Möbelstück" />
-            {item.source !== "manual" && <details className="correction-control"><summary>Erkennung korrigieren</summary><label htmlFor={`correct-${item.id}`}>Tatsächliche Möbelart</label><select id={`correct-${item.id}`} value={item.catalogId} onChange={(event) => correctItem(item.id, event.target.value)}>{catalogGroups.map((group) => <optgroup label={group} key={group}>{furnitureCatalog.filter((entry) => entry.group === group).map((entry) => <option value={entry.id} key={entry.id}>{entry.label}</option>)}</optgroup>)}</select></details>}
-          </article>
-        ))}
-      </div>
+      {review.items.length > 0 && <div className="furniture-selector" aria-label="Möbel auswählen">
+        {review.items.map((item) => <button className={selectedItem?.id === item.id ? "selected" : ""} type="button" aria-pressed={selectedItem?.id === item.id} onClick={() => setSelectedItemId(item.id)} key={item.id}><span>{item.label}{item.quantity > 1 ? ` (${item.quantity}×)` : ""}</span><small>{sourceLabels[item.source]}</small></button>)}
+      </div>}
+
+      {selectedItem && <article className="furniture-card" key={selectedItem.id}>
+        <div className="furniture-card-heading"><div><small>{sourceLabels[selectedItem.source]}</small><h3>{selectedItem.label}{selectedItem.quantity > 1 ? ` (${selectedItem.quantity}×)` : ""}</h3></div><button type="button" onClick={() => removeItem(selectedItem.id)}>{selectedItem.source === "manual" ? "Aus Planung entfernen" : "Falsch erkannt – entfernen"}</button></div>
+        {selectedItem.source !== "manual" ? (
+          <fieldset><legend>Ihre freiwillige Vorgabe</legend>{(["none", "keep", "replace"] as FurniturePreference[]).map((preference) => <label key={preference}><input type="radio" name={`preference-${selectedItem.id}`} checked={selectedItem.preference === preference} onChange={() => updateItem(selectedItem.id, { preference })} />{{ none: "Keine Vorgabe", keep: "Behalten", replace: "Ersetzen", add: "Ergänzen" }[preference]}</label>)}</fieldset>
+        ) : <p className="added-status">Vorgabe: Ergänzen</p>}
+        <label htmlFor={`comment-${selectedItem.id}`}>Freiwilliger Kommentar <small>{selectedItem.comment.length}/300</small></label>
+        <textarea id={`comment-${selectedItem.id}`} maxLength={300} value={selectedItem.comment} onChange={(event) => updateItem(selectedItem.id, { comment: event.target.value })} placeholder="Optionaler Hinweis zu diesem Möbelstück" />
+        {selectedItem.source !== "manual" && <details className="correction-control"><summary>Erkennung korrigieren</summary><label htmlFor={`correct-${selectedItem.id}`}>Tatsächliche Möbelart</label><select id={`correct-${selectedItem.id}`} value={selectedItem.catalogId} onChange={(event) => correctItem(selectedItem.id, event.target.value)}>{catalogGroups.map((group) => <optgroup label={group} key={group}>{furnitureCatalog.filter((entry) => entry.group === group).map((entry) => <option value={entry.id} key={entry.id}>{entry.label}</option>)}</optgroup>)}</select></details>}
+      </article>}
 
       <details className="add-furniture"><summary>Möbel ergänzen</summary><div><label htmlFor="catalog-furniture">Möbelart</label><select id="catalog-furniture" value={catalogId} onChange={(event) => { setCatalogId(event.target.value); setQuantity(1); }}>{catalogGroups.map((group) => <optgroup label={group} key={group}>{furnitureCatalog.filter((entry) => entry.group === group).map((entry) => <option value={entry.id} key={entry.id}>{entry.label}</option>)}</optgroup>)}</select>{furnitureCatalog.find((item) => item.id === catalogId)?.supportsQuantity && <><label htmlFor="furniture-quantity">Anzahl</label><select id="furniture-quantity" value={quantity} onChange={(event) => setQuantity(Number(event.target.value))}>{[1,2,3,4,5,6].map((count) => <option key={count}>{count}</option>)}</select></>}<button type="button" onClick={addFurniture}>Zur Planung hinzufügen</button></div></details>
     </section>

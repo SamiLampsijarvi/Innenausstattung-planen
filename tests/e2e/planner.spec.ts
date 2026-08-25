@@ -85,8 +85,9 @@ test("prüft, korrigiert und ergänzt Möbel mit freiwilligen Angaben", async ({
   await expect(simulationButton).toBeEnabled();
   await simulationButton.click();
 
-  await expect(page.locator(".furniture-card")).toHaveCount(6);
-  const sofaCard = page.locator(".furniture-card").filter({ has: page.getByRole("heading", { name: "Sofa / Couch", exact: true }) });
+  await expect(page.locator(".furniture-selector button")).toHaveCount(6);
+  await expect(page.getByRole("button", { name: /Sofa \/ Couch Simuliert erkannt/ })).toHaveAttribute("aria-pressed", "true");
+  const sofaCard = page.locator(".furniture-card");
   await expect(sofaCard.getByLabel("Keine Vorgabe")).toBeChecked();
   await sofaCard.getByLabel("Behalten").check();
   await sofaCard.getByLabel("Freiwilliger Kommentar").fill("Dieses Sofa muss bleiben.");
@@ -94,25 +95,26 @@ test("prüft, korrigiert und ergänzt Möbel mit freiwilligen Angaben", async ({
 
   await sofaCard.getByText("Erkennung korrigieren").click();
   await sofaCard.getByLabel("Tatsächliche Möbelart").selectOption("armchair");
-  const correctedCard = page.locator(".furniture-card").filter({ has: page.getByRole("heading", { name: "Sessel", exact: true }) });
+  const correctedCard = page.locator(".furniture-card");
   await expect(correctedCard).toContainText("Vom Nutzer korrigiert");
   await expect(correctedCard.getByLabel("Behalten")).toBeChecked();
   await expect(correctedCard.getByLabel("Freiwilliger Kommentar")).toHaveValue("Dieses Sofa muss bleiben.");
 
   await correctedCard.getByRole("button", { name: "Falsch erkannt – entfernen" }).click();
   await page.getByRole("button", { name: "Rückgängig" }).click();
-  await expect(page.locator(".furniture-card").filter({ has: page.getByRole("heading", { name: "Sessel", exact: true }) })).toBeVisible();
+  await expect(page.getByRole("button", { name: /Sessel Vom Nutzer korrigiert/ })).toHaveAttribute("aria-pressed", "true");
 
   await page.getByText("Möbel ergänzen").click();
   await page.getByLabel("Möbelart", { exact: true }).selectOption("dining-chair");
   await page.getByLabel("Anzahl").selectOption("4");
   await page.getByRole("button", { name: "Zur Planung hinzufügen" }).click();
-  await expect(page.locator(".furniture-card").filter({ has: page.getByRole("heading", { name: "Esszimmerstuhl (4×)", exact: true }) })).toContainText("Vom Nutzer ergänzt");
+  await expect(page.locator(".furniture-card")).toContainText("Esszimmerstuhl (4×)");
+  await expect(page.locator(".furniture-card")).toContainText("Vom Nutzer ergänzt");
 
   await page.reload();
   await page.waitForLoadState("networkidle");
   await page.locator(".project-grid article").filter({ hasText: "Möbeltest" }).getByRole("button", { name: "Öffnen" }).click();
-  await expect(page.locator(".furniture-card")).toHaveCount(7);
+  await expect(page.locator(".furniture-selector button")).toHaveCount(7);
   await expect(page.getByLabel("Allgemeine Raumnotiz")).toHaveValue("Keine schwarzen Möbel.");
   await expect(page.getByAltText("Vorschau: raum.png")).toHaveCount(0);
 });
@@ -139,8 +141,9 @@ test("migriert bestehende Version-1-Projekte und erlaubt eine leere Möbelliste"
   await page.locator('input[type="file"]').setInputFiles({ name: "alt.png", mimeType: "image/png", buffer: onePixelPng });
   await page.getByRole("button", { name: "Test-Erkennung starten" }).click();
   for (let index = 0; index < 6; index += 1) {
-    await page.locator(".furniture-card").first().getByRole("button", { name: "Falsch erkannt – entfernen" }).click();
+    await page.locator(".furniture-card").getByRole("button", { name: "Falsch erkannt – entfernen" }).click();
   }
+  await expect(page.locator(".furniture-selector button")).toHaveCount(0);
   await expect(page.locator(".furniture-card")).toHaveCount(0);
   await expect(page.getByText("Keine Möbel in der Planung.")).toBeVisible();
 });

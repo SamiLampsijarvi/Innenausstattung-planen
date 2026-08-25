@@ -168,6 +168,7 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 - **Korrektur:** Erkannte Möbel können korrigiert werden. Bereits gewählte Vorgaben und Kommentare bleiben dabei erhalten.
 - **Entfernen und Ergänzen:** Einträge können ohne Bestätigungsdialog entfernt und unmittelbar wiederhergestellt werden. Zusätzliche Möbel stammen aus einem gruppierten lokalen Katalog; für Esszimmerstühle kann eine Anzahl von eins bis sechs gewählt werden.
 - **Raumnotiz:** Eine allgemeine freiwillige Raumnotiz bis 500 Zeichen wird unterstützt.
+- **Darstellung:** Alle Möbel erscheinen platzsparend in einer kompakten Auswahl. Der vollständige Bearbeitungsbereich wird nur für das aktuell ausgewählte Möbel angezeigt.
 - **Speicherung:** Die Möbelangaben werden im versionierten lokalen Projektformat Version 2 gespeichert. Projekte aus Version 1 werden ohne Verlust ihrer bisherigen Planungsdaten automatisch übernommen. Fotos bleiben weiterhin sitzungsgebunden.
 
 ## Offene Entscheidungen

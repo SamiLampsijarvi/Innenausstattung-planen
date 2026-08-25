@@ -37,7 +37,7 @@ Bei Pull Requests nach `main` und Änderungen an `main` führt GitHub Actions di
 - Lokale Zusammenfassung des Planungsbriefings ohne Übertragung oder Speicherung
 - Mehrere lokal gespeicherte Zuhause-Projekte anlegen, öffnen, umbenennen und löschen
 - Stil, Postleitzahl und Budget versioniert im Browser speichern und nach einem Neuladen weiterbearbeiten
-- Möbel mit klar gekennzeichneten Testdaten simulieren, korrigieren, entfernen und ergänzen
+- Möbel mit klar gekennzeichneten Testdaten simulieren und über eine kompakte Auswahl einzeln bearbeiten, korrigieren, entfernen oder ergänzen
 - Freiwillige Vorgaben und Kommentare je Möbelstück sowie eine allgemeine Raumnotiz lokal speichern
 
 ## Bewusste MVP-Grenzen
