@@ -1,3 +1,7 @@
+"use client";
+
+import { ChangeEvent, useMemo, useState } from "react";
+
 const futureRooms = [
   "Schlafzimmer Design", "Küche Design", "Badezimmer Design", "Eingang Design",
   "Kinderzimmer Design", "Garten", "Homeoffice", "Gaming Room", "Garage",
@@ -13,11 +17,84 @@ const futureRoomOptions = [
   "Garten", "Homeoffice", "Gaming Room", "Ankleidezimmer", "Garage",
 ];
 
+const designStyles = [
+  ["Modern", "Klare Linien, ruhige Farben und funktionale Möbel"],
+  ["Skandinavisch", "Hell, natürlich, gemütlich und unkompliziert"],
+  ["Japandi", "Japanische Ruhe trifft skandinavische Wärme"],
+  ["Industrial", "Rohes Holz, Metall und markante Kontraste"],
+  ["Boho", "Lebendig, persönlich, textil und pflanzenreich"],
+  ["Mid-Century", "Organische Formen und Design der 1950er–60er"],
+  ["1990er Revival", "Warme Hölzer, Glas, Chrom und mutige Akzente"],
+  ["Landhaus", "Zeitlos, wohnlich und von der Natur inspiriert"],
+  ["Neubau minimalistisch", "Raumoptimiert, hochwertig und reduziert"],
+];
+
+type RoomImage = { file: File; previewUrl: string };
+
 function Soon() {
   return <small>Bald verfügbar</small>;
 }
 
 export default function Home() {
+  const [style, setStyle] = useState("");
+  const [images, setImages] = useState<RoomImage[]>([]);
+  const [postcode, setPostcode] = useState("");
+  const [budget, setBudget] = useState(1500);
+  const [error, setError] = useState("");
+  const [showSummary, setShowSummary] = useState(false);
+
+  const postcodeIsValid = /^\d{5}$/.test(postcode);
+  const briefingIsComplete = Boolean(style && images.length && postcodeIsValid);
+  const budgetLabel = useMemo(() => budget.toLocaleString("de-DE"), [budget]);
+
+  function handleImages(event: ChangeEvent<HTMLInputElement>) {
+    const selectedFiles = Array.from(event.target.files ?? []);
+    setError("");
+
+    if (selectedFiles.length > 5) {
+      setError("Bitte wähle höchstens fünf Fotos aus.");
+      event.target.value = "";
+      return;
+    }
+
+    const invalidFile = selectedFiles.find((file) =>
+      !["image/jpeg", "image/png", "image/webp"].includes(file.type),
+    );
+    if (invalidFile) {
+      setError(`${invalidFile.name} ist kein unterstütztes Bildformat.`);
+      event.target.value = "";
+      return;
+    }
+
+    const tooLarge = selectedFiles.find((file) => file.size > 10 * 1024 * 1024);
+    if (tooLarge) {
+      setError(`${tooLarge.name} ist größer als 10 MB.`);
+      event.target.value = "";
+      return;
+    }
+
+    images.forEach(({ previewUrl }) => URL.revokeObjectURL(previewUrl));
+    setImages(selectedFiles.map((file) => ({ file, previewUrl: URL.createObjectURL(file) })));
+    setShowSummary(false);
+  }
+
+  function removeImage(index: number) {
+    setImages((current) => current.filter((image, imageIndex) => {
+      if (imageIndex === index) URL.revokeObjectURL(image.previewUrl);
+      return imageIndex !== index;
+    }));
+    setShowSummary(false);
+  }
+
+  function createSummary() {
+    if (!briefingIsComplete) {
+      setError("Bitte wähle einen Stil, lade mindestens ein Foto hoch und gib eine gültige Postleitzahl ein.");
+      return;
+    }
+    setError("");
+    setShowSummary(true);
+  }
+
   return (
     <>
       <header className="site-header">
@@ -98,26 +175,100 @@ export default function Home() {
                 ))}
               </ul>
             </li>
-            <li><div className="step-heading"><span>2</span><strong>Designstil wählen</strong></div></li>
             <li className="planning-step-detailed">
-              <div className="step-heading"><span>3</span><strong>Bilder Ihres Wohnzimmers hochladen</strong></div>
-              <div className="image-placeholders" aria-label="Zwei zukünftige Plätze für Zimmerbilder">
-                <div><span>Bild 1</span><small>Bald verfügbar</small></div>
-                <div><span>Bild 2</span><small>Bald verfügbar</small></div>
+              <div className="step-heading"><span>2</span><strong>Designstil wählen</strong></div>
+              <div className="style-options" aria-label="Designstil wählen">
+                {designStyles.map(([name, description]) => (
+                  <button
+                    className={style === name ? "selected" : ""}
+                    key={name}
+                    type="button"
+                    aria-pressed={style === name}
+                    onClick={() => { setStyle(name); setShowSummary(false); }}
+                  >
+                    <strong>{name}</strong><small>{description}</small>
+                  </button>
+                ))}
               </div>
             </li>
-            <li><div className="step-heading"><span>4</span><strong>Budget festlegen</strong></div></li>
+            <li className="planning-step-detailed">
+              <div className="step-heading"><span>3</span><strong>Bilder Ihres Wohnzimmers hochladen</strong></div>
+              <label className="upload-zone" htmlFor="room-images">
+                <span aria-hidden="true">↑</span>
+                <strong>Fotos auswählen</strong>
+                <small>1–5 Bilder · JPG, PNG oder WEBP · maximal 10 MB pro Bild</small>
+                <input id="room-images" type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={handleImages} />
+              </label>
+              <div className="image-previews" aria-live="polite">
+                {images.map(({ file, previewUrl }, index) => (
+                  <figure key={`${file.name}-${file.lastModified}`}>
+                    {/* A local object URL is required for an immediate, non-uploaded preview. */}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={previewUrl} alt={`Vorschau: ${file.name}`} />
+                    <button type="button" onClick={() => removeImage(index)} aria-label={`${file.name} entfernen`}>×</button>
+                  </figure>
+                ))}
+              </div>
+            </li>
+            <li className="planning-step-detailed">
+              <div className="step-heading"><span>4</span><strong>Postleitzahl und Budget festlegen</strong></div>
+              <div className="planning-fields">
+                <label htmlFor="postcode">Postleitzahl des Zuhauses</label>
+                <input
+                  id="postcode"
+                  value={postcode}
+                  onChange={(event) => {
+                    setPostcode(event.target.value.replace(/\D/g, "").slice(0, 5));
+                    setShowSummary(false);
+                  }}
+                  inputMode="numeric"
+                  autoComplete="postal-code"
+                  maxLength={5}
+                  placeholder="z. B. 10115"
+                  aria-describedby="postcode-help"
+                />
+                <small id="postcode-help">Für spätere regionale Empfehlungen in Deutschland. Eine vollständige Adresse ist nicht erforderlich.</small>
+                <label htmlFor="budget">Budget: <strong>{budgetLabel} €</strong></label>
+                <input
+                  id="budget"
+                  type="range"
+                  min="100"
+                  max="10000"
+                  step="100"
+                  value={budget}
+                  onChange={(event) => { setBudget(Number(event.target.value)); setShowSummary(false); }}
+                />
+                <div className="range-labels"><span>100 €</span><span>10.000 €</span></div>
+              </div>
+            </li>
           </ol>
           <div className="generate-panel">
-            <button type="button" disabled>Generieren</button>
-            <small>Füllen Sie zuerst alle vier Schritte aus.</small>
+            <button type="button" disabled={!briefingIsComplete} onClick={createSummary}>Planung zusammenfassen</button>
+            <small>{briefingIsComplete ? "Alle Angaben sind vollständig." : "Wählen Sie einen Stil, mindestens ein Foto und eine gültige Postleitzahl."}</small>
+            {error && <p className="form-error" role="alert">{error}</p>}
           </div>
           </div>
           <aside className="design-results" aria-labelledby="design-results-title">
-            <div>
-              <h2 id="design-results-title">Ihre Entwürfe</h2>
-              <p>Ihre generierten Raumkonzepte erscheinen später hier.</p>
-            </div>
+            {showSummary ? (
+              <div className="briefing-summary" aria-live="polite">
+                <small className="summary-kicker">PLANUNGSBRIEFING BEREIT</small>
+                <h2 id="design-results-title">Ihre Zusammenfassung</h2>
+                <dl>
+                  <div><dt>Raum</dt><dd>Wohnzimmer</dd></div>
+                  <div><dt>Designstil</dt><dd>{style}</dd></div>
+                  <div><dt>Fotos</dt><dd>{images.length}</dd></div>
+                  <div><dt>Postleitzahl</dt><dd>{postcode}</dd></div>
+                  <div><dt>Budget</dt><dd>{budgetLabel} €</dd></div>
+                </dl>
+                <div className="prototype-note"><strong>Noch keine KI-Ausführung</strong><p>Die Fotos bleiben lokal in diesem Browserfenster. Eine KI-Erstellung und dauerhafte Speicherung sind in dieser Phase nicht aktiv.</p></div>
+                <button type="button" onClick={() => setShowSummary(false)}>Angaben bearbeiten</button>
+              </div>
+            ) : (
+              <div>
+                <h2 id="design-results-title">Ihre Planung</h2>
+                <p>Vervollständigen Sie links die Angaben. Danach erscheint hier Ihr lokales Planungsbriefing.</p>
+              </div>
+            )}
           </aside>
           </div>
         </section>
