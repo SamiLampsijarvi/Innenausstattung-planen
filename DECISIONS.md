@@ -160,6 +160,16 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 - **Sicherheit:** Der Workflow besitzt nur Lesezugriff auf Repository-Inhalte, verwendet keine Geheimnisse und führt kein Deployment aus.
 - **Kostenbegrenzung:** Gleichartige veraltete Läufe werden abgebrochen; Playwright-Fehlerberichte werden nur bei Fehlschlägen und höchstens sieben Tage gespeichert.
 
+### D-023: Freiwillige Möbelprüfung mit lokalen Testdaten in Phase 4B
+
+- **Status:** Bestätigt und umgesetzt
+- **Simulation:** Nach Auswahl mindestens eines Fotos in der aktuellen Browsersitzung kann eine klar als Simulation bezeichnete Erkennung mit sechs vorbereiteten Möbeln gestartet werden. Das Foto wird dabei nicht analysiert.
+- **Vorgaben:** Für erkannte Möbel ist „Keine Vorgabe“ der neutrale Ausgangszustand. „Behalten“ und „Ersetzen“ sowie ein Kommentar bis 300 Zeichen sind freiwillig; der Nutzer muss nicht jedes Möbelstück bearbeiten.
+- **Korrektur:** Erkannte Möbel können korrigiert werden. Bereits gewählte Vorgaben und Kommentare bleiben dabei erhalten.
+- **Entfernen und Ergänzen:** Einträge können ohne Bestätigungsdialog entfernt und unmittelbar wiederhergestellt werden. Zusätzliche Möbel stammen aus einem gruppierten lokalen Katalog; für Esszimmerstühle kann eine Anzahl von eins bis sechs gewählt werden.
+- **Raumnotiz:** Eine allgemeine freiwillige Raumnotiz bis 500 Zeichen wird unterstützt.
+- **Speicherung:** Die Möbelangaben werden im versionierten lokalen Projektformat Version 2 gespeichert. Projekte aus Version 1 werden ohne Verlust ihrer bisherigen Planungsdaten automatisch übernommen. Fotos bleiben weiterhin sitzungsgebunden.
+
 ## Offene Entscheidungen
 
 - Markenname und visuelle Identität
