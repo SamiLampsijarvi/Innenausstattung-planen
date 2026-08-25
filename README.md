@@ -15,19 +15,24 @@ Das Wohnzimmer ist der erste MVP-Raum. Langfristig soll Raumly alle Räume eines
 
 ## Lokal starten
 
-Die aktuelle Version benötigt keine Installation. `index.html` kann direkt im Browser geöffnet werden. Komfortabler ist ein lokaler Webserver, zum Beispiel mit VS Code Live Server.
+Die aktuelle Anwendung basiert auf Next.js und TypeScript. Nach der Installation der Abhängigkeiten startet `pnpm dev` den lokalen Entwicklungsserver. Der frühere Stand bleibt im Ordner `prototype` als Referenz erhalten.
+
+## Prüfen
+
+- `pnpm build`: Produktions-Build und TypeScript-Prüfung
+- `pnpm lint`: statische Codeprüfung
+- `pnpm test:e2e`: vollständiger Planungsablauf in Desktop- und Mobilgröße
 
 ## Was bereits funktioniert
 
 - Responsive Landingpage
-- Geführter Vier-Schritte-Planer
+- Geführter lokaler Planungsablauf
 - Wohnzimmerplanung mit 9 Designstilen
 - Responsive Navigation nach der bestätigten Seitenskizze
 - Lokale Bildvorschau für bis zu fünf Fotos
 - Budgetregler von 100 bis 10.000 Euro
-- Auswahl des Einkaufslandes
-- Freiwillige, nicht gespeicherte Standorterkennung mit Postleitzahl-Alternative
-- Zusammenfassung des Planungsbriefings
+- Deutsche Postleitzahleingabe ohne vollständige Adresse
+- Lokale Zusammenfassung des Planungsbriefings ohne Übertragung oder Speicherung
 
 ## Bewusste MVP-Grenzen
 
@@ -39,7 +44,7 @@ Die aktuelle Version benötigt keine Installation. `index.html` kann direkt im B
 ## Empfohlene nächste Phasen
 
 1. Bestätigte Zielgruppe und Deutschland als Startmarkt mit Testnutzern validieren.
-2. Frontend auf eine produktionsfähige App-Basis übertragen.
+2. Planung mit lokalen Testdaten um Projekte, Möbelentscheidungen und Entwurfsgrenzen erweitern.
 3. Backend, Datenbank, sichere Foto-Uploads und Anmeldung ergänzen.
 4. KI-Bildbearbeitung mit Einwilligung, Moderation und Kostenlimit anbinden.
 5. Zunächst 2–3 Händler-/Affiliate-Feeds für ein einziges Land integrieren.

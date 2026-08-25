@@ -63,7 +63,7 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 
 ### D-010: Produktionsfähige technische Grundlage
 
-- **Status:** Bestätigt, noch nicht umgesetzt
+- **Status:** Bestätigt, technische Grundlage und lokaler Planungsablauf umgesetzt
 - **Entscheidung:** Das Zielprodukt wird schrittweise auf Next.js und TypeScript übertragen.
 - **Kontinuität:** Der vorhandene Prototyp bleibt Referenz. Funktionierendes Verhalten wird kontrolliert übertragen und nicht unnötig neu gestaltet.
 - **Betrieb:** Die Entwicklung bleibt zunächst lokal. Eine Veröffentlichung ist nicht freigegeben.
