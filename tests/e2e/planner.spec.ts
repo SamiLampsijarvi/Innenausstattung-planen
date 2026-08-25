@@ -136,7 +136,7 @@ test("migriert bestehende Version-1-Projekte und erlaubt eine leere Möbelliste"
   await expect(page.getByRole("button", { name: /Japandi/ })).toHaveAttribute("aria-pressed", "true");
   await expect(page.getByLabel("Postleitzahl des Zuhauses")).toHaveValue("10115");
   await expect(page.getByText("Budget:").locator(".." )).toContainText("2.400 €");
-  expect(await page.evaluate(() => JSON.parse(localStorage.getItem("raumly.local-projects")!).version)).toBe(2);
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem("raumly.local-projects")!).version)).toBe(3);
 
   await page.locator('input[type="file"]').setInputFiles({ name: "alt.png", mimeType: "image/png", buffer: onePixelPng });
   await page.getByRole("button", { name: "Test-Erkennung starten" }).click();
@@ -146,4 +146,74 @@ test("migriert bestehende Version-1-Projekte und erlaubt eine leere Möbelliste"
   await expect(page.locator(".furniture-selector button")).toHaveCount(0);
   await expect(page.locator(".furniture-card")).toHaveCount(0);
   await expect(page.getByText("Keine Möbel in der Planung.")).toBeVisible();
+});
+
+test("erstellt höchstens drei unveränderliche Testentwürfe und vergleicht sie vertikal", async ({ page }) => {
+  await page.goto("/");
+  await page.waitForLoadState("networkidle");
+  await page.getByLabel("Neues Zuhause").fill("Entwurfstest");
+  await page.getByRole("button", { name: "Zuhause anlegen" }).click();
+
+  const createDraftButton = page.getByRole("button", { name: "Testentwurf erstellen" });
+  await expect(createDraftButton).toBeDisabled();
+  await page.getByRole("button", { name: /Japandi/ }).click();
+  await page.getByLabel("Postleitzahl des Zuhauses").fill("10115");
+  await page.locator('input[type="file"]').setInputFiles({ name: "entwurf.png", mimeType: "image/png", buffer: onePixelPng });
+  await createDraftButton.click();
+
+  await page.getByRole("button", { name: /Modern/ }).click();
+  await page.getByLabel(/Budget:/).fill("3000");
+  await createDraftButton.click();
+  await page.getByRole("button", { name: /Boho/ }).click();
+  await createDraftButton.click();
+
+  await expect(page.locator(".draft-card")).toHaveCount(3);
+  await expect(createDraftButton).toBeDisabled();
+  await expect(page.getByText("Die Grenze von drei Testentwürfen ist erreicht.")).toBeVisible();
+
+  const firstDraft = page.locator(".draft-card").nth(0);
+  const secondDraft = page.locator(".draft-card").nth(1);
+  await firstDraft.getByRole("button", { name: "Entwurf öffnen" }).click();
+  const selectedDetail = page.locator(".draft-detail").filter({ has: page.getByRole("heading", { name: "Ausgewählter Entwurf", exact: true }) });
+  await expect(selectedDetail).toContainText("Japandi");
+  await expect(selectedDetail).toContainText("1.500 €");
+
+  await firstDraft.getByLabel("Für Vergleich auswählen").check();
+  await secondDraft.getByLabel("Für Vergleich auswählen").check();
+  await expect(page.locator(".draft-comparison .draft-detail")).toHaveCount(2);
+  await expect(page.locator(".draft-comparison")).toContainText("2 Entwürfe werden untereinander verglichen.");
+
+  await firstDraft.getByRole("button", { name: "Entwurf löschen" }).click();
+  await expect(page.locator(".draft-card")).toHaveCount(2);
+  await page.locator(".draft-undo").getByRole("button", { name: "Rückgängig" }).click();
+  await expect(page.locator(".draft-card")).toHaveCount(3);
+
+  await page.reload();
+  await page.waitForLoadState("networkidle");
+  await page.locator(".project-grid article").filter({ hasText: "Entwurfstest" }).getByRole("button", { name: "Öffnen" }).click();
+  await expect(page.locator(".draft-card")).toHaveCount(3);
+  await expect(page.getByAltText("Vorschau: entwurf.png")).toHaveCount(0);
+});
+
+test("migriert Möbelprojekte von Version 2 ohne Datenverlust auf Version 3", async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem("raumly.local-projects", JSON.stringify({
+      version: 2,
+      projects: [{
+        id: "phase-4b", name: "Phase 4B Projekt", createdAt: "2026-08-25T10:00:00.000Z", updatedAt: "2026-08-25T11:00:00.000Z",
+        livingRoom: {
+          style: "Skandinavisch", postcode: "12163", budget: 1800,
+          furnitureReview: { status: "ready", generalNote: "Helle Farben", items: [{ id: "sofa-1", catalogId: "sofa", label: "Sofa / Couch", source: "simulated", preference: "keep", comment: "Bitte behalten", quantity: 1 }] },
+        },
+      }],
+    }));
+  });
+  await page.goto("/");
+  await page.waitForLoadState("networkidle");
+  await page.getByRole("button", { name: "Öffnen" }).click();
+  await expect(page.getByLabel("Allgemeine Raumnotiz")).toHaveValue("Helle Farben");
+  await expect(page.locator(".furniture-card").getByLabel("Behalten")).toBeChecked();
+  await expect(page.locator(".furniture-card").getByLabel("Freiwilliger Kommentar")).toHaveValue("Bitte behalten");
+  await expect(page.locator(".draft-card")).toHaveCount(0);
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem("raumly.local-projects")!).version)).toBe(3);
 });

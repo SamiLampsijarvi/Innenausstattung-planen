@@ -3,7 +3,7 @@
 ## Dokumentstatus
 
 - **Status:** Technische Richtung mit dem Nutzer schrittweise abgestimmt
-- **Umsetzung:** Phasen 1 bis 3 sowie Phase 4A und 4B abgeschlossen; weitere Teile von Phase 4 bleiben offen
+- **Umsetzung:** Phasen 1 bis 3 sowie Phase 4A und 4B abgeschlossen; Phase 4C technisch umgesetzt und automatisiert geprüft, visuelle Nutzerfreigabe offen
 - **Veröffentlichung:** Nicht freigegeben
 
 ## 1. Bestätigte technische Grundlage
@@ -218,6 +218,8 @@ Zentrale Möbel müssen zuverlässig erkannt werden. Kleine Fehler sind nur akze
 **Teilstatus Phase 4A:** Abgeschlossen am 25. August 2026. Mehrere Zuhause-Projekte können lokal angelegt, geöffnet, umbenannt und nach Bestätigung gelöscht werden. Projektname, Wohnzimmerstil, Postleitzahl und Budget werden in einem versionierten Browserformat gespeichert. Fotos bleiben sitzungsgebunden und werden nicht dauerhaft gespeichert. Möbelentscheidungen, Entwurfsgrenzen und Vergleichsansicht bleiben offen.
 
 **Teilstatus Phase 4B:** Abgeschlossen am 25. August 2026. Nach Auswahl eines sitzungsgebundenen Fotos kann der Nutzer eine deutlich gekennzeichnete Test-Erkennung mit sechs vorbereiteten Möbeln starten. Die Möbel werden platzsparend in einer kompakten Auswahl dargestellt; nur das ausgewählte Möbel zeigt seinen Bearbeitungsbereich. Möbel lassen sich korrigieren, entfernen, wiederherstellen und aus einem gruppierten Katalog ergänzen. Entscheidungen und Kommentare bleiben freiwillig; eine neutrale Vorgabe ist der Ausgangszustand. Möbelangaben und die allgemeine Raumnotiz werden lokal gespeichert. Vorhandene Projekte werden kontrolliert vom lokalen Datenformat Version 1 auf Version 2 migriert. Es findet weiterhin keine echte Fotoanalyse statt. Entwurfsgrenzen und Vergleichsansicht bleiben offen.
+
+**Teilstatus Phase 4C:** Technisch umgesetzt und automatisiert geprüft am 25. August 2026; visuelle Nutzerfreigabe offen. Ein lokales Wohnzimmer kann bis zu drei eindeutig als Simulation gekennzeichnete Testentwürfe speichern. Jeder Entwurf friert Stil, Budget, Postleitzahl, Möbelvorgaben, Kommentare und Raumnotiz zum Erstellungszeitpunkt ein und ergänzt eine vorbereitete Farbpalette und Konzeptbeschreibung. Entwürfe und Vergleichsergebnisse erscheinen auf Desktop und Mobil untereinander in „Ihre Planung“. Ein vierter Entwurf wird blockiert; einzelne Entwürfe können sofort gelöscht und unmittelbar wiederhergestellt werden. Das lokale Datenformat wird verlustfrei von Version 2 auf Version 3 migriert. Es findet weiterhin keine echte KI-Bildgenerierung statt.
 
 **Freigabekriterium:** vollständiger Ablauf mit Testdaten besteht automatische Tests.
 

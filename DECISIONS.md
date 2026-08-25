@@ -171,6 +171,17 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 - **Darstellung:** Alle Möbel erscheinen platzsparend in einer kompakten Auswahl. Der vollständige Bearbeitungsbereich wird nur für das aktuell ausgewählte Möbel angezeigt.
 - **Speicherung:** Die Möbelangaben werden im versionierten lokalen Projektformat Version 2 gespeichert. Projekte aus Version 1 werden ohne Verlust ihrer bisherigen Planungsdaten automatisch übernommen. Fotos bleiben weiterhin sitzungsgebunden.
 
+### D-024: Lokale Testentwürfe und Vergleich in Phase 4C
+
+- **Status:** Bestätigt, technisch umgesetzt und automatisiert geprüft; visuelle Nutzerfreigabe offen
+- **Testgrenze:** Lokale Testprojekte dürfen vor Einführung der Konten bis zu drei Testentwürfe pro Wohnzimmer speichern, damit Grenze und Vergleich geprüft werden können. Die spätere Regel bleibt ein Gastentwurf beziehungsweise höchstens drei gespeicherte Kontoentwürfe.
+- **Inhalt:** Ein Testentwurf speichert den Planungsstand zum Erstellungszeitpunkt und ergänzt eine vorbereitete Farbpalette sowie Konzeptbeschreibung. Er ist ausdrücklich keine KI-Ausführung und enthält noch kein erzeugtes Raumbild.
+- **Beständigkeit:** Spätere Änderungen an Stil, Budget oder Möbelangaben verändern vorhandene Entwürfe nicht.
+- **Darstellung:** Entwürfe werden in der rechten Spalte „Ihre Planung“ auf Desktop und unterhalb der Planung auf Mobilgeräten immer untereinander angezeigt. Auch ausgewählte Vergleichsentwürfe stehen untereinander.
+- **Grenze:** Ein vierter Testentwurf wird blockiert. Es wird kein vorhandener Entwurf automatisch überschrieben.
+- **Löschen:** Einzelne Entwürfe werden sofort entfernt und können unmittelbar über „Rückgängig“ wiederhergestellt werden.
+- **Speicherung:** Testentwürfe werden im lokalen Datenformat Version 3 gespeichert. Projekte aus Version 1 und 2 werden ohne Verlust ihrer bisherigen Daten übernommen.
+
 ## Offene Entscheidungen
 
 - Markenname und visuelle Identität

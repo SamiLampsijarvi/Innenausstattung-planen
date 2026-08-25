@@ -39,19 +39,21 @@ Bei Pull Requests nach `main` und Änderungen an `main` führt GitHub Actions di
 - Stil, Postleitzahl und Budget versioniert im Browser speichern und nach einem Neuladen weiterbearbeiten
 - Möbel mit klar gekennzeichneten Testdaten simulieren und über eine kompakte Auswahl einzeln bearbeiten, korrigieren, entfernen oder ergänzen
 - Freiwillige Vorgaben und Kommentare je Möbelstück sowie eine allgemeine Raumnotiz lokal speichern
+- Bis zu drei klar gekennzeichnete lokale Testentwürfe erstellen, untereinander anzeigen, öffnen, löschen und vergleichen
 
 ## Bewusste MVP-Grenzen
 
 - Noch keine Benutzerkonten oder externe Datenspeicherung
 - Noch keine dauerhafte Fotospeicherung; Bilder müssen nach einem Neuladen erneut ausgewählt werden
 - Noch keine echte KI-Möbelerkennung oder Bildgenerierung; die angezeigten Möbel sind ausdrücklich Testdaten
+- Testentwürfe enthalten vorbereitete Konzepte und Farbpaletten, aber noch keine erzeugten Raumbilder
 - Noch keine Live-Produktpreise oder Händlerverfügbarkeit
 - Noch keine Bezahlung
 
 ## Empfohlene nächste Phasen
 
 1. Bestätigte Zielgruppe und Deutschland als Startmarkt mit Testnutzern validieren.
-2. Planung mit lokalen Testdaten um Entwurfsgrenzen und Vergleichsansicht erweitern.
+2. Den lokalen Planungsablauf mit Testnutzern validieren und die Anforderungen an echte Entwurfsbilder schärfen.
 3. Backend, Datenbank, sichere Foto-Uploads und Anmeldung ergänzen.
 4. KI-Bildbearbeitung mit Einwilligung, Moderation und Kostenlimit anbinden.
 5. Zunächst 2–3 Händler-/Affiliate-Feeds für ein einziges Land integrieren.
