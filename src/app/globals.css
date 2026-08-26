@@ -269,3 +269,30 @@ main { min-height: calc(100vh - 131px); padding: clamp(4rem, 9vw, 8rem) max(3vw,
   .projects-panel { padding: 20px 16px; }
   .new-project-form > div { align-items: stretch; flex-direction: column; }
 }
+.auth-panel {
+  width: min(1098px, calc(100% - 32px));
+  margin: 0 auto 28px;
+  padding: 28px;
+  border: 1px solid #dedbd2;
+  border-radius: 18px;
+  background: #fff;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 420px);
+  gap: 28px;
+  align-items: start;
+}
+
+.auth-panel h2 { margin: 4px 0 8px; }
+.auth-panel p { margin: 0; color: #62645f; }
+.auth-panel > div > small { color: #9a5b43; font-weight: 700; letter-spacing: .08em; }
+.auth-form, .auth-session { display: grid; gap: 10px; }
+.auth-form label, .auth-session span { font-size: .84rem; font-weight: 700; }
+.auth-form input { width: 100%; padding: 12px; border: 1px solid #cfcfc8; border-radius: 8px; }
+.auth-form button, .auth-session button { padding: 11px 14px; border: 1px solid #173f35; border-radius: 8px; background: #173f35; color: #fff; font-weight: 700; }
+.auth-form .auth-mode { background: transparent; color: #173f35; }
+.auth-session .delete-account { background: transparent; border-color: #a84235; color: #a84235; }
+.auth-message { grid-column: 1 / -1; padding-top: 8px; }
+
+@media (max-width: 720px) {
+  .auth-panel { grid-template-columns: 1fr; padding: 22px; }
+}

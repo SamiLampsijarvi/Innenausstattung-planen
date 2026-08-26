@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
 import {
   createLocalProject,
   readLocalProjects,
@@ -9,6 +9,17 @@ import {
 import type { LocalProject } from "@/lib/local-projects";
 import FurniturePlanner from "./furniture-planner";
 import DraftResults from "./draft-results";
+import AuthPanel from "./auth-panel";
+import type { User } from "@supabase/supabase-js";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import {
+  deletePrivateProject,
+  readPrivatePhotos,
+  readPrivateProjects,
+  removePrivatePhoto,
+  savePrivateProject,
+  uploadPrivatePhotos,
+} from "@/lib/supabase/private-projects";
 
 const futureRooms = [
   "Schlafzimmer Design", "Küche Design", "Badezimmer Design", "Eingang Design",
@@ -37,7 +48,7 @@ const designStyles = [
   ["Neubau minimalistisch", "Raumoptimiert, hochwertig und reduziert"],
 ];
 
-type RoomImage = { file: File; previewUrl: string };
+type RoomImage = { name: string; previewUrl: string; file?: File; storagePath?: string };
 
 function Soon() {
   return <small>Bald verfügbar</small>;
@@ -57,6 +68,8 @@ export default function Home() {
   const [budget, setBudget] = useState(1500);
   const [error, setError] = useState("");
   const [showSummary, setShowSummary] = useState(false);
+  const [accountUser, setAccountUser] = useState<User | null>(null);
+  const supabase = useMemo(() => createSupabaseBrowserClient(), []);
 
   const postcodeIsValid = /^\d{5}$/.test(postcode);
   const briefingIsComplete = Boolean(style && images.length && postcodeIsValid);
@@ -71,10 +84,42 @@ export default function Home() {
     return () => window.clearTimeout(loadProjects);
   }, []);
 
+  useEffect(() => {
+    if (!accountUser) return;
+    let active = true;
+    readPrivateProjects(supabase).then((privateProjects) => {
+      if (!active) return;
+      setProjects(privateProjects);
+      setActiveProjectId(null);
+      setProjectsLoaded(true);
+    }).catch((loadError) => {
+      if (!active) return;
+      setProjectError(loadError instanceof Error ? loadError.message : "Private Projekte konnten nicht geladen werden.");
+      setProjectsLoaded(true);
+    });
+    return () => { active = false; };
+  }, [accountUser, supabase]);
+
   function commitProjects(nextProjects: LocalProject[]) {
     setProjects(nextProjects);
-    writeLocalProjects(window.localStorage, nextProjects);
+    if (accountUser) {
+      Promise.all(nextProjects.map((project) => savePrivateProject(supabase, accountUser, project)))
+        .catch((saveError) => setProjectError(saveError instanceof Error ? saveError.message : "Das private Projekt konnte nicht gespeichert werden."));
+    } else {
+      writeLocalProjects(window.localStorage, nextProjects);
+    }
   }
+
+  const handleAccountUserChange = useCallback((user: User | null) => {
+    setAccountUser(user);
+    if (user) {
+      setProjectsLoaded(false);
+    } else {
+      setProjects(readLocalProjects(window.localStorage));
+      setActiveProjectId(null);
+      setProjectsLoaded(true);
+    }
+  }, []);
 
   function createProject() {
     const name = newProjectName.trim();
@@ -89,8 +134,8 @@ export default function Home() {
     openProject(project);
   }
 
-  function openProject(project: LocalProject) {
-    images.forEach(({ previewUrl }) => URL.revokeObjectURL(previewUrl));
+  async function openProject(project: LocalProject) {
+    images.forEach(({ previewUrl }) => { if (previewUrl.startsWith("blob:")) URL.revokeObjectURL(previewUrl); });
     setImages([]);
     setStyle(project.livingRoom.style);
     setPostcode(project.livingRoom.postcode);
@@ -98,6 +143,14 @@ export default function Home() {
     setShowSummary(false);
     setError("");
     setActiveProjectId(project.id);
+    if (accountUser) {
+      try {
+        const storedImages = await readPrivatePhotos(supabase, project.id);
+        setImages(storedImages);
+      } catch (loadError) {
+        setError(loadError instanceof Error ? loadError.message : "Private Fotos konnten nicht geladen werden.");
+      }
+    }
     requestAnimationFrame(() => document.querySelector("#planer")?.scrollIntoView());
   }
 
@@ -128,19 +181,28 @@ export default function Home() {
     setProjectError("");
   }
 
-  function deleteProject(project: LocalProject) {
-    if (!window.confirm(`Möchten Sie „${project.name}“ wirklich löschen? Diese lokale Löschung kann nicht rückgängig gemacht werden.`)) return;
+  async function deleteProject(project: LocalProject) {
+    if (!window.confirm(`Möchten Sie „${project.name}“ wirklich löschen? Diese Löschung kann nicht rückgängig gemacht werden.`)) return;
+    if (accountUser) {
+      try {
+        await deletePrivateProject(supabase, project.id);
+      } catch (deleteError) {
+        setProjectError(deleteError instanceof Error ? deleteError.message : "Das private Projekt konnte nicht gelöscht werden.");
+        return;
+      }
+    }
     const remainingProjects = projects.filter(({ id }) => id !== project.id);
-    commitProjects(remainingProjects);
+    setProjects(remainingProjects);
+    if (!accountUser) writeLocalProjects(window.localStorage, remainingProjects);
     if (activeProjectId === project.id) {
       setActiveProjectId(null);
-      images.forEach(({ previewUrl }) => URL.revokeObjectURL(previewUrl));
+      images.forEach(({ previewUrl }) => { if (previewUrl.startsWith("blob:")) URL.revokeObjectURL(previewUrl); });
       setImages([]);
       setShowSummary(false);
     }
   }
 
-  function handleImages(event: ChangeEvent<HTMLInputElement>) {
+  async function handleImages(event: ChangeEvent<HTMLInputElement>) {
     const selectedFiles = Array.from(event.target.files ?? []);
     setError("");
 
@@ -166,16 +228,35 @@ export default function Home() {
       return;
     }
 
-    images.forEach(({ previewUrl }) => URL.revokeObjectURL(previewUrl));
-    setImages(selectedFiles.map((file) => ({ file, previewUrl: URL.createObjectURL(file) })));
+    images.forEach(({ previewUrl }) => { if (previewUrl.startsWith("blob:")) URL.revokeObjectURL(previewUrl); });
+    const previews = selectedFiles.map((file) => ({ name: file.name, file, previewUrl: URL.createObjectURL(file) }));
+    setImages(previews);
+    if (accountUser && activeProjectId) {
+      try {
+        const storedImages = images.filter((image) => image.storagePath);
+        await Promise.all(storedImages.map((image) => removePrivatePhoto(supabase, image.storagePath!)));
+        const uploaded = await uploadPrivatePhotos(supabase, accountUser, activeProjectId, selectedFiles);
+        previews.forEach(({ previewUrl }) => URL.revokeObjectURL(previewUrl));
+        setImages(uploaded);
+      } catch (uploadError) {
+        setError(uploadError instanceof Error ? uploadError.message : "Die privaten Fotos konnten nicht gespeichert werden.");
+      }
+    }
     setShowSummary(false);
   }
 
-  function removeImage(index: number) {
-    setImages((current) => current.filter((image, imageIndex) => {
-      if (imageIndex === index) URL.revokeObjectURL(image.previewUrl);
-      return imageIndex !== index;
-    }));
+  async function removeImage(index: number) {
+    const image = images[index];
+    if (accountUser && image?.storagePath) {
+      try {
+        await removePrivatePhoto(supabase, image.storagePath);
+      } catch (removeError) {
+        setError(removeError instanceof Error ? removeError.message : "Das private Foto konnte nicht gelöscht werden.");
+        return;
+      }
+    }
+    if (image?.previewUrl.startsWith("blob:")) URL.revokeObjectURL(image.previewUrl);
+    setImages((current) => current.filter((_, imageIndex) => imageIndex !== index));
     setShowSummary(false);
   }
 
@@ -257,10 +338,13 @@ export default function Home() {
           <h1 id="home-intro-title">
             Gestalten Sie Ihr Zuhause – passend zu Ihrem Raum, Ihrem Stil und Ihrem Budget.
           </h1>
+          <AuthPanel onUserChange={handleAccountUserChange} />
           <section className="projects-panel" id="projekte" aria-labelledby="projects-title">
             <div className="projects-heading">
-              <div><small>LOKAL IN DIESEM BROWSER</small><h2 id="projects-title">Meine Projekte</h2></div>
-              <p>Ihre Projektdaten bleiben auf diesem Gerät. Fotos werden nicht dauerhaft gespeichert.</p>
+              <div><small>{accountUser ? "PRIVAT IN IHREM KONTO" : "LOKAL IN DIESEM BROWSER"}</small><h2 id="projects-title">Meine Projekte</h2></div>
+              <p>{accountUser
+                ? "Ihre Projekte und Fotos werden privat Ihrem angemeldeten Konto zugeordnet."
+                : "Ihre Projektdaten bleiben auf diesem Gerät. Fotos werden nicht dauerhaft gespeichert."}</p>
             </div>
             <form className="new-project-form" onSubmit={(event) => { event.preventDefault(); createProject(); }}>
               <label htmlFor="new-project-name">Neues Zuhause</label>
@@ -336,12 +420,12 @@ export default function Home() {
                 <input id="room-images" type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={handleImages} />
               </label>
               <div className="image-previews" aria-live="polite">
-                {images.map(({ file, previewUrl }, index) => (
-                  <figure key={`${file.name}-${file.lastModified}`}>
+                {images.map(({ name, file, previewUrl, storagePath }, index) => (
+                  <figure key={storagePath ?? `${name}-${file?.lastModified ?? index}`}>
                     {/* A local object URL is required for an immediate, non-uploaded preview. */}
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={previewUrl} alt={`Vorschau: ${file.name}`} />
-                    <button type="button" onClick={() => removeImage(index)} aria-label={`${file.name} entfernen`}>×</button>
+                    <img src={previewUrl} alt={`Vorschau: ${name}`} />
+                    <button type="button" onClick={() => removeImage(index)} aria-label={`${name} entfernen`}>×</button>
                   </figure>
                 ))}
               </div>
