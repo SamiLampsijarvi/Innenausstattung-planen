@@ -231,6 +231,17 @@ Zentrale Möbel müssen zuverlässig erkannt werden. Kleine Fehler sind nur akze
 - Gastübernahme und Löschfristen
 - Zugriffs- und Sicherheitstests
 
+**Plan vor der Umsetzung:**
+
+1. Aktuelle Supabase-Regionen, Datenschutzbedingungen, Tarifgrenzen und Löschmöglichkeiten aus primären Quellen prüfen.
+2. Datenumfang und Lebensdauer für Konten, Projekte, Entwürfe und Fotos festlegen; Fotos bleiben standardmäßig privat.
+3. Anmeldung, E-Mail-Bestätigung, Passwort-Wiederherstellung, Gastübernahme und vollständige Kontolöschung als Nutzerabläufe festlegen.
+4. Datenbank- und Speicherregeln so entwerfen, dass Nutzer ausschließlich eigene Projekte und Fotos lesen oder verändern können.
+5. Umsetzung zunächst in einer getrennten Entwicklungsumgebung; keine Produktionsveröffentlichung ohne weitere Zustimmung.
+6. Automatische Zugriffs-, Lösch-, Migrations- und Browsertests durchführen und bekannte Einschränkungen dokumentieren.
+
+**Wesentliche Risiken:** falsche Zugriffsregeln könnten private Fotos offenlegen; Löschabläufe könnten unvollständig sein; Tarife und Region beeinflussen Kosten und Datenschutz. Einrichtung eines externen Dienstes, mögliche Kosten und die endgültige Region benötigen deshalb eine gesonderte Freigabe.
+
 **Freigabekriterium:** Nutzer sehen nur eigene Daten und Löschabläufe funktionieren.
 
 ### Phase 6: Getrennter KI-Machbarkeitstest
@@ -239,6 +250,8 @@ Zentrale Möbel müssen zuverlässig erkannt werden. Kleine Fehler sind nur akze
 - freigegebene Beispielfotos verwenden
 - Möbelerkennung und Bildbearbeitung messen
 - Qualität, Laufzeit und Kosten auswerten
+
+**Teilstatus vom 26. August 2026:** Die Bildbearbeitung wurde manuell mit drei Raumarten und unterschiedlichen Stilen und Budgets qualitativ geprüft. Stilgerechte Inspirationsbilder gelangen zuverlässig. Die exakte Bewahrung vorhandener Möbel, Raumdetails, Perspektive und Budgetvorgaben gelang nicht zuverlässig. Deshalb wird Raumly KI-Bilder zunächst nur als Inspiration kennzeichnen. API-Integration, automatische Möbelerkennung, Laufzeit und API-Kosten wurden noch nicht geprüft und bleiben vor Phase 7 offen.
 
 **Freigabekriterium:** vereinbarte Qualitätskriterien werden erreicht und Kosten bleiben im Limit.
 

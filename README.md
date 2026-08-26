@@ -47,15 +47,16 @@ Bei Pull Requests nach `main` und Änderungen an `main` führt GitHub Actions di
 - Noch keine dauerhafte Fotospeicherung; Bilder müssen nach einem Neuladen erneut ausgewählt werden
 - Noch keine echte KI-Möbelerkennung oder Bildgenerierung; die angezeigten Möbel sind ausdrücklich Testdaten
 - Testentwürfe enthalten vorbereitete Konzepte und Farbpaletten, aber noch keine erzeugten Raumbilder
+- Manuelle KI-Versuche lieferten überzeugende Inspirationsbilder, bewahrten vorhandene Möbel, Raumdetails und Budgets aber nicht zuverlässig exakt; zukünftige KI-Bilder sind daher keine maßgenaue Planung oder Kostengarantie
 - Noch keine Live-Produktpreise oder Händlerverfügbarkeit
 - Noch keine Bezahlung
 
 ## Empfohlene nächste Phasen
 
-1. Bestätigte Zielgruppe und Deutschland als Startmarkt mit Testnutzern validieren.
-2. Den lokalen Planungsablauf mit Testnutzern validieren und die Anforderungen an echte Entwurfsbilder schärfen.
-3. Backend, Datenbank, sichere Foto-Uploads und Anmeldung ergänzen.
-4. KI-Bildbearbeitung mit Einwilligung, Moderation und Kostenlimit anbinden.
+1. Backend, Datenbank, sichere Foto-Uploads und Anmeldung nach erneuter Datenschutz-, Regions- und Kostenprüfung ergänzen.
+2. Den offenen API-Teil des KI-Machbarkeitstests mit Einwilligung und festem Kostenlimit durchführen.
+3. KI-Bildbearbeitung als klar gekennzeichnete Inspiration mit Moderation, Fehlerbehandlung und Kostenlimit anbinden.
+4. Bestätigte Zielgruppe, Planungsablauf und KI-Ergebnisse später mit Testnutzern validieren.
 5. Zunächst 2–3 Händler-/Affiliate-Feeds für ein einziges Land integrieren.
 6. Mit Testnutzern Qualität, Kaufabsicht und Zahlungsbereitschaft messen.
 
