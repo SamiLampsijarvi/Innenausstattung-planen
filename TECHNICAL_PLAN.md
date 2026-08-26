@@ -242,6 +242,14 @@ Zentrale Möbel müssen zuverlässig erkannt werden. Kleine Fehler sind nur akze
 
 **Wesentliche Risiken:** falsche Zugriffsregeln könnten private Fotos offenlegen; Löschabläufe könnten unvollständig sein; Tarife und Region beeinflussen Kosten und Datenschutz. Einrichtung eines externen Dienstes, mögliche Kosten und die endgültige Region benötigen deshalb eine gesonderte Freigabe.
 
+**Aktuell geprüfte Empfehlung vom 26. August 2026, noch nicht zur Einrichtung freigegeben:**
+
+- Für die abgeschirmte Entwicklung genügt voraussichtlich zunächst der kostenlose Supabase-Tarif mit 500 MB Datenbank und 1 GB Dateispeicher. Kostenpflichtige Produktivnutzung wird separat entschieden; der Pro-Tarif beginnt aktuell bei 25 US-Dollar pro Monat. Quelle: [Supabase Pricing](https://supabase.com/pricing).
+- Für den deutschen Startmarkt wird die konkrete Region `eu-central-1` in Frankfurt empfohlen. Eine allgemeine Europa-Region kann auch Standorte außerhalb der EU auswählen. Quelle: [Supabase Regions](https://supabase.com/docs/guides/platform/regions).
+- Raumfotos liegen ausschließlich in einem privaten Bucket. Datenbank- und Speicherregeln beschränken Lesen, Hochladen, Ändern und Löschen auf die jeweilige Nutzer-ID. Quelle: [Storage Access Control](https://supabase.com/docs/guides/storage/security/access-control).
+- Beim Löschen eines Kontos werden zuerst alle privaten Dateien über die Storage-API, danach Projektdaten und zuletzt das Authentifizierungskonto entfernt. Das ist nötig, weil Nutzer mit eigenen Storage-Objekten nicht direkt gelöscht werden können. Quelle: [Managing User Data](https://supabase.com/docs/guides/auth/managing-user-data).
+- Vor einer Produktivnutzung werden Auftragsverarbeitung, Einwilligung, Datenschutzhinweise, Speicherfristen und die tatsächliche Löschwirkung gesondert rechtlich und technisch geprüft.
+
 **Freigabekriterium:** Nutzer sehen nur eigene Daten und Löschabläufe funktionieren.
 
 ### Phase 6: Getrennter KI-Machbarkeitstest
