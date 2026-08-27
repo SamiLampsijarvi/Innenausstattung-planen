@@ -1,7 +1,16 @@
 begin;
 
 create extension if not exists pgtap with schema extensions;
-select plan(12);
+select plan(20);
+
+select ok(has_table_privilege('service_role', 'public.projects', 'SELECT'), 'Löschdienst darf Projekte lesen');
+select ok(has_table_privilege('service_role', 'public.projects', 'DELETE'), 'Löschdienst darf Projekte endgültig löschen');
+select ok(not has_table_privilege('service_role', 'public.projects', 'INSERT'), 'Löschdienst darf keine Projekte erstellen');
+select ok(has_table_privilege('service_role', 'public.project_photos', 'SELECT'), 'Löschdienst darf Fotopfade lesen');
+select ok(not has_table_privilege('service_role', 'public.project_photos', 'DELETE'), 'Löschdienst löscht Fotometadaten nicht direkt');
+select ok(has_table_privilege('service_role', 'public.account_deletion_requests', 'SELECT'), 'Löschdienst darf fällige Kontolöschungen lesen');
+select ok(has_table_privilege('service_role', 'public.deletion_audit', 'INSERT'), 'Löschdienst darf abgeschlossene Löschungen protokollieren');
+select ok(not has_table_privilege('service_role', 'public.deletion_audit', 'SELECT'), 'Löschdienst darf Löschprotokolle nicht auslesen');
 
 insert into auth.users (id, email) values
   ('11111111-1111-4111-8111-111111111111', 'raumly-user-1@example.test'),

@@ -193,6 +193,16 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 - **Sicherheit:** Die Sperre gilt sowohl in der Oberfläche als auch als Berechtigungsentzug in Supabase. Es wurden dabei keine Konten oder Nutzerdaten gelöscht.
 - **Offen:** Antrag, Widerruf, endgültige Löschung nach 14 Tagen und Bereinigung von Sicherungskopien werden in einem eigenen freigegebenen Arbeitsschritt umgesetzt.
 
+### D-026: Papierkorb und verzögerte Kontolöschung
+
+- **Status:** Bestätigt, umgesetzt und im Produktivprojekt geprüft am 27. August 2026
+- **Projektlöschung:** Projekte bleiben nach dem Verschieben in den Papierkorb 30 Tage wiederherstellbar und werden erst danach endgültig gelöscht.
+- **Kontolöschung:** Kontolöschungen bleiben 14 Tage widerrufbar. Während dieser Frist ist der normale Zugriff auf die Projektdaten gesperrt.
+- **Automatisierung:** Ein täglich geplanter, durch einen eigenen geheimen Schlüssel geschützter Löschdienst verarbeitet ausschließlich fällige Löschungen.
+- **Minimalrechte:** Der Löschdienst darf Projekte lesen und löschen, Fotopfade und fällige Kontolöschungen lesen sowie abgeschlossene Löschungen protokollieren. Er erhält keine darüber hinausgehenden Schreibrechte auf diese Tabellen.
+- **Prüfung:** Der produktive Abschlusstest antwortete mit Status 200 und verarbeitete bei null fälligen Projekten und null fälligen Konten keine Daten.
+- **Offen vor öffentlicher Veröffentlichung:** Benachrichtigungs-E-Mails und die konkrete Bereinigung von Sicherheitskopien müssen noch umgesetzt beziehungsweise mit dem gewählten Supabase-Tarif abgestimmt werden.
+
 ## Offene Entscheidungen
 
 - Markenname und visuelle Identität

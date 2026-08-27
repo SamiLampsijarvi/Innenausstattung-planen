@@ -43,10 +43,12 @@ Bei Pull Requests nach `main` und Änderungen an `main` führt GitHub Actions di
 - Konto mit E-Mail-Bestätigung anlegen, anmelden und abmelden
 - Private Zuhause-Projekte und Raumfotos in Supabase speichern und nach einer erneuten Anmeldung laden
 - Passwort-Wiederherstellung starten
+- Projekte 30 Tage im Papierkorb aufbewahren, wiederherstellen und anschließend automatisiert endgültig löschen
+- Kontolöschung mit 14-tägiger Widerrufsfrist beantragen und widerrufen
 
 ## Bewusste MVP-Grenzen
 
-- Die 14-tägige widerrufbare Kontolöschung ist noch nicht umgesetzt; die frühere sofortige Löschung ist deshalb gesperrt
+- Benachrichtigungs-E-Mails für anstehende Kontolöschungen und die tarifabhängige Bereinigung von Sicherheitskopien sind vor einer öffentlichen Veröffentlichung noch offen
 - Gastprojekte bleiben lokal; die automatische Übernahme eines Gastprojekts in ein Konto ist noch offen
 - Noch keine echte KI-Möbelerkennung oder Bildgenerierung; die angezeigten Möbel sind ausdrücklich Testdaten
 - Testentwürfe enthalten vorbereitete Konzepte und Farbpaletten, aber noch keine erzeugten Raumbilder
@@ -56,7 +58,7 @@ Bei Pull Requests nach `main` und Änderungen an `main` führt GitHub Actions di
 
 ## Empfohlene nächste Phasen
 
-1. Den 14-tägigen Kontolöschablauf, Projektpapierkorb und vollständige Zugriffstests ergänzen.
+1. Benachrichtigungs-E-Mails und die Bereinigung von Sicherheitskopien für den Löschablauf ergänzen.
 2. Den offenen API-Teil des KI-Machbarkeitstests mit Einwilligung und festem Kostenlimit durchführen.
 3. KI-Bildbearbeitung als klar gekennzeichnete Inspiration mit Moderation, Fehlerbehandlung und Kostenlimit anbinden.
 4. Bestätigte Zielgruppe, Planungsablauf und KI-Ergebnisse später mit Testnutzern validieren.

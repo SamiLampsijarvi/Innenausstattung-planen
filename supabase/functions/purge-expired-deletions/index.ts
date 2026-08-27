@@ -16,6 +16,14 @@ const admin = createClient(supabaseUrl, serviceRoleKey, {
   auth: { autoRefreshToken: false, persistSession: false },
 });
 
+function describeError(error: unknown) {
+  if (error instanceof Error) return error.message;
+  if (typeof error === "object" && error !== null && "message" in error && typeof error.message === "string") {
+    return error.message;
+  }
+  return "Unknown worker error";
+}
+
 async function removeStoredPhotos(query: { projectId?: string; userId?: string }) {
   let photoQuery = admin.from("project_photos").select("storage_path");
   if (query.projectId) photoQuery = photoQuery.eq("project_id", query.projectId);
@@ -42,7 +50,7 @@ async function recordProjectFailure(projectId: string, error: unknown) {
 async function purgeDueProjects() {
   const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
   const { data, error } = await admin.from("projects").select("id").not("deleted_at", "is", null).lte("deleted_at", cutoff);
-  if (error) throw error;
+  if (error) throw new Error(`project_query_failed: ${describeError(error)}`);
   let completed = 0;
   for (const project of data ?? []) {
     try {
@@ -66,7 +74,7 @@ async function recordAccountFailure(requestId: string, error: unknown) {
 
 async function purgeDueAccounts() {
   const { data, error } = await admin.from("account_deletion_requests").select("id,user_id").lte("delete_after", new Date().toISOString());
-  if (error) throw error;
+  if (error) throw new Error(`account_query_failed: ${describeError(error)}`);
   let completed = 0;
   for (const request of data ?? []) {
     try {
@@ -106,9 +114,10 @@ async function purgeOwnTrashedProject(request: Request) {
 }
 
 Deno.serve(async (request) => {
+  const isWorkerRequest = request.headers.get("x-raumly-worker-secret") === deletionWorkerSecret;
   try {
     if (request.method !== "POST") return new Response("Method not allowed", { status: 405 });
-    if (request.headers.get("x-raumly-worker-secret") === deletionWorkerSecret) {
+    if (isWorkerRequest) {
       const projects = await purgeDueProjects();
       const accounts = await purgeDueAccounts();
       return Response.json({ projects, accounts });
@@ -116,6 +125,9 @@ Deno.serve(async (request) => {
     return await purgeOwnTrashedProject(request);
   } catch (error) {
     console.error("Deletion purge failed", error);
-    return Response.json({ error: "Deletion purge failed" }, { status: 500 });
+    return Response.json({
+      error: "Deletion purge failed",
+      ...(isWorkerRequest ? { detail: describeError(error) } : {}),
+    }, { status: 500 });
   }
 });
