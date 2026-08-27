@@ -5,6 +5,19 @@ const onePixelPng = Buffer.from(
   "base64",
 );
 
+test("öffnet die Passwort-Wiederherstellung ohne technische Hilfe", async ({ page }) => {
+  await page.goto("/");
+  await page.waitForLoadState("networkidle");
+
+  await page.getByRole("button", { name: "Passwort vergessen?" }).click();
+  await expect(page.getByLabel("E-Mail-Adresse")).toBeVisible();
+  await expect(page.getByLabel("Passwort", { exact: true })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Link zum Zurücksetzen senden" })).toBeVisible();
+
+  await page.getByRole("button", { name: "Zurück zur Anmeldung" }).click();
+  await expect(page.locator(".auth-form").getByRole("button", { name: "Anmelden", exact: true })).toBeVisible();
+});
+
 test("speichert ein Wohnzimmerprojekt lokal und öffnet es erneut", async ({ page }) => {
   await page.goto("/");
   await page.waitForLoadState("networkidle");

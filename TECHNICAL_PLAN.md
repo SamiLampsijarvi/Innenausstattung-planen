@@ -242,13 +242,15 @@ Zentrale Möbel müssen zuverlässig erkannt werden. Kleine Fehler sind nur akze
 
 **Wesentliche Risiken:** falsche Zugriffsregeln könnten private Fotos offenlegen; Löschabläufe könnten unvollständig sein; Tarife und Region beeinflussen Kosten und Datenschutz. Einrichtung eines externen Dienstes, mögliche Kosten und die endgültige Region benötigen deshalb eine gesonderte Freigabe.
 
-**Aktuell geprüfte Empfehlung vom 26. August 2026, noch nicht zur Einrichtung freigegeben:**
+**Freigegebener Entwicklungsstand vom 27. August 2026:**
 
 - Für die abgeschirmte Entwicklung genügt voraussichtlich zunächst der kostenlose Supabase-Tarif mit 500 MB Datenbank und 1 GB Dateispeicher. Kostenpflichtige Produktivnutzung wird separat entschieden; der Pro-Tarif beginnt aktuell bei 25 US-Dollar pro Monat. Quelle: [Supabase Pricing](https://supabase.com/pricing).
 - Für den deutschen Startmarkt wird die konkrete Region `eu-central-1` in Frankfurt empfohlen. Eine allgemeine Europa-Region kann auch Standorte außerhalb der EU auswählen. Quelle: [Supabase Regions](https://supabase.com/docs/guides/platform/regions).
 - Raumfotos liegen ausschließlich in einem privaten Bucket. Datenbank- und Speicherregeln beschränken Lesen, Hochladen, Ändern und Löschen auf die jeweilige Nutzer-ID. Quelle: [Storage Access Control](https://supabase.com/docs/guides/storage/security/access-control).
 - Beim Löschen eines Kontos werden zuerst alle privaten Dateien über die Storage-API, danach Projektdaten und zuletzt das Authentifizierungskonto entfernt. Das ist nötig, weil Nutzer mit eigenen Storage-Objekten nicht direkt gelöscht werden können. Quelle: [Managing User Data](https://supabase.com/docs/guides/auth/managing-user-data).
 - Vor einer Produktivnutzung werden Auftragsverarbeitung, Einwilligung, Datenschutzhinweise, Speicherfristen und die tatsächliche Löschwirkung gesondert rechtlich und technisch geprüft.
+
+**Teilstatus Phase 5A:** Supabase wurde im kostenlosen Tarif in Frankfurt für die abgeschirmte Entwicklung eingerichtet. Registrierung, E-Mail-Bestätigung, Anmeldung, private Projekte und private Raumfotos funktionieren. Fotoersetzung lädt neue Dateien zuerst hoch und behält vorhandene Fotos bei einem Fehlschlag; teilweise hochgeladene neue Dateien werden bestmöglich zurückgerollt. Die Passwort-Wiederherstellung ist in der Oberfläche ergänzt und automatisch auf Desktop und Mobil geprüft. Die frühere sofortige Kontolöschung ist in der Oberfläche und durch entzogenes Supabase-Ausführungsrecht gesperrt. Gastübernahme, 14-Tage-Kontolöschung, 30-Tage-Projektpapierkorb und vollständige Mehrnutzer-Zugriffstests bleiben offen.
 
 **Freigabekriterium:** Nutzer sehen nur eigene Daten und Löschabläufe funktionieren.
 

@@ -70,9 +70,9 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 
 ### D-011: Konten, Datenbank und Fotos
 
-- **Status:** Bestätigt, noch nicht umgesetzt
+- **Status:** Bestätigt und teilweise umgesetzt
 - **Entscheidung:** Supabase ist als Grundlage für Authentifizierung, relationale Daten und private Fotoablage vorgesehen.
-- **Vorbehalt:** Region, Datenschutzbedingungen, Kosten und Löschmöglichkeiten werden vor der Einrichtung erneut geprüft. Externe Einrichtung oder Kosten benötigen Zustimmung.
+- **Umsetzung:** Das freigegebene Entwicklungsprojekt nutzt den kostenlosen Tarif in Frankfurt. Registrierung, E-Mail-Bestätigung, Anmeldung, private Projekte und private Fotoablage sind verbunden. Eine kostenpflichtige Nutzung oder Veröffentlichung ist nicht freigegeben.
 
 ### D-012: KI-Machbarkeitstest
 
@@ -185,6 +185,13 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 - **Grenze:** Ein vierter Testentwurf wird blockiert. Es wird kein vorhandener Entwurf automatisch überschrieben.
 - **Löschen:** Einzelne Entwürfe werden sofort entfernt und können unmittelbar über „Rückgängig“ wiederhergestellt werden.
 - **Speicherung:** Testentwürfe werden im lokalen Datenformat Version 3 gespeichert. Projekte aus Version 1 und 2 werden ohne Verlust ihrer bisherigen Daten übernommen.
+
+### D-025: Sicherer Zwischenstand der Kontolöschung
+
+- **Status:** Bestätigt und umgesetzt am 27. August 2026
+- **Entscheidung:** Die frühere sofortige Kontolöschung bleibt für angemeldete Nutzer gesperrt, bis die bestätigte 14-Tage-Widerrufsfrist vollständig umgesetzt und geprüft ist.
+- **Sicherheit:** Die Sperre gilt sowohl in der Oberfläche als auch als Berechtigungsentzug in Supabase. Es wurden dabei keine Konten oder Nutzerdaten gelöscht.
+- **Offen:** Antrag, Widerruf, endgültige Löschung nach 14 Tagen und Bereinigung von Sicherungskopien werden in einem eigenen freigegebenen Arbeitsschritt umgesetzt.
 
 ## Offene Entscheidungen
 
