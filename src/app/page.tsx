@@ -57,6 +57,7 @@ function Soon() {
 export default function Home() {
   const [projects, setProjects] = useState<LocalProject[]>([]);
   const [projectsLoaded, setProjectsLoaded] = useState(false);
+  const [projectSaveStatus, setProjectSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
   const [newProjectName, setNewProjectName] = useState("");
   const [projectError, setProjectError] = useState("");
@@ -100,14 +101,23 @@ export default function Home() {
     return () => { active = false; };
   }, [accountUser, supabase]);
 
-  function commitProjects(nextProjects: LocalProject[]) {
-    setProjects(nextProjects);
+  async function commitProjects(nextProjects: LocalProject[]) {
+    setProjectError("");
     if (accountUser) {
-      Promise.all(nextProjects.map((project) => savePrivateProject(supabase, accountUser, project)))
-        .catch((saveError) => setProjectError(saveError instanceof Error ? saveError.message : "Das private Projekt konnte nicht gespeichert werden."));
+      setProjectSaveStatus("saving");
+      try {
+        await Promise.all(nextProjects.map((project) => savePrivateProject(supabase, accountUser, project)));
+      } catch (saveError) {
+        setProjectSaveStatus("idle");
+        setProjectError(saveError instanceof Error ? saveError.message : "Das private Projekt konnte nicht gespeichert werden.");
+        return false;
+      }
+      setProjectSaveStatus("saved");
     } else {
       writeLocalProjects(window.localStorage, nextProjects);
     }
+    setProjects(nextProjects);
+    return true;
   }
 
   const handleAccountUserChange = useCallback((user: User | null) => {
@@ -121,16 +131,16 @@ export default function Home() {
     }
   }, []);
 
-  function createProject() {
+  async function createProject() {
     const name = newProjectName.trim();
     if (!name) {
       setProjectError("Bitte geben Sie Ihrem Zuhause einen Namen.");
       return;
     }
     const project = createLocalProject(name);
-    commitProjects([...projects, project]);
+    const saved = await commitProjects([...projects, project]);
+    if (!saved) return;
     setNewProjectName("");
-    setProjectError("");
     openProject(project);
   }
 
@@ -168,17 +178,17 @@ export default function Home() {
     setProjectError("");
   }
 
-  function saveProjectName(projectId: string) {
+  async function saveProjectName(projectId: string) {
     const name = renamingProjectName.trim();
     if (!name) {
       setProjectError("Der Projektname darf nicht leer sein.");
       return;
     }
-    commitProjects(projects.map((project) => project.id === projectId
+    const saved = await commitProjects(projects.map((project) => project.id === projectId
       ? { ...project, name, updatedAt: new Date().toISOString() }
       : project));
+    if (!saved) return;
     setRenamingProjectId(null);
-    setProjectError("");
   }
 
   async function deleteProject(project: LocalProject) {
@@ -350,10 +360,11 @@ export default function Home() {
               <label htmlFor="new-project-name">Neues Zuhause</label>
               <div>
                 <input id="new-project-name" value={newProjectName} onChange={(event) => setNewProjectName(event.target.value)} maxLength={60} placeholder="z. B. Meine Wohnung" />
-                <button type="submit">Zuhause anlegen</button>
+                <button type="submit" disabled={projectSaveStatus === "saving"}>{projectSaveStatus === "saving" ? "Wird gespeichert …" : "Zuhause anlegen"}</button>
               </div>
             </form>
             {projectError && <p className="form-error" role="alert">{projectError}</p>}
+            {accountUser && projectSaveStatus === "saved" && !projectError && <p className="projects-status" role="status">Alle Änderungen wurden sicher gespeichert.</p>}
             {!projectsLoaded ? <p className="projects-status">Projekte werden geladen …</p> : projects.length === 0 ? (
               <p className="projects-status">Noch kein Zuhause angelegt. Beginnen Sie mit einem Namen.</p>
             ) : (
