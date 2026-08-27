@@ -80,6 +80,13 @@ main { min-height: calc(100vh - 131px); padding: clamp(4rem, 9vw, 8rem) max(3vw,
 .rename-project-form { display: grid; gap: 9px; }
 .rename-project-form > div { display: flex; gap: 8px; }
 .rename-project-form button { min-height: 36px; padding: 7px 10px; font-size: 11px; }
+.project-trash { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--line); }
+.project-trash > summary { color: var(--forest); font-weight: 700; cursor: pointer; }
+.project-trash > p { color: var(--muted); font-size: 13px; }
+.project-trash .project-grid article { min-height: 150px; background: #f2eee8; }
+.account-locked { margin-top: 28px; padding: 28px; color: var(--forest); background: var(--paper); border: 1px solid var(--line); border-radius: 16px; }
+.account-locked h2 { margin: 0; font: 700 28px/1.2 Georgia, serif; }
+.account-locked p { margin: 10px 0 0; color: var(--muted); }
 .active-project-banner { display: flex; align-items: center; gap: 14px; margin: 20px 0 -24px; padding: 14px 18px; text-align: left; color: var(--forest); background: var(--mint); border: 1px solid var(--line); border-radius: 12px; }
 .active-project-banner span { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; }
 .active-project-banner small { margin-left: auto; color: var(--muted); }
@@ -291,6 +298,8 @@ main { min-height: calc(100vh - 131px); padding: clamp(4rem, 9vw, 8rem) max(3vw,
 .auth-form button, .auth-session button { padding: 11px 14px; border: 1px solid #173f35; border-radius: 8px; background: #173f35; color: #fff; font-weight: 700; }
 .auth-form .auth-mode { background: transparent; color: #173f35; }
 .auth-session .delete-account { background: transparent; border-color: #a84235; color: #a84235; }
+.auth-session.deletion-pending { padding: 14px; background: #fff4ec; border: 1px solid #d8b6a3; border-radius: 10px; }
+.auth-session.deletion-pending p { font-size: .88rem; }
 .auth-message { grid-column: 1 / -1; padding-top: 8px; }
 
 @media (max-width: 720px) {

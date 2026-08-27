@@ -7,14 +7,16 @@ type ProjectRow = {
   living_room: LocalProject["livingRoom"];
   created_at: string;
   updated_at: string;
+  deleted_at: string | null;
 };
 
 export type StoredRoomImage = { name: string; previewUrl: string; storagePath: string };
+export type PrivateProject = LocalProject & { deletedAt: string | null };
 
-export async function readPrivateProjects(supabase: SupabaseClient): Promise<LocalProject[]> {
+export async function readPrivateProjects(supabase: SupabaseClient): Promise<PrivateProject[]> {
   const { data, error } = await supabase
     .from("projects")
-    .select("id,name,living_room,created_at,updated_at")
+    .select("id,name,living_room,created_at,updated_at,deleted_at")
     .order("updated_at", { ascending: false });
   if (error) throw error;
   return ((data ?? []) as ProjectRow[]).map((row) => ({
@@ -23,6 +25,7 @@ export async function readPrivateProjects(supabase: SupabaseClient): Promise<Loc
     livingRoom: row.living_room,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    deletedAt: row.deleted_at,
   }));
 }
 
@@ -38,19 +41,20 @@ export async function savePrivateProject(supabase: SupabaseClient, user: User, p
   if (error) throw error;
 }
 
-export async function deletePrivateProject(supabase: SupabaseClient, projectId: string) {
-  const { data: photos, error: photoError } = await supabase
-    .from("project_photos")
-    .select("storage_path")
-    .eq("project_id", projectId);
-  if (photoError) throw photoError;
-  const paths = (photos ?? []).map(({ storage_path }) => storage_path as string);
-  if (paths.length) {
-    const { error } = await supabase.storage.from("room-photos").remove(paths);
-    if (error) throw error;
-  }
-  const { error } = await supabase.from("projects").delete().eq("id", projectId);
+export async function movePrivateProjectToTrash(supabase: SupabaseClient, projectId: string) {
+  const { error } = await supabase.from("projects").update({ deleted_at: new Date().toISOString() }).eq("id", projectId);
   if (error) throw error;
+}
+
+export async function restorePrivateProject(supabase: SupabaseClient, projectId: string) {
+  const { error } = await supabase.from("projects").update({ deleted_at: null }).eq("id", projectId);
+  if (error) throw error;
+}
+
+export async function permanentlyDeletePrivateProject(supabase: SupabaseClient, projectId: string) {
+  const { data, error } = await supabase.functions.invoke("purge-expired-deletions", { body: { projectId } });
+  if (error) throw error;
+  if (!data?.deleted) throw new Error("Das Projekt konnte nicht endgültig gelöscht werden.");
 }
 
 export async function uploadPrivatePhotos(
