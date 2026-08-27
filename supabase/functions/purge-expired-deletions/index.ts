@@ -3,7 +3,8 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 const supabaseUrl = Deno.env.get("SUPABASE_URL");
 const secretKeys = JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS") ?? "{}") as Record<string, string>;
 const publishableKeys = JSON.parse(Deno.env.get("SUPABASE_PUBLISHABLE_KEYS") ?? "{}") as Record<string, string>;
-const serviceRoleKey = secretKeys.default ?? Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+const legacyServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+const serviceRoleKey = secretKeys.default ?? legacyServiceRoleKey;
 const publishableKey = publishableKeys.default ?? Deno.env.get("SUPABASE_ANON_KEY");
 
 if (!supabaseUrl || !serviceRoleKey || !publishableKey) {
@@ -106,7 +107,8 @@ async function purgeOwnTrashedProject(request: Request) {
 Deno.serve(async (request) => {
   try {
     if (request.method !== "POST") return new Response("Method not allowed", { status: 405 });
-    if (request.headers.get("apikey") === serviceRoleKey) {
+    const apiKey = request.headers.get("apikey");
+    if (apiKey === serviceRoleKey || apiKey === legacyServiceRoleKey) {
       const projects = await purgeDueProjects();
       const accounts = await purgeDueAccounts();
       return Response.json({ projects, accounts });
