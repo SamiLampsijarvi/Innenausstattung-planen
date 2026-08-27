@@ -76,8 +76,11 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 
 ### D-012: KI-Machbarkeitstest
 
-- **Status:** Bestätigt, noch nicht umgesetzt
+- **Status:** Qualitativer Bildbearbeitungstest abgeschlossen; API-Integration, Möbelerkennung, Laufzeit und API-Kosten noch nicht geprüft
 - **Entscheidung:** OpenAI wird als erster Kandidat für einen begrenzten Test von Möbelerkennung und realistischer Bildbearbeitung verwendet.
+- **Ergebnis vom 26. August 2026:** Manuelle Bildbearbeitungsversuche mit Wohnzimmer, Küche und Bad erzeugten überzeugende, stilgerechte Inspirationsbilder. Auch bei strengen Vorgaben wurden vorhandene Möbel, Raumdetails, Perspektiven und Budgets jedoch nicht zuverlässig exakt bewahrt.
+- **Produktgrenze:** KI-Bilder werden zunächst als Inspiration behandelt. Sie sind keine maßgenaue Raumplanung, keine originalgetreue Bestandsdokumentation und keine Kostengarantie.
+- **Offene Prüfung:** Vor einer Integration werden die separate API-Nutzung, Möbelerkennung, Laufzeit, Fehlerquote und tatsächlichen Kosten mit freigegebenen Testdaten geprüft.
 - **Anbieterwechsel:** Die KI-Anbindung wird austauschbar gestaltet.
 - **Kostenlimit:** In der ersten Entwicklungs- und Testphase höchstens 20 Euro pro Monat; keine Erhöhung ohne Zustimmung.
 
