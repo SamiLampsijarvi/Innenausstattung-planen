@@ -14,6 +14,26 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  database-security:
+    name: Datenbank-Zugriffsregeln
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Quellcode laden
+        uses: actions/checkout@v6
+
+      - name: Supabase CLI einrichten
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Lokale Testdatenbank starten
+        run: supabase start
+
+      - name: Zugriffs- und Löschregeln prüfen
+        run: supabase test db
+
   quality:
     name: Build, Lint und Browsertests
     runs-on: ubuntu-latest

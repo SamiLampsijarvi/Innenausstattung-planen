@@ -3,12 +3,19 @@
 import type { User } from "@supabase/supabase-js";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import {
+  cancelAccountDeletion,
+  readAccountDeletionRequest,
+  requestAccountDeletion,
+} from "@/lib/supabase/account-deletion";
+import type { AccountDeletionRequest } from "@/lib/supabase/account-deletion";
 
 type AuthPanelProps = {
   onUserChange: (user: User | null) => void;
+  onDeletionRequestChange: (request: AccountDeletionRequest | null) => void;
 };
 
-export default function AuthPanel({ onUserChange }: AuthPanelProps) {
+export default function AuthPanel({ onUserChange, onDeletionRequestChange }: AuthPanelProps) {
   const supabase = useMemo(() => createSupabaseBrowserClient(), []);
   const [user, setUser] = useState<User | null>(null);
   const [mode, setMode] = useState<"signin" | "signup" | "reset" | "update">("signin");
@@ -16,6 +23,7 @@ export default function AuthPanel({ onUserChange }: AuthPanelProps) {
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const [deletionRequest, setDeletionRequest] = useState<AccountDeletionRequest | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -32,12 +40,30 @@ export default function AuthPanel({ onUserChange }: AuthPanelProps) {
       }
       setUser(session?.user ?? null);
       onUserChange(session?.user ?? null);
+      if (!session?.user) {
+        setDeletionRequest(null);
+        onDeletionRequestChange(null);
+      }
     });
     return () => {
       active = false;
       subscription.subscription.unsubscribe();
     };
-  }, [onUserChange, supabase]);
+  }, [onDeletionRequestChange, onUserChange, supabase]);
+
+  useEffect(() => {
+    if (!user) return;
+    let active = true;
+    readAccountDeletionRequest(supabase).then((request) => {
+      if (!active) return;
+      setDeletionRequest(request);
+      onDeletionRequestChange(request);
+    }).catch((loadError) => {
+      if (!active) return;
+      setMessage(loadError instanceof Error ? loadError.message : "Der Kontostatus konnte nicht geladen werden.");
+    });
+    return () => { active = false; };
+  }, [onDeletionRequestChange, supabase, user]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -85,6 +111,41 @@ export default function AuthPanel({ onUserChange }: AuthPanelProps) {
     setMessage(error ? error.message : "Sie sind abgemeldet.");
   }
 
+  async function requestDeletion() {
+    if (!window.confirm("Möchten Sie die Löschung Ihres Kontos beantragen? Die normale Nutzung wird gesperrt. Sie können den Antrag innerhalb von 14 Tagen widerrufen.")) return;
+    setBusy(true);
+    setMessage("");
+    try {
+      const request = await requestAccountDeletion(supabase);
+      setDeletionRequest(request);
+      onDeletionRequestChange(request);
+      setMessage("Die Kontolöschung wurde vorgemerkt.");
+    } catch (requestError) {
+      setMessage(requestError instanceof Error ? requestError.message : "Die Kontolöschung konnte nicht vorgemerkt werden.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function cancelDeletion() {
+    setBusy(true);
+    setMessage("");
+    try {
+      await cancelAccountDeletion(supabase);
+      setDeletionRequest(null);
+      onDeletionRequestChange(null);
+      setMessage("Die Kontolöschung wurde widerrufen. Ihr Konto ist wieder normal nutzbar.");
+    } catch (cancelError) {
+      setMessage(cancelError instanceof Error ? cancelError.message : "Die Kontolöschung konnte nicht widerrufen werden.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const deletionDate = deletionRequest
+    ? new Intl.DateTimeFormat("de-DE", { dateStyle: "long", timeStyle: "short" }).format(new Date(deletionRequest.deleteAfter))
+    : "";
+
   return (
     <section className="auth-panel" aria-labelledby="account-title">
       <div>
@@ -100,12 +161,20 @@ export default function AuthPanel({ onUserChange }: AuthPanelProps) {
           <input id="account-password" type="password" autoComplete="new-password" minLength={8} required value={password} onChange={(event) => setPassword(event.target.value)} />
           <button type="submit" disabled={busy}>{busy ? "Bitte warten …" : "Neues Passwort speichern"}</button>
         </form>
+      ) : user && deletionRequest ? (
+        <div className="auth-session deletion-pending" role="status">
+          <span>Kontolöschung vorgemerkt</span>
+          <strong>Endgültige Löschung frühestens am {deletionDate}</strong>
+          <p>Ihr Konto ist bis dahin für die normale Nutzung gesperrt.</p>
+          <button type="button" onClick={cancelDeletion} disabled={busy}>{busy ? "Bitte warten …" : "Kontolöschung widerrufen"}</button>
+          <button type="button" onClick={signOut} disabled={busy}>Abmelden</button>
+        </div>
       ) : user ? (
         <div className="auth-session">
           <span>Angemeldet als</span>
           <strong>{user.email}</strong>
           <button type="button" onClick={signOut} disabled={busy}>Abmelden</button>
-          <button className="delete-account" type="button" disabled title="Die bestätigte 14-Tage-Widerrufsfrist wird noch umgesetzt.">Kontolöschung mit 14-Tage-Frist folgt</button>
+          <button className="delete-account" type="button" onClick={requestDeletion} disabled={busy}>Kontolöschung beantragen</button>
         </div>
       ) : (
         <form className="auth-form" onSubmit={submit}>

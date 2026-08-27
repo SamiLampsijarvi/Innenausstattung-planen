@@ -11,15 +11,19 @@ import FurniturePlanner from "./furniture-planner";
 import DraftResults from "./draft-results";
 import AuthPanel from "./auth-panel";
 import type { User } from "@supabase/supabase-js";
+import type { AccountDeletionRequest } from "@/lib/supabase/account-deletion";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import {
-  deletePrivateProject,
+  movePrivateProjectToTrash,
+  permanentlyDeletePrivateProject,
   readPrivatePhotos,
   readPrivateProjects,
   removePrivatePhoto,
+  restorePrivateProject,
   savePrivateProject,
   uploadPrivatePhotos,
 } from "@/lib/supabase/private-projects";
+import type { PrivateProject } from "@/lib/supabase/private-projects";
 
 const futureRooms = [
   "Schlafzimmer Design", "Küche Design", "Badezimmer Design", "Eingang Design",
@@ -71,6 +75,8 @@ export default function Home() {
   const [error, setError] = useState("");
   const [showSummary, setShowSummary] = useState(false);
   const [accountUser, setAccountUser] = useState<User | null>(null);
+  const [accountDeletionRequest, setAccountDeletionRequest] = useState<AccountDeletionRequest | null>(null);
+  const [trashedProjects, setTrashedProjects] = useState<PrivateProject[]>([]);
   const supabase = useMemo(() => createSupabaseBrowserClient(), []);
 
   const postcodeIsValid = /^\d{5}$/.test(postcode);
@@ -87,11 +93,12 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    if (!accountUser) return;
+    if (!accountUser || accountDeletionRequest) return;
     let active = true;
     readPrivateProjects(supabase).then((privateProjects) => {
       if (!active) return;
-      setProjects(privateProjects);
+      setProjects(privateProjects.filter((project) => !project.deletedAt));
+      setTrashedProjects(privateProjects.filter((project) => project.deletedAt));
       setActiveProjectId(null);
       setProjectsLoaded(true);
     }).catch((loadError) => {
@@ -100,7 +107,7 @@ export default function Home() {
       setProjectsLoaded(true);
     });
     return () => { active = false; };
-  }, [accountUser, supabase]);
+  }, [accountDeletionRequest, accountUser, supabase]);
 
   async function commitProjects(nextProjects: LocalProject[]) {
     setProjectError("");
@@ -127,8 +134,21 @@ export default function Home() {
       setProjectsLoaded(false);
     } else {
       setProjects(readLocalProjects(window.localStorage));
+      setTrashedProjects([]);
       setActiveProjectId(null);
       setProjectsLoaded(true);
+    }
+  }, []);
+
+  const handleDeletionRequestChange = useCallback((request: AccountDeletionRequest | null) => {
+    setAccountDeletionRequest(request);
+    if (request) {
+      setProjects([]);
+      setTrashedProjects([]);
+      setActiveProjectId(null);
+      setImages([]);
+    } else {
+      setProjectsLoaded(false);
     }
   }, []);
 
@@ -193,14 +213,18 @@ export default function Home() {
   }
 
   async function deleteProject(project: LocalProject) {
-    if (!window.confirm(`Möchten Sie „${project.name}“ wirklich löschen? Diese Löschung kann nicht rückgängig gemacht werden.`)) return;
+    const confirmation = accountUser
+      ? `Möchten Sie „${project.name}“ für 30 Tage in den Papierkorb verschieben?`
+      : `Möchten Sie „${project.name}“ wirklich löschen? Diese lokale Löschung kann nicht rückgängig gemacht werden.`;
+    if (!window.confirm(confirmation)) return;
     if (accountUser) {
       try {
-        await deletePrivateProject(supabase, project.id);
+        await movePrivateProjectToTrash(supabase, project.id);
       } catch (deleteError) {
-        setProjectError(deleteError instanceof Error ? deleteError.message : "Das private Projekt konnte nicht gelöscht werden.");
+        setProjectError(deleteError instanceof Error ? deleteError.message : "Das private Projekt konnte nicht in den Papierkorb verschoben werden.");
         return;
       }
+      setTrashedProjects((current) => [{ ...project, deletedAt: new Date().toISOString() }, ...current]);
     }
     const remainingProjects = projects.filter(({ id }) => id !== project.id);
     setProjects(remainingProjects);
@@ -210,6 +234,28 @@ export default function Home() {
       images.forEach(({ previewUrl }) => { if (previewUrl.startsWith("blob:")) URL.revokeObjectURL(previewUrl); });
       setImages([]);
       setShowSummary(false);
+    }
+  }
+
+  async function restoreProject(project: PrivateProject) {
+    try {
+      await restorePrivateProject(supabase, project.id);
+      setTrashedProjects((current) => current.filter(({ id }) => id !== project.id));
+      setProjects((current) => [{ ...project, deletedAt: null }, ...current]);
+      setProjectError("");
+    } catch (restoreError) {
+      setProjectError(restoreError instanceof Error ? restoreError.message : "Das Projekt konnte nicht wiederhergestellt werden.");
+    }
+  }
+
+  async function permanentlyDeleteProject(project: PrivateProject) {
+    if (!window.confirm(`Möchten Sie „${project.name}“ jetzt endgültig löschen? Das Projekt und seine Fotos können danach nicht wiederhergestellt werden.`)) return;
+    try {
+      await permanentlyDeletePrivateProject(supabase, project.id);
+      setTrashedProjects((current) => current.filter(({ id }) => id !== project.id));
+      setProjectError("");
+    } catch (deleteError) {
+      setProjectError(deleteError instanceof Error ? deleteError.message : "Das Projekt konnte nicht endgültig gelöscht werden.");
     }
   }
 
@@ -364,7 +410,13 @@ export default function Home() {
           <h1 id="home-intro-title">
             Gestalten Sie Ihr Zuhause – passend zu Ihrem Raum, Ihrem Stil und Ihrem Budget.
           </h1>
-          <AuthPanel onUserChange={handleAccountUserChange} />
+          <AuthPanel onUserChange={handleAccountUserChange} onDeletionRequestChange={handleDeletionRequestChange} />
+          {accountDeletionRequest ? (
+            <section className="account-locked" aria-labelledby="account-locked-title">
+              <h2 id="account-locked-title">Konto zur Löschung vorgemerkt</h2>
+              <p>Ihre Projekte und Fotos bleiben während der 14-tägigen Widerrufsfrist geschützt, können aber nicht bearbeitet werden.</p>
+            </section>
+          ) : <>
           <section className="projects-panel" id="projekte" aria-labelledby="projects-title">
             <div className="projects-heading">
               <div><small>{accountUser ? "PRIVAT IN IHREM KONTO" : "LOKAL IN DIESEM BROWSER"}</small><h2 id="projects-title">Meine Projekte</h2></div>
@@ -406,6 +458,26 @@ export default function Home() {
                   </article>
                 ))}
               </div>
+            )}
+            {accountUser && trashedProjects.length > 0 && (
+              <details className="project-trash">
+                <summary>Papierkorb ({trashedProjects.length})</summary>
+                <p>Projekte werden 30 Tage nach dem Löschen endgültig entfernt.</p>
+                <div className="project-grid">
+                  {trashedProjects.map((project) => {
+                    const deleteOn = new Date(new Date(project.deletedAt!).getTime() + 30 * 24 * 60 * 60 * 1000);
+                    return (
+                      <article key={project.id}>
+                        <div><small>PAPIERKORB</small><h3>{project.name}</h3><p>Endgültige Löschung frühestens am {deleteOn.toLocaleDateString("de-DE")}</p></div>
+                        <div className="project-actions">
+                          <button type="button" onClick={() => restoreProject(project)}>Wiederherstellen</button>
+                          <button className="delete-action" type="button" onClick={() => permanentlyDeleteProject(project)}>Endgültig löschen</button>
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+              </details>
             )}
           </section>
           {activeProject && <div className="active-project-banner"><span>Aktives Zuhause</span><strong>{activeProject.name}</strong><small>Änderungen an Stil, Postleitzahl und Budget werden automatisch lokal gespeichert.</small></div>}
@@ -529,6 +601,7 @@ export default function Home() {
           </aside>
           </> : <div className="no-project-message"><h2>Wählen Sie zuerst ein Zuhause</h2><p>Legen Sie oben ein Projekt an oder öffnen Sie ein vorhandenes Zuhause, um das Wohnzimmer zu planen.</p></div>}
           </div>
+          </>}
         </section>
       </main>
     </>
