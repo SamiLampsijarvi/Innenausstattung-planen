@@ -6,8 +6,9 @@ const publishableKeys = JSON.parse(Deno.env.get("SUPABASE_PUBLISHABLE_KEYS") ?? 
 const legacyServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 const serviceRoleKey = secretKeys.default ?? legacyServiceRoleKey;
 const publishableKey = publishableKeys.default ?? Deno.env.get("SUPABASE_ANON_KEY");
+const deletionWorkerSecret = Deno.env.get("DELETION_WORKER_SECRET");
 
-if (!supabaseUrl || !serviceRoleKey || !publishableKey) {
+if (!supabaseUrl || !serviceRoleKey || !publishableKey || !deletionWorkerSecret) {
   throw new Error("Supabase server configuration is incomplete.");
 }
 
@@ -107,8 +108,7 @@ async function purgeOwnTrashedProject(request: Request) {
 Deno.serve(async (request) => {
   try {
     if (request.method !== "POST") return new Response("Method not allowed", { status: 405 });
-    const apiKey = request.headers.get("apikey");
-    if (apiKey === serviceRoleKey || apiKey === legacyServiceRoleKey) {
+    if (request.headers.get("x-raumly-worker-secret") === deletionWorkerSecret) {
       const projects = await purgeDueProjects();
       const accounts = await purgeDueAccounts();
       return Response.json({ projects, accounts });

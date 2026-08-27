@@ -5,7 +5,7 @@ create extension if not exists pg_cron;
 create extension if not exists pg_net with schema extensions;
 
 select vault.create_secret('PROJECT_URL', 'raumly_project_url');
-select vault.create_secret('SECRET_KEY', 'raumly_deletion_worker_key');
+select vault.create_secret('WORKER_SECRET', 'raumly_deletion_worker_key');
 
 select cron.schedule(
   'raumly-daily-deletion-worker',
@@ -15,7 +15,7 @@ select cron.schedule(
     url := (select decrypted_secret from vault.decrypted_secrets where name = 'raumly_project_url') || '/functions/v1/purge-expired-deletions',
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
-      'apikey', (select decrypted_secret from vault.decrypted_secrets where name = 'raumly_deletion_worker_key')
+      'x-raumly-worker-secret', (select decrypted_secret from vault.decrypted_secrets where name = 'raumly_deletion_worker_key')
     ),
     body := '{}'::jsonb
   );
