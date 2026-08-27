@@ -3,7 +3,6 @@
 import type { User } from "@supabase/supabase-js";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
-import { deleteOwnAccount } from "@/lib/supabase/private-projects";
 
 type AuthPanelProps = {
   onUserChange: (user: User | null) => void;
@@ -12,7 +11,7 @@ type AuthPanelProps = {
 export default function AuthPanel({ onUserChange }: AuthPanelProps) {
   const supabase = useMemo(() => createSupabaseBrowserClient(), []);
   const [user, setUser] = useState<User | null>(null);
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup" | "reset" | "update">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
@@ -25,8 +24,12 @@ export default function AuthPanel({ onUserChange }: AuthPanelProps) {
       setUser(data.user);
       onUserChange(data.user);
     });
-    const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: subscription } = supabase.auth.onAuthStateChange((event, session) => {
       if (!active) return;
+      if (event === "PASSWORD_RECOVERY") {
+        setMode("update");
+        setMessage("Bitte legen Sie jetzt ein neues Passwort fest.");
+      }
       setUser(session?.user ?? null);
       onUserChange(session?.user ?? null);
     });
@@ -40,6 +43,26 @@ export default function AuthPanel({ onUserChange }: AuthPanelProps) {
     event.preventDefault();
     setBusy(true);
     setMessage("");
+    if (mode === "reset") {
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: window.location.origin,
+      });
+      setBusy(false);
+      setMessage(error ? error.message : "Wir haben Ihnen einen Link zum Zurücksetzen des Passworts geschickt.");
+      return;
+    }
+    if (mode === "update") {
+      const { error } = await supabase.auth.updateUser({ password });
+      setBusy(false);
+      if (error) {
+        setMessage(error.message);
+        return;
+      }
+      setPassword("");
+      setMode("signin");
+      setMessage("Ihr Passwort wurde erfolgreich geändert.");
+      return;
+    }
     const credentials = { email: email.trim(), password };
     const result = mode === "signup"
       ? await supabase.auth.signUp(credentials)
@@ -62,20 +85,6 @@ export default function AuthPanel({ onUserChange }: AuthPanelProps) {
     setMessage(error ? error.message : "Sie sind abgemeldet.");
   }
 
-  async function deleteAccount() {
-    if (!window.confirm("Möchten Sie Ihr Raumly-Konto wirklich vollständig löschen? Private Projekte und Fotos werden unwiderruflich entfernt.")) return;
-    setBusy(true);
-    setMessage("");
-    try {
-      await deleteOwnAccount(supabase);
-      setMessage("Ihr Konto und die privaten Daten wurden gelöscht.");
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Das Konto konnte nicht vollständig gelöscht werden.");
-    } finally {
-      setBusy(false);
-    }
-  }
-
   return (
     <section className="auth-panel" aria-labelledby="account-title">
       <div>
@@ -85,23 +94,30 @@ export default function AuthPanel({ onUserChange }: AuthPanelProps) {
           ? "Sie sind angemeldet. Projekte und Fotos werden privat Ihrem Konto zugeordnet."
           : "Melden Sie sich an, damit Projekte und Fotos später sicher Ihrem Konto zugeordnet werden können."}</p>
       </div>
-      {user ? (
+      {mode === "update" ? (
+        <form className="auth-form" onSubmit={submit}>
+          <label htmlFor="account-password">Neues Passwort</label>
+          <input id="account-password" type="password" autoComplete="new-password" minLength={8} required value={password} onChange={(event) => setPassword(event.target.value)} />
+          <button type="submit" disabled={busy}>{busy ? "Bitte warten …" : "Neues Passwort speichern"}</button>
+        </form>
+      ) : user ? (
         <div className="auth-session">
           <span>Angemeldet als</span>
           <strong>{user.email}</strong>
           <button type="button" onClick={signOut} disabled={busy}>Abmelden</button>
-          <button className="delete-account" type="button" onClick={deleteAccount} disabled={busy}>Konto und private Daten löschen</button>
+          <button className="delete-account" type="button" disabled title="Die bestätigte 14-Tage-Widerrufsfrist wird noch umgesetzt.">Kontolöschung mit 14-Tage-Frist folgt</button>
         </div>
       ) : (
         <form className="auth-form" onSubmit={submit}>
           <label htmlFor="account-email">E-Mail-Adresse</label>
           <input id="account-email" type="email" autoComplete="email" required value={email} onChange={(event) => setEmail(event.target.value)} />
-          <label htmlFor="account-password">Passwort</label>
-          <input id="account-password" type="password" autoComplete={mode === "signup" ? "new-password" : "current-password"} minLength={8} required value={password} onChange={(event) => setPassword(event.target.value)} />
-          <button type="submit" disabled={busy}>{busy ? "Bitte warten …" : mode === "signup" ? "Konto anlegen" : "Anmelden"}</button>
-          <button className="auth-mode" type="button" onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setMessage(""); }}>
-            {mode === "signin" ? "Noch kein Konto? Registrieren" : "Bereits registriert? Anmelden"}
-          </button>
+          {mode !== "reset" && <><label htmlFor="account-password">Passwort</label>
+          <input id="account-password" type="password" autoComplete={mode === "signup" ? "new-password" : "current-password"} minLength={8} required value={password} onChange={(event) => setPassword(event.target.value)} /></>}
+          <button type="submit" disabled={busy}>{busy ? "Bitte warten …" : mode === "signup" ? "Konto anlegen" : mode === "reset" ? "Link zum Zurücksetzen senden" : "Anmelden"}</button>
+          {mode === "signin" ? <>
+            <button className="auth-mode" type="button" onClick={() => { setMode("signup"); setMessage(""); }}>Noch kein Konto? Registrieren</button>
+            <button className="auth-mode" type="button" onClick={() => { setMode("reset"); setMessage(""); }}>Passwort vergessen?</button>
+          </> : <button className="auth-mode" type="button" onClick={() => { setMode("signin"); setMessage(""); }}>Zurück zur Anmeldung</button>}
         </form>
       )}
       {message && <p className="auth-message" role="status">{message}</p>}

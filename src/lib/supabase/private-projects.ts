@@ -60,29 +60,36 @@ export async function uploadPrivatePhotos(
   files: File[],
 ): Promise<StoredRoomImage[]> {
   const uploaded: StoredRoomImage[] = [];
-  for (const file of files) {
-    const extension = file.name.split(".").pop()?.toLowerCase() || "jpg";
-    const path = `${user.id}/${projectId}/${crypto.randomUUID()}.${extension}`;
-    const { error: uploadError } = await supabase.storage.from("room-photos").upload(path, file, {
-      contentType: file.type,
-      upsert: false,
-    });
-    if (uploadError) throw uploadError;
-    const { error: metadataError } = await supabase.from("project_photos").insert({
-      project_id: projectId,
-      user_id: user.id,
-      storage_path: path,
-      original_name: file.name,
-    });
-    if (metadataError) {
-      await supabase.storage.from("room-photos").remove([path]);
-      throw metadataError;
+  const uploadedPaths: string[] = [];
+  try {
+    for (const file of files) {
+      const extension = file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const path = `${user.id}/${projectId}/${crypto.randomUUID()}.${extension}`;
+      const { error: uploadError } = await supabase.storage.from("room-photos").upload(path, file, {
+        contentType: file.type,
+        upsert: false,
+      });
+      if (uploadError) throw uploadError;
+      uploadedPaths.push(path);
+      const { error: metadataError } = await supabase.from("project_photos").insert({
+        project_id: projectId,
+        user_id: user.id,
+        storage_path: path,
+        original_name: file.name,
+      });
+      if (metadataError) throw metadataError;
+      const { data, error: signedUrlError } = await supabase.storage.from("room-photos").createSignedUrl(path, 3600);
+      if (signedUrlError || !data?.signedUrl) throw signedUrlError ?? new Error("Für das Foto konnte keine private Vorschau erstellt werden.");
+      uploaded.push({ name: file.name, previewUrl: data.signedUrl, storagePath: path });
     }
-    const { data } = await supabase.storage.from("room-photos").createSignedUrl(path, 3600);
-    if (!data?.signedUrl) throw new Error("Für das Foto konnte keine private Vorschau erstellt werden.");
-    uploaded.push({ name: file.name, previewUrl: data.signedUrl, storagePath: path });
+    return uploaded;
+  } catch (error) {
+    if (uploadedPaths.length) {
+      await supabase.from("project_photos").delete().in("storage_path", uploadedPaths);
+      await supabase.storage.from("room-photos").remove(uploadedPaths);
+    }
+    throw error;
   }
-  return uploaded;
 }
 
 export async function readPrivatePhotos(supabase: SupabaseClient, projectId: string): Promise<StoredRoomImage[]> {
@@ -94,7 +101,8 @@ export async function readPrivatePhotos(supabase: SupabaseClient, projectId: str
   if (error) throw error;
   const result: StoredRoomImage[] = [];
   for (const row of rows ?? []) {
-    const { data } = await supabase.storage.from("room-photos").createSignedUrl(row.storage_path, 3600);
+    const { data, error: signedUrlError } = await supabase.storage.from("room-photos").createSignedUrl(row.storage_path, 3600);
+    if (signedUrlError) throw signedUrlError;
     if (data?.signedUrl) result.push({ name: row.original_name, previewUrl: data.signedUrl, storagePath: row.storage_path });
   }
   return result;
@@ -105,17 +113,4 @@ export async function removePrivatePhoto(supabase: SupabaseClient, storagePath: 
   if (storageError) throw storageError;
   const { error } = await supabase.from("project_photos").delete().eq("storage_path", storagePath);
   if (error) throw error;
-}
-
-export async function deleteOwnAccount(supabase: SupabaseClient) {
-  const { data: photos, error: photoError } = await supabase.from("project_photos").select("storage_path");
-  if (photoError) throw photoError;
-  const paths = (photos ?? []).map(({ storage_path }) => storage_path as string);
-  if (paths.length) {
-    const { error } = await supabase.storage.from("room-photos").remove(paths);
-    if (error) throw error;
-  }
-  const { error } = await supabase.rpc("delete_own_account");
-  if (error) throw error;
-  await supabase.auth.signOut();
 }

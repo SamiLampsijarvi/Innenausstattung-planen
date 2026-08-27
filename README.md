@@ -40,11 +40,14 @@ Bei Pull Requests nach `main` und Änderungen an `main` führt GitHub Actions di
 - Möbel mit klar gekennzeichneten Testdaten simulieren und über eine kompakte Auswahl einzeln bearbeiten, korrigieren, entfernen oder ergänzen
 - Freiwillige Vorgaben und Kommentare je Möbelstück sowie eine allgemeine Raumnotiz lokal speichern
 - Bis zu drei klar gekennzeichnete lokale Testentwürfe erstellen, untereinander anzeigen, öffnen, löschen und vergleichen
+- Konto mit E-Mail-Bestätigung anlegen, anmelden und abmelden
+- Private Zuhause-Projekte und Raumfotos in Supabase speichern und nach einer erneuten Anmeldung laden
+- Passwort-Wiederherstellung starten
 
 ## Bewusste MVP-Grenzen
 
-- Noch keine Benutzerkonten oder externe Datenspeicherung
-- Noch keine dauerhafte Fotospeicherung; Bilder müssen nach einem Neuladen erneut ausgewählt werden
+- Die 14-tägige widerrufbare Kontolöschung ist noch nicht umgesetzt; die frühere sofortige Löschung ist deshalb gesperrt
+- Gastprojekte bleiben lokal; die automatische Übernahme eines Gastprojekts in ein Konto ist noch offen
 - Noch keine echte KI-Möbelerkennung oder Bildgenerierung; die angezeigten Möbel sind ausdrücklich Testdaten
 - Testentwürfe enthalten vorbereitete Konzepte und Farbpaletten, aber noch keine erzeugten Raumbilder
 - Manuelle KI-Versuche lieferten überzeugende Inspirationsbilder, bewahrten vorhandene Möbel, Raumdetails und Budgets aber nicht zuverlässig exakt; zukünftige KI-Bilder sind daher keine maßgenaue Planung oder Kostengarantie
@@ -53,7 +56,7 @@ Bei Pull Requests nach `main` und Änderungen an `main` führt GitHub Actions di
 
 ## Empfohlene nächste Phasen
 
-1. Backend, Datenbank, sichere Foto-Uploads und Anmeldung nach erneuter Datenschutz-, Regions- und Kostenprüfung ergänzen.
+1. Den 14-tägigen Kontolöschablauf, Projektpapierkorb und vollständige Zugriffstests ergänzen.
 2. Den offenen API-Teil des KI-Machbarkeitstests mit Einwilligung und festem Kostenlimit durchführen.
 3. KI-Bildbearbeitung als klar gekennzeichnete Inspiration mit Moderation, Fehlerbehandlung und Kostenlimit anbinden.
 4. Bestätigte Zielgruppe, Planungsablauf und KI-Ergebnisse später mit Testnutzern validieren.

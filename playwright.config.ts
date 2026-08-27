@@ -18,7 +18,7 @@ export default defineConfig({
   webServer: {
     command: "next dev -p 3100",
     url: "http://localhost:3100",
-    reuseExistingServer: false,
+    reuseExistingServer: true,
     timeout: 120_000,
   },
 });

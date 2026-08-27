@@ -58,6 +58,7 @@ export default function Home() {
   const [projects, setProjects] = useState<LocalProject[]>([]);
   const [projectsLoaded, setProjectsLoaded] = useState(false);
   const [projectSaveStatus, setProjectSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
+  const [photoSaveStatus, setPhotoSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
   const [newProjectName, setNewProjectName] = useState("");
   const [projectError, setProjectError] = useState("");
@@ -216,6 +217,8 @@ export default function Home() {
     const selectedFiles = Array.from(event.target.files ?? []);
     setError("");
 
+    if (selectedFiles.length === 0) return;
+
     if (selectedFiles.length > 5) {
       setError("Bitte wähle höchstens fünf Fotos aus.");
       event.target.value = "";
@@ -238,19 +241,32 @@ export default function Home() {
       return;
     }
 
-    images.forEach(({ previewUrl }) => { if (previewUrl.startsWith("blob:")) URL.revokeObjectURL(previewUrl); });
     const previews = selectedFiles.map((file) => ({ name: file.name, file, previewUrl: URL.createObjectURL(file) }));
-    setImages(previews);
     if (accountUser && activeProjectId) {
+      setPhotoSaveStatus("saving");
       try {
         const storedImages = images.filter((image) => image.storagePath);
-        await Promise.all(storedImages.map((image) => removePrivatePhoto(supabase, image.storagePath!)));
         const uploaded = await uploadPrivatePhotos(supabase, accountUser, activeProjectId, selectedFiles);
         previews.forEach(({ previewUrl }) => URL.revokeObjectURL(previewUrl));
-        setImages(uploaded);
+        const remainingOldImages: RoomImage[] = [];
+        for (const storedImage of storedImages) {
+          try {
+            await removePrivatePhoto(supabase, storedImage.storagePath!);
+          } catch {
+            remainingOldImages.push(storedImage);
+          }
+        }
+        setImages([...remainingOldImages, ...uploaded]);
+        setPhotoSaveStatus("saved");
+        if (remainingOldImages.length) setError("Die neuen Fotos wurden gespeichert, aber mindestens ein bisheriges Foto konnte noch nicht entfernt werden.");
       } catch (uploadError) {
+        previews.forEach(({ previewUrl }) => URL.revokeObjectURL(previewUrl));
+        setPhotoSaveStatus("idle");
         setError(uploadError instanceof Error ? uploadError.message : "Die privaten Fotos konnten nicht gespeichert werden.");
       }
+    } else {
+      images.forEach(({ previewUrl }) => { if (previewUrl.startsWith("blob:")) URL.revokeObjectURL(previewUrl); });
+      setImages(previews);
     }
     setShowSummary(false);
   }
@@ -428,15 +444,17 @@ export default function Home() {
                 <span aria-hidden="true">↑</span>
                 <strong>Fotos auswählen</strong>
                 <small>1–5 Bilder · JPG, PNG oder WEBP · maximal 10 MB pro Bild</small>
-                <input id="room-images" type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={handleImages} />
+                <input id="room-images" type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={handleImages} disabled={photoSaveStatus === "saving"} />
               </label>
+              {accountUser && photoSaveStatus === "saving" && <p className="projects-status" role="status">Fotos werden sicher gespeichert …</p>}
+              {accountUser && photoSaveStatus === "saved" && !error && <p className="projects-status" role="status">Fotos wurden sicher gespeichert.</p>}
               <div className="image-previews" aria-live="polite">
                 {images.map(({ name, file, previewUrl, storagePath }, index) => (
                   <figure key={storagePath ?? `${name}-${file?.lastModified ?? index}`}>
                     {/* A local object URL is required for an immediate, non-uploaded preview. */}
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={previewUrl} alt={`Vorschau: ${name}`} />
-                    <button type="button" onClick={() => removeImage(index)} aria-label={`${name} entfernen`}>×</button>
+                    <button type="button" onClick={() => removeImage(index)} aria-label={`${name} entfernen`} disabled={photoSaveStatus === "saving"}>×</button>
                   </figure>
                 ))}
               </div>
