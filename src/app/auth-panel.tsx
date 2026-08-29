@@ -9,13 +9,19 @@ import {
   requestAccountDeletion,
 } from "@/lib/supabase/account-deletion";
 import type { AccountDeletionRequest } from "@/lib/supabase/account-deletion";
+import { readAccountNumber } from "@/lib/supabase/account-profile";
+import {
+  clearPendingGuestProjectTransfer,
+  prepareGuestProjectTransfer,
+} from "@/lib/supabase/guest-project-transfer";
 
 type AuthPanelProps = {
   onUserChange: (user: User | null) => void;
   onDeletionRequestChange: (request: AccountDeletionRequest | null) => void;
+  guestProjectId: string | null;
 };
 
-export default function AuthPanel({ onUserChange, onDeletionRequestChange }: AuthPanelProps) {
+export default function AuthPanel({ onUserChange, onDeletionRequestChange, guestProjectId }: AuthPanelProps) {
   const supabase = useMemo(() => createSupabaseBrowserClient(), []);
   const [user, setUser] = useState<User | null>(null);
   const [mode, setMode] = useState<"signin" | "signup" | "reset" | "update">("signin");
@@ -24,6 +30,7 @@ export default function AuthPanel({ onUserChange, onDeletionRequestChange }: Aut
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
   const [deletionRequest, setDeletionRequest] = useState<AccountDeletionRequest | null>(null);
+  const [accountNumber, setAccountNumber] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -54,9 +61,10 @@ export default function AuthPanel({ onUserChange, onDeletionRequestChange }: Aut
   useEffect(() => {
     if (!user) return;
     let active = true;
-    readAccountDeletionRequest(supabase).then((request) => {
+    Promise.all([readAccountDeletionRequest(supabase), readAccountNumber(supabase, user)]).then(([request, number]) => {
       if (!active) return;
       setDeletionRequest(request);
+      setAccountNumber(number);
       onDeletionRequestChange(request);
     }).catch((loadError) => {
       if (!active) return;
@@ -90,11 +98,13 @@ export default function AuthPanel({ onUserChange, onDeletionRequestChange }: Aut
       return;
     }
     const credentials = { email: email.trim(), password };
+    if (mode === "signup") prepareGuestProjectTransfer(window.localStorage, guestProjectId, credentials.email);
     const result = mode === "signup"
       ? await supabase.auth.signUp(credentials)
       : await supabase.auth.signInWithPassword(credentials);
     setBusy(false);
     if (result.error) {
+      if (mode === "signup") clearPendingGuestProjectTransfer(window.localStorage);
       setMessage(result.error.message);
       return;
     }
@@ -173,6 +183,7 @@ export default function AuthPanel({ onUserChange, onDeletionRequestChange }: Aut
         <div className="auth-session">
           <span>Angemeldet als</span>
           <strong>{user.email}</strong>
+          {accountNumber && <span>Kontonummer: <strong>{accountNumber}</strong></span>}
           <button type="button" onClick={signOut} disabled={busy}>Abmelden</button>
           <button className="delete-account" type="button" onClick={requestDeletion} disabled={busy}>Kontolöschung beantragen</button>
         </div>
@@ -183,6 +194,7 @@ export default function AuthPanel({ onUserChange, onDeletionRequestChange }: Aut
           {mode !== "reset" && <><label htmlFor="account-password">Passwort</label>
           <input id="account-password" type="password" autoComplete={mode === "signup" ? "new-password" : "current-password"} minLength={8} required value={password} onChange={(event) => setPassword(event.target.value)} /></>}
           <button type="submit" disabled={busy}>{busy ? "Bitte warten …" : mode === "signup" ? "Konto anlegen" : mode === "reset" ? "Link zum Zurücksetzen senden" : "Anmelden"}</button>
+          {mode === "signup" && guestProjectId && <p>Nach der E-Mail-Bestätigung wird nur Ihr aktuell geöffnetes lokales Zuhause sicher in das neue Konto übernommen.</p>}
           {mode === "signin" ? <>
             <button className="auth-mode" type="button" onClick={() => { setMode("signup"); setMessage(""); }}>Noch kein Konto? Registrieren</button>
             <button className="auth-mode" type="button" onClick={() => { setMode("reset"); setMessage(""); }}>Passwort vergessen?</button>

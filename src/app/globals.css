@@ -122,6 +122,9 @@ main { min-height: calc(100vh - 131px); padding: clamp(4rem, 9vw, 8rem) max(3vw,
 .upload-zone strong { color: var(--forest); }
 .upload-zone small { font-size: 10px; }
 .upload-zone input { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.photo-consent-panel { display: grid; gap: 9px; margin-top: 18px; padding: 14px; background: #f4f7f2; border: 1px solid var(--line); border-radius: 10px; }
+.photo-consent-panel p, .photo-consent-panel span { margin: 0; color: var(--muted); font-size: .84rem; line-height: 1.45; }
+.photo-consent-panel button { justify-self: start; padding: 9px 12px; border: 1px solid var(--forest); border-radius: 8px; background: var(--forest); color: #fff; font-weight: 700; }
 .image-previews { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin-top: 12px; }
 .image-previews figure { position: relative; aspect-ratio: 4 / 3; margin: 0; overflow: hidden; background: var(--cream); border-radius: 9px; }
 .image-previews img { width: 100%; height: 100%; object-fit: cover; }

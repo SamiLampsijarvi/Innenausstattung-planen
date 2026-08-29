@@ -45,12 +45,15 @@ Bei Pull Requests nach `main` und Änderungen an `main` führt GitHub Actions di
 - Passwort-Wiederherstellung starten
 - Projekte 30 Tage im Papierkorb aufbewahren, wiederherstellen und anschließend automatisiert endgültig löschen
 - Kontolöschung mit 14-tägiger Widerrufsfrist beantragen und widerrufen
+- Benachrichtigungs-E-Mails für Löschantrag und Widerruf zuverlässig versenden
+- Achtstellige Kontonummer automatisch und privat vergeben
+- Das beim Registrieren geöffnete Gastprojekt sicher in das neue Konto übernehmen
+- Foto-Einwilligung nachweisbar erteilen und widerrufen; beim Widerruf gespeicherte Fotos löschen
 
 ## Bewusste MVP-Grenzen
 
-- Benachrichtigungs-E-Mails für Kontolöschungen sind technisch vorbereitet, aber noch nicht mit einem E-Mail-Anbieter verbunden oder veröffentlicht
 - Der verwendete kostenlose Supabase-Tarif erstellt keine automatischen Datenbanksicherungen; vor einer öffentlichen Veröffentlichung wird ein passendes Sicherungs- und Löschkonzept benötigt
-- Gastprojekte bleiben lokal; die automatische Übernahme eines Gastprojekts in ein Konto ist noch offen
+- Rechtlich verbindliche Anbieter- und Verantwortlichenangaben sowie die abschließende Datenschutzerklärung benötigen vor einer Veröffentlichung eine juristische Prüfung
 - Noch keine echte KI-Möbelerkennung oder Bildgenerierung; die angezeigten Möbel sind ausdrücklich Testdaten
 - Testentwürfe enthalten vorbereitete Konzepte und Farbpaletten, aber noch keine erzeugten Raumbilder
 - Manuelle KI-Versuche lieferten überzeugende Inspirationsbilder, bewahrten vorhandene Möbel, Raumdetails und Budgets aber nicht zuverlässig exakt; zukünftige KI-Bilder sind daher keine maßgenaue Planung oder Kostengarantie
@@ -59,12 +62,11 @@ Bei Pull Requests nach `main` und Änderungen an `main` führt GitHub Actions di
 
 ## Empfohlene nächste Phasen
 
-1. Den vorbereiteten E-Mail-Versand nach gesonderter Freigabe mit einem Anbieter verbinden und im Entwicklungsprojekt prüfen.
-2. Den offenen API-Teil des KI-Machbarkeitstests mit Einwilligung und festem Kostenlimit durchführen.
-3. KI-Bildbearbeitung als klar gekennzeichnete Inspiration mit Moderation, Fehlerbehandlung und Kostenlimit anbinden.
-4. Bestätigte Zielgruppe, Planungsablauf und KI-Ergebnisse später mit Testnutzern validieren.
-5. Zunächst 2–3 Händler-/Affiliate-Feeds für ein einziges Land integrieren.
-6. Mit Testnutzern Qualität, Kaufabsicht und Zahlungsbereitschaft messen.
+1. Den offenen API-Teil des KI-Machbarkeitstests mit Einwilligung und festem Kostenlimit durchführen.
+2. KI-Bildbearbeitung als klar gekennzeichnete Inspiration mit Moderation, Fehlerbehandlung und Kostenlimit anbinden.
+3. Bestätigte Zielgruppe, Planungsablauf und KI-Ergebnisse später mit Testnutzern validieren.
+4. Zunächst 2–3 Händler-/Affiliate-Feeds für ein einziges Land integrieren.
+5. Mit Testnutzern Qualität, Kaufabsicht und Zahlungsbereitschaft messen.
 
 ## Wichtigste Produktentscheidung
 

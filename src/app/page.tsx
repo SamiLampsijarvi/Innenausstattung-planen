@@ -24,6 +24,12 @@ import {
   uploadPrivatePhotos,
 } from "@/lib/supabase/private-projects";
 import type { PrivateProject } from "@/lib/supabase/private-projects";
+import { transferPendingGuestProject } from "@/lib/supabase/guest-project-transfer";
+import {
+  grantPhotoStorageConsent,
+  readPhotoStorageConsent,
+  withdrawPhotoStorageConsent,
+} from "@/lib/supabase/photo-consent";
 
 const futureRooms = [
   "Schlafzimmer Design", "Küche Design", "Badezimmer Design", "Eingang Design",
@@ -77,6 +83,9 @@ export default function Home() {
   const [accountUser, setAccountUser] = useState<User | null>(null);
   const [accountDeletionRequest, setAccountDeletionRequest] = useState<AccountDeletionRequest | null>(null);
   const [trashedProjects, setTrashedProjects] = useState<PrivateProject[]>([]);
+  const [guestTransferMessage, setGuestTransferMessage] = useState("");
+  const [photoConsentActive, setPhotoConsentActive] = useState(false);
+  const [photoConsentBusy, setPhotoConsentBusy] = useState(false);
   const supabase = useMemo(() => createSupabaseBrowserClient(), []);
 
   const postcodeIsValid = /^\d{5}$/.test(postcode);
@@ -95,8 +104,16 @@ export default function Home() {
   useEffect(() => {
     if (!accountUser || accountDeletionRequest) return;
     let active = true;
-    readPrivateProjects(supabase).then((privateProjects) => {
+    Promise.all([
+      transferPendingGuestProject(window.localStorage, supabase, accountUser),
+      readPhotoStorageConsent(supabase),
+    ]).then(async ([transferredProjectName, consentActive]) => {
+      const privateProjects = await readPrivateProjects(supabase);
       if (!active) return;
+      setPhotoConsentActive(consentActive);
+      setGuestTransferMessage(transferredProjectName
+        ? `„${transferredProjectName}“ wurde sicher aus diesem Browser in Ihr Konto übernommen.`
+        : "");
       setProjects(privateProjects.filter((project) => !project.deletedAt));
       setTrashedProjects(privateProjects.filter((project) => project.deletedAt));
       setActiveProjectId(null);
@@ -135,10 +152,41 @@ export default function Home() {
     } else {
       setProjects(readLocalProjects(window.localStorage));
       setTrashedProjects([]);
+      setPhotoConsentActive(false);
+      setGuestTransferMessage("");
       setActiveProjectId(null);
       setProjectsLoaded(true);
     }
   }, []);
+
+  async function allowPrivatePhotoStorage() {
+    setPhotoConsentBusy(true);
+    setError("");
+    try {
+      await grantPhotoStorageConsent(supabase);
+      setPhotoConsentActive(true);
+    } catch (consentError) {
+      setError(consentError instanceof Error ? consentError.message : "Die Foto-Einwilligung konnte nicht gespeichert werden.");
+    } finally {
+      setPhotoConsentBusy(false);
+    }
+  }
+
+  async function withdrawPrivatePhotoStorage() {
+    if (!window.confirm("Möchten Sie die Einwilligung zur privaten Fotospeicherung widerrufen? Alle bisher gespeicherten Raumfotos werden dauerhaft gelöscht.")) return;
+    setPhotoConsentBusy(true);
+    setError("");
+    try {
+      await withdrawPhotoStorageConsent(supabase);
+      images.forEach(({ previewUrl }) => { if (previewUrl.startsWith("blob:")) URL.revokeObjectURL(previewUrl); });
+      setImages([]);
+      setPhotoConsentActive(false);
+    } catch (consentError) {
+      setError(consentError instanceof Error ? consentError.message : "Der Widerruf konnte nicht vollständig verarbeitet werden.");
+    } finally {
+      setPhotoConsentBusy(false);
+    }
+  }
 
   const handleDeletionRequestChange = useCallback((request: AccountDeletionRequest | null) => {
     setAccountDeletionRequest(request);
@@ -410,7 +458,11 @@ export default function Home() {
           <h1 id="home-intro-title">
             Gestalten Sie Ihr Zuhause – passend zu Ihrem Raum, Ihrem Stil und Ihrem Budget.
           </h1>
-          <AuthPanel onUserChange={handleAccountUserChange} onDeletionRequestChange={handleDeletionRequestChange} />
+          <AuthPanel
+            onUserChange={handleAccountUserChange}
+            onDeletionRequestChange={handleDeletionRequestChange}
+            guestProjectId={accountUser ? null : activeProjectId}
+          />
           {accountDeletionRequest ? (
             <section className="account-locked" aria-labelledby="account-locked-title">
               <h2 id="account-locked-title">Konto zur Löschung vorgemerkt</h2>
@@ -432,6 +484,7 @@ export default function Home() {
               </div>
             </form>
             {projectError && <p className="form-error" role="alert">{projectError}</p>}
+            {guestTransferMessage && <p className="projects-status" role="status">{guestTransferMessage}</p>}
             {accountUser && projectSaveStatus === "saved" && !projectError && <p className="projects-status" role="status">Alle Änderungen wurden sicher gespeichert.</p>}
             {!projectsLoaded ? <p className="projects-status">Projekte werden geladen …</p> : projects.length === 0 ? (
               <p className="projects-status">Noch kein Zuhause angelegt. Beginnen Sie mit einem Namen.</p>
@@ -512,12 +565,20 @@ export default function Home() {
             </li>
             <li className="planning-step-detailed">
               <div className="step-heading"><span>3</span><strong>Bilder Ihres Wohnzimmers hochladen</strong></div>
+              {accountUser && <div className="photo-consent-panel">
+                <strong>Private Fotospeicherung</strong>
+                <p>Raumfotos können persönliche Details enthalten. Sie werden privat Ihrem Konto zugeordnet und ausschließlich für Ihre Raumplanung gespeichert.</p>
+                {photoConsentActive
+                  ? <><span role="status">Einwilligung aktiv</span><button type="button" onClick={withdrawPrivatePhotoStorage} disabled={photoConsentBusy}>{photoConsentBusy ? "Bitte warten …" : "Einwilligung widerrufen und Fotos löschen"}</button></>
+                  : <button type="button" onClick={allowPrivatePhotoStorage} disabled={photoConsentBusy}>{photoConsentBusy ? "Bitte warten …" : "Private Fotospeicherung erlauben"}</button>}
+              </div>}
               <label className="upload-zone" htmlFor="room-images">
                 <span aria-hidden="true">↑</span>
                 <strong>Fotos auswählen</strong>
                 <small>1–5 Bilder · JPG, PNG oder WEBP · maximal 10 MB pro Bild</small>
-                <input id="room-images" type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={handleImages} disabled={photoSaveStatus === "saving"} />
+                <input id="room-images" type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={handleImages} disabled={photoSaveStatus === "saving" || Boolean(accountUser && !photoConsentActive)} />
               </label>
+              {accountUser && !photoConsentActive && <small>Bitte erlauben Sie zuerst die private Fotospeicherung. Ohne Einwilligung wird kein Foto hochgeladen.</small>}
               {accountUser && photoSaveStatus === "saving" && <p className="projects-status" role="status">Fotos werden sicher gespeichert …</p>}
               {accountUser && photoSaveStatus === "saved" && !error && <p className="projects-status" role="status">Fotos wurden sicher gespeichert.</p>}
               <div className="image-previews" aria-live="polite">
