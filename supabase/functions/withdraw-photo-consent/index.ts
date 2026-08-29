@@ -29,11 +29,10 @@ Deno.serve(async (request) => {
   const userId = data.user?.id;
   if (!userId) return new Response("Unauthorized", { status: 401, headers: corsHeaders });
 
-  const { error: consentError } = await admin.from("consent_events").insert({
-    user_id: userId,
-    consent_kind: "photo_storage",
-    action: "withdrawn",
-    policy_version: "photo-storage-v1",
+  const { error: consentError } = await userClient.rpc("record_own_consent", {
+    target_kind: "photo_storage",
+    target_action: "withdrawn",
+    target_policy_version: "photo-storage-v1",
   });
   if (consentError) return Response.json({ error: "consent_record_failed" }, { status: 500, headers: corsHeaders });
 
