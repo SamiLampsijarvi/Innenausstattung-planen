@@ -49,7 +49,7 @@ Deno.serve(async (request) => {
     if (error) return Response.json({ error: "photo_removal_failed" }, { status: 500, headers: corsHeaders });
   }
   if (paths.length) {
-    const { error } = await admin.from("project_photos").delete().eq("user_id", userId);
+    const { error } = await userClient.from("project_photos").delete().eq("user_id", userId);
     if (error) return Response.json({ error: "photo_metadata_removal_failed" }, { status: 500, headers: corsHeaders });
   }
 
