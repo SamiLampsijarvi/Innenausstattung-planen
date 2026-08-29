@@ -1,7 +1,7 @@
 begin;
 
 create extension if not exists pgtap with schema extensions;
-select plan(20);
+select plan(22);
 
 insert into auth.users (id, email) values
   ('33333333-3333-4333-8333-333333333333', 'phase5-user-1@example.test'),
@@ -44,6 +44,10 @@ select lives_ok(
   $$insert into public.project_photos (project_id, user_id, storage_path, original_name) values ('cccccccc-cccc-4ccc-8ccc-cccccccccccc', '33333333-3333-4333-8333-333333333333', '33333333-3333-4333-8333-333333333333/cccccccc-cccc-4ccc-8ccc-cccccccccccc/allowed.png', 'allowed.png')$$,
   'Mit Einwilligung darf eigene Fotometadaten gespeichert werden'
 );
+select lives_ok(
+  $$insert into storage.objects (bucket_id, name, owner_id) values ('room-photos', '33333333-3333-4333-8333-333333333333/cccccccc-cccc-4ccc-8ccc-cccccccccccc/allowed-storage.png', '33333333-3333-4333-8333-333333333333')$$,
+  'Mit Einwilligung darf eine Datei im eigenen aktiven Projekt gespeichert werden'
+);
 select throws_ok(
   $$insert into public.project_photos (project_id, user_id, storage_path, original_name) values ('dddddddd-dddd-4ddd-8ddd-dddddddddddd', '33333333-3333-4333-8333-333333333333', '33333333-3333-4333-8333-333333333333/dddddddd-dddd-4ddd-8ddd-dddddddddddd/foreign.png', 'foreign.png')$$,
   '42501', null,
@@ -58,6 +62,11 @@ select throws_ok(
   $$insert into public.project_photos (project_id, user_id, storage_path, original_name) values ('cccccccc-cccc-4ccc-8ccc-cccccccccccc', '33333333-3333-4333-8333-333333333333', '33333333-3333-4333-8333-333333333333/cccccccc-cccc-4ccc-8ccc-cccccccccccc/blocked.png', 'blocked.png')$$,
   '42501', null,
   'Nach Widerruf werden neue Fotometadaten abgelehnt'
+);
+select throws_ok(
+  $$insert into storage.objects (bucket_id, name, owner_id) values ('room-photos', '33333333-3333-4333-8333-333333333333/cccccccc-cccc-4ccc-8ccc-cccccccccccc/blocked-storage.png', '33333333-3333-4333-8333-333333333333')$$,
+  '42501', null,
+  'Nach Widerruf werden neue Dateien im privaten Speicher abgelehnt'
 );
 select throws_ok(
   $$insert into public.account_profiles (user_id, account_number) values ('33333333-3333-4333-8333-333333333333', '12345678')$$,
