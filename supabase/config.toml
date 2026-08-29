@@ -39,3 +39,6 @@ verify_jwt = false
 
 [functions.send-deletion-notifications]
 verify_jwt = false
+
+[functions.withdraw-photo-consent]
+verify_jwt = false

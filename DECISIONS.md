@@ -205,12 +205,21 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 
 ### D-027: Benachrichtigungen zur Kontolöschung und Sicherungskopien
 
-- **Status:** Bestätigt; technische Vorbereitung im Entwicklungszweig, noch nicht veröffentlicht
+- **Status:** Bestätigt, verbunden, veröffentlicht und im Entwicklungsprojekt geprüft
 - **Benachrichtigungen:** Löschantrag, Widerruf und eine Erinnerung sieben Tage vor der endgültigen Löschung erzeugen jeweils einen eigenen, nicht öffentlich lesbaren Versandauftrag.
 - **Fehlerverhalten:** Ein vorübergehender E-Mail-Fehler darf den Löschantrag oder Widerruf nicht rückgängig machen. Fehlversuche werden begrenzt protokolliert und können erneut verarbeitet werden.
 - **Datensparsamkeit:** E-Mails enthalten keine Raumfotos, Projektinhalte oder sonstigen Nutzereingaben.
-- **Anbieter:** Resend ist der technisch vorbereitete Kandidat. Ein Konto, Schlüssel, eine Domain-Verknüpfung oder mögliche Kosten werden erst nach einer weiteren ausdrücklichen Freigabe eingerichtet.
+- **Anbieter:** Resend versendet die datensparsamen transaktionalen Nachrichten im kostenlosen Tarif. Der eingeschränkte Schlüssel liegt ausschließlich als Supabase-Geheimnis vor. Löschantrag und Widerruf wurden im Entwicklungsprojekt erfolgreich zugestellt.
 - **Sicherheitskopien:** Im kostenlosen Supabase-Tarif bestehen keine automatischen Datenbanksicherungen. Sobald ein Tarif oder ein eigener Prozess Sicherungskopien erzeugt, muss deren Bereinigung innerhalb der bestätigten 30-Tage-Frist vorab nachgewiesen werden.
+
+### D-028: Abschluss von Phase 5 – Kontozuordnung, Gastübernahme und Foto-Einwilligung
+
+- **Status:** Bestätigt und technisch umgesetzt; juristische Schlussprüfung vor externer Nutzung offen
+- **Kontonummer:** Jedes Konto erhält automatisch eine eindeutige achtstellige Nummer. Nutzer können nur die eigene Nummer lesen und sie nicht verändern.
+- **Gastübernahme:** Bei einer Registrierung wird ausschließlich das aktuell geöffnete lokale Projekt vorgemerkt. Nach erfolgreicher Anmeldung wird es sicher in das neue Konto geschrieben und erst danach aus dem lokalen Browser-Speicher entfernt. Der Vorgang ist wiederholbar, ohne ein zweites Projekt anzulegen.
+- **Foto-Einwilligung:** Private Raumfotos können erst nach einer protokollierten Einwilligung hochgeladen werden. Der Widerruf wird protokolliert, sperrt weitere Uploads und löscht vorhandene private Raumfotos.
+- **KI-Trennung:** Die Foto-Speichereinwilligung erlaubt keine KI-Verarbeitung. Dafür bleibt vor Phase 7 eine getrennte Einwilligung erforderlich.
+- **Nachweis:** Mehrnutzer-, Kontonummer-, Einwilligungs-, Zugriffs- und Löschregeln werden automatisch geprüft. Der technische Datenschutzstand und die offenen juristischen Angaben sind in `docs/PHASE_5_PRIVACY_READINESS.md` dokumentiert.
 
 ## Offene Entscheidungen
 

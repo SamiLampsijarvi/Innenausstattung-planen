@@ -18,6 +18,37 @@ test("öffnet die Passwort-Wiederherstellung ohne technische Hilfe", async ({ pa
   await expect(page.locator(".auth-form").getByRole("button", { name: "Anmelden", exact: true })).toBeVisible();
 });
 
+test("erklärt und markiert die sichere Übernahme des geöffneten Gastprojekts", async ({ page }) => {
+  await page.route("**/auth/v1/signup", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        user: { id: "55555555-5555-4555-8555-555555555555", email: "gast@example.test" },
+        session: null,
+      }),
+    });
+  });
+  await page.goto("/");
+  await page.waitForLoadState("networkidle");
+
+  await page.getByLabel("Neues Zuhause").fill("Mein Gastprojekt");
+  await page.getByRole("button", { name: "Zuhause anlegen" }).click();
+  const projectId = await page.evaluate(() => JSON.parse(localStorage.getItem("raumly.local-projects")!).projects[0].id);
+
+  await page.getByRole("button", { name: "Noch kein Konto? Registrieren" }).click();
+  await expect(page.getByText("Nach der E-Mail-Bestätigung wird nur Ihr aktuell geöffnetes lokales Zuhause sicher in das neue Konto übernommen.")).toBeVisible();
+  await page.getByLabel("E-Mail-Adresse").fill("gast@example.test");
+  await page.getByLabel("Passwort", { exact: true }).fill("sicheres-test-passwort");
+  await page.getByRole("button", { name: "Konto anlegen" }).click();
+  await expect(page.getByText("Bitte bestätigen Sie Ihre E-Mail-Adresse.")).toBeVisible();
+
+  expect(await page.evaluate(() => {
+    const pending = JSON.parse(localStorage.getItem("raumly.pending-guest-transfer")!);
+    return { projectId: pending.projectId, expectedEmail: pending.expectedEmail };
+  })).toEqual({ projectId, expectedEmail: "gast@example.test" });
+});
+
 test("speichert ein Wohnzimmerprojekt lokal und öffnet es erneut", async ({ page }) => {
   await page.goto("/");
   await page.waitForLoadState("networkidle");
