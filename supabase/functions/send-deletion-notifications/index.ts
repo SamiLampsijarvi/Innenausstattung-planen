@@ -9,6 +9,12 @@ const resendApiKey = Deno.env.get("RESEND_API_KEY");
 const emailFrom = Deno.env.get("DELETION_EMAIL_FROM");
 const workerSecret = Deno.env.get("DELETION_WORKER_SECRET");
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-raumly-worker-secret",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
+
 if (!supabaseUrl || !serviceRoleKey || !publishableKey || !resendApiKey || !emailFrom || !workerSecret) {
   throw new Error("Deletion notification configuration is incomplete.");
 }
@@ -41,22 +47,23 @@ async function send(notification: Notification) {
 }
 
 Deno.serve(async (request) => {
-  if (request.method !== "POST") return new Response("Method not allowed", { status: 405 });
+  if (request.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  if (request.method !== "POST") return new Response("Method not allowed", { status: 405, headers: corsHeaders });
   const isWorker = request.headers.get("x-raumly-worker-secret") === workerSecret;
   let userId: string | null = null;
   if (!isWorker) {
     const authorization = request.headers.get("Authorization");
-    if (!authorization) return new Response("Unauthorized", { status: 401 });
+    if (!authorization) return new Response("Unauthorized", { status: 401, headers: corsHeaders });
     const userClient = createClient(supabaseUrl, publishableKey, { global: { headers: { Authorization: authorization } } });
     const { data } = await userClient.auth.getUser();
     userId = data.user?.id ?? null;
-    if (!userId) return new Response("Unauthorized", { status: 401 });
+    if (!userId) return new Response("Unauthorized", { status: 401, headers: corsHeaders });
   }
 
   let query = admin.from("deletion_notifications").select("id,user_id,kind,scheduled_for").is("sent_at", null).lte("scheduled_for", new Date().toISOString()).lt("attempts", 5).order("scheduled_for").limit(50);
   if (userId) query = query.eq("user_id", userId);
   const { data, error } = await query;
-  if (error) return Response.json({ error: "notification_query_failed" }, { status: 500 });
+  if (error) return Response.json({ error: "notification_query_failed" }, { status: 500, headers: corsHeaders });
 
   let sent = 0;
   for (const notification of (data ?? []) as Notification[]) {
@@ -69,5 +76,5 @@ Deno.serve(async (request) => {
       await admin.rpc("record_deletion_notification_failure", { target_notification_id: notification.id, failure_message: message });
     }
   }
-  return Response.json({ sent });
+  return Response.json({ sent }, { headers: corsHeaders });
 });
