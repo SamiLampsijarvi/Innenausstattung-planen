@@ -120,7 +120,7 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 - **Einzellöschung:** Originalfotos und Entwürfe können unabhängig gelöscht werden.
 - **Projektpapierkorb:** 30 Tage Wiederherstellungsfrist.
 - **Kontolöschung:** 14 Tage widerrufbar, danach endgültige Löschung.
-- **Sicherheitskopien:** spätestens 30 Tage nach endgültiger Löschung bereinigen.
+- **Sicherheitskopien:** Sofern eigene oder anbieterseitige Sicherheitskopien vorhanden sind, müssen gelöschte personenbezogene Daten darin spätestens 30 Tage nach der endgültigen Löschung bereinigt sein.
 - **Einwilligungen:** Zustimmung und Widerruf zur Foto- und KI-Verarbeitung mit Zeitpunkt speichern.
 
 ### D-018: KI-Aufträge und Fehlerbehandlung
@@ -201,7 +201,16 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 - **Automatisierung:** Ein täglich geplanter, durch einen eigenen geheimen Schlüssel geschützter Löschdienst verarbeitet ausschließlich fällige Löschungen.
 - **Minimalrechte:** Der Löschdienst darf Projekte lesen und löschen, Fotopfade und fällige Kontolöschungen lesen sowie abgeschlossene Löschungen protokollieren. Er erhält keine darüber hinausgehenden Schreibrechte auf diese Tabellen.
 - **Prüfung:** Der produktive Abschlusstest antwortete mit Status 200 und verarbeitete bei null fälligen Projekten und null fälligen Konten keine Daten.
-- **Offen vor öffentlicher Veröffentlichung:** Benachrichtigungs-E-Mails und die konkrete Bereinigung von Sicherheitskopien müssen noch umgesetzt beziehungsweise mit dem gewählten Supabase-Tarif abgestimmt werden.
+- **Offen vor öffentlicher Veröffentlichung:** Der vorbereitete E-Mail-Versand muss noch mit einem freigegebenen Anbieter verbunden und im Entwicklungsprojekt geprüft werden. Der aktuelle kostenlose Supabase-Tarif erstellt keine automatischen Datenbanksicherungen; vor einem Tarifwechsel oder eigenen Sicherungen muss die 30-Tage-Löschregel technisch abgesichert werden.
+
+### D-027: Benachrichtigungen zur Kontolöschung und Sicherungskopien
+
+- **Status:** Bestätigt; technische Vorbereitung im Entwicklungszweig, noch nicht veröffentlicht
+- **Benachrichtigungen:** Löschantrag, Widerruf und eine Erinnerung sieben Tage vor der endgültigen Löschung erzeugen jeweils einen eigenen, nicht öffentlich lesbaren Versandauftrag.
+- **Fehlerverhalten:** Ein vorübergehender E-Mail-Fehler darf den Löschantrag oder Widerruf nicht rückgängig machen. Fehlversuche werden begrenzt protokolliert und können erneut verarbeitet werden.
+- **Datensparsamkeit:** E-Mails enthalten keine Raumfotos, Projektinhalte oder sonstigen Nutzereingaben.
+- **Anbieter:** Resend ist der technisch vorbereitete Kandidat. Ein Konto, Schlüssel, eine Domain-Verknüpfung oder mögliche Kosten werden erst nach einer weiteren ausdrücklichen Freigabe eingerichtet.
+- **Sicherheitskopien:** Im kostenlosen Supabase-Tarif bestehen keine automatischen Datenbanksicherungen. Sobald ein Tarif oder ein eigener Prozess Sicherungskopien erzeugt, muss deren Bereinigung innerhalb der bestätigten 30-Tage-Frist vorab nachgewiesen werden.
 
 ## Offene Entscheidungen
 

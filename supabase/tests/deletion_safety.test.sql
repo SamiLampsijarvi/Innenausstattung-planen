@@ -1,7 +1,7 @@
 begin;
 
 create extension if not exists pgtap with schema extensions;
-select plan(20);
+select plan(28);
 
 select ok(has_table_privilege('service_role', 'public.projects', 'SELECT'), 'Löschdienst darf Projekte lesen');
 select ok(has_table_privilege('service_role', 'public.projects', 'DELETE'), 'Löschdienst darf Projekte endgültig löschen');
@@ -11,6 +11,10 @@ select ok(not has_table_privilege('service_role', 'public.project_photos', 'DELE
 select ok(has_table_privilege('service_role', 'public.account_deletion_requests', 'SELECT'), 'Löschdienst darf fällige Kontolöschungen lesen');
 select ok(has_table_privilege('service_role', 'public.deletion_audit', 'INSERT'), 'Löschdienst darf abgeschlossene Löschungen protokollieren');
 select ok(not has_table_privilege('service_role', 'public.deletion_audit', 'SELECT'), 'Löschdienst darf Löschprotokolle nicht auslesen');
+select ok(has_table_privilege('service_role', 'public.deletion_notifications', 'SELECT'), 'E-Mail-Dienst darf fällige Benachrichtigungen lesen');
+select ok(has_table_privilege('service_role', 'public.deletion_notifications', 'UPDATE'), 'E-Mail-Dienst darf Versandstatus aktualisieren');
+select ok(not has_table_privilege('service_role', 'public.deletion_notifications', 'INSERT'), 'E-Mail-Dienst darf keine Benachrichtigungen erfinden');
+select ok(not has_table_privilege('service_role', 'public.deletion_notifications', 'DELETE'), 'E-Mail-Dienst darf Benachrichtigungen nicht löschen');
 
 insert into auth.users (id, email) values
   ('11111111-1111-4111-8111-111111111111', 'raumly-user-1@example.test'),
@@ -79,6 +83,23 @@ select lives_ok(
   'Der eigene Kontolöschantrag kann erstellt werden'
 );
 
+reset role;
+
+select results_eq(
+  $$select count(*) from public.deletion_notifications where kind = 'request_confirmation'$$,
+  array[1::bigint],
+  'Der Löschantrag merkt eine Bestätigungs-E-Mail vor'
+);
+
+select results_eq(
+  $$select count(*) from public.deletion_notifications where kind = 'deletion_reminder'$$,
+  array[1::bigint],
+  'Der Löschantrag merkt eine rechtzeitige Erinnerungs-E-Mail vor'
+);
+
+set local role authenticated;
+set local request.jwt.claim.sub = '11111111-1111-4111-8111-111111111111';
+
 select results_eq(
   'select count(*) from public.projects',
   array[0::bigint],
@@ -89,6 +110,23 @@ select lives_ok(
   'select public.cancel_account_deletion()',
   'Der Löschantrag kann innerhalb der Frist widerrufen werden'
 );
+
+reset role;
+
+select results_eq(
+  $$select count(*) from public.deletion_notifications where kind = 'cancellation_confirmation'$$,
+  array[1::bigint],
+  'Der Widerruf merkt eine Bestätigungs-E-Mail vor'
+);
+
+select results_eq(
+  $$select count(*) from public.deletion_notifications where kind = 'deletion_reminder' and sent_at is null$$,
+  array[0::bigint],
+  'Nach dem Widerruf bleibt keine offene Lösch-Erinnerung bestehen'
+);
+
+set local role authenticated;
+set local request.jwt.claim.sub = '11111111-1111-4111-8111-111111111111';
 
 select results_eq(
   'select count(*) from public.projects',

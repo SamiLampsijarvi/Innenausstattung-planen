@@ -28,10 +28,12 @@ export async function requestAccountDeletion(supabase: SupabaseClient): Promise<
   if (error) throw error;
   const request = await readAccountDeletionRequest(supabase);
   if (!request) throw new Error("Der Löschantrag konnte nicht bestätigt werden.");
+  await supabase.functions.invoke("send-deletion-notifications").catch(() => undefined);
   return { ...request, deleteAfter: String(deleteAfter ?? request.deleteAfter) };
 }
 
 export async function cancelAccountDeletion(supabase: SupabaseClient) {
   const { error } = await supabase.rpc("cancel_account_deletion");
   if (error) throw error;
+  await supabase.functions.invoke("send-deletion-notifications").catch(() => undefined);
 }
