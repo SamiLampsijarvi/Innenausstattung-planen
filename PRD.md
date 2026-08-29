@@ -155,7 +155,7 @@ Nach Anwendung der harten Budgetgrenze werden Produkte sortiert nach:
 - Vor endgültiger Löschung wird deutlich nachgefragt.
 - Eine Kontolöschung kann 14 Tage rückgängig gemacht werden.
 - Danach werden Konto und zugehörige Daten endgültig gelöscht.
-- Daten in technischen Sicherheitskopien werden spätestens nach 30 Tagen entfernt.
+- Sofern technische Sicherheitskopien vorhanden sind, werden gelöschte personenbezogene Daten darin spätestens 30 Tage nach der endgültigen Löschung bereinigt.
 - Zeitpunkt von Einwilligung und Widerruf zur Foto- und KI-Verarbeitung wird gespeichert.
 - Projekte bleiben im MVP ausschließlich privat.
 - Eine automatische Download-Funktion für persönliche Daten ist im MVP nicht vorgesehen. Gesetzliche Datenauskunft muss zunächst manuell ermöglicht werden.

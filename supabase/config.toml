@@ -36,3 +36,6 @@ jwt_expiry = 3600
 
 [functions.purge-expired-deletions]
 verify_jwt = false
+
+[functions.send-deletion-notifications]
+verify_jwt = false

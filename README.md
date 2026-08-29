@@ -48,7 +48,8 @@ Bei Pull Requests nach `main` und Änderungen an `main` führt GitHub Actions di
 
 ## Bewusste MVP-Grenzen
 
-- Benachrichtigungs-E-Mails für anstehende Kontolöschungen und die tarifabhängige Bereinigung von Sicherheitskopien sind vor einer öffentlichen Veröffentlichung noch offen
+- Benachrichtigungs-E-Mails für Kontolöschungen sind technisch vorbereitet, aber noch nicht mit einem E-Mail-Anbieter verbunden oder veröffentlicht
+- Der verwendete kostenlose Supabase-Tarif erstellt keine automatischen Datenbanksicherungen; vor einer öffentlichen Veröffentlichung wird ein passendes Sicherungs- und Löschkonzept benötigt
 - Gastprojekte bleiben lokal; die automatische Übernahme eines Gastprojekts in ein Konto ist noch offen
 - Noch keine echte KI-Möbelerkennung oder Bildgenerierung; die angezeigten Möbel sind ausdrücklich Testdaten
 - Testentwürfe enthalten vorbereitete Konzepte und Farbpaletten, aber noch keine erzeugten Raumbilder
@@ -58,7 +59,7 @@ Bei Pull Requests nach `main` und Änderungen an `main` führt GitHub Actions di
 
 ## Empfohlene nächste Phasen
 
-1. Benachrichtigungs-E-Mails und die Bereinigung von Sicherheitskopien für den Löschablauf ergänzen.
+1. Den vorbereiteten E-Mail-Versand nach gesonderter Freigabe mit einem Anbieter verbinden und im Entwicklungsprojekt prüfen.
 2. Den offenen API-Teil des KI-Machbarkeitstests mit Einwilligung und festem Kostenlimit durchführen.
 3. KI-Bildbearbeitung als klar gekennzeichnete Inspiration mit Moderation, Fehlerbehandlung und Kostenlimit anbinden.
 4. Bestätigte Zielgruppe, Planungsablauf und KI-Ergebnisse später mit Testnutzern validieren.
