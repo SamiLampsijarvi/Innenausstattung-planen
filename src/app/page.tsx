@@ -7,8 +7,6 @@ import {
   writeLocalProjects,
 } from "@/lib/local-projects";
 import type { LocalProject } from "@/lib/local-projects";
-import FurniturePlanner from "./furniture-planner";
-import DraftResults from "./draft-results";
 import AuthPanel from "./auth-panel";
 import type { User } from "@supabase/supabase-js";
 import type { AccountDeletionRequest } from "@/lib/supabase/account-deletion";
@@ -89,7 +87,7 @@ export default function Home() {
   const supabase = useMemo(() => createSupabaseBrowserClient(), []);
 
   const postcodeIsValid = /^\d{5}$/.test(postcode);
-  const briefingIsComplete = Boolean(style && images.length && postcodeIsValid);
+  const briefingIsComplete = Boolean(style && images.length);
   const budgetLabel = useMemo(() => budget.toLocaleString("de-DE"), [budget]);
   const activeProject = projects.find((project) => project.id === activeProjectId) ?? null;
 
@@ -382,7 +380,7 @@ export default function Home() {
 
   function createSummary() {
     if (!briefingIsComplete) {
-      setError("Bitte wähle einen Stil, lade mindestens ein Foto hoch und gib eine gültige Postleitzahl ein.");
+      setError("Bitte wähle einen Stil und lade mindestens ein Foto hoch.");
       return;
     }
     setError("");
@@ -539,7 +537,7 @@ export default function Home() {
           <div className="planning-controls-column">
           <ol className="planning-steps" aria-label="So funktioniert Raumly">
             <li className="planning-step-detailed">
-              <div className="step-heading"><span>1</span><strong>Wohnzimmer planen</strong></div>
+              <div className="step-heading"><span>1</span><strong>Zimmer auswählen</strong></div>
               <ul className="room-options" aria-label="Verfügbare und zukünftige Zimmer">
                 <li className="room-option-selected"><strong>Wohnzimmer</strong><small>Ausgewählt</small></li>
                 {futureRoomOptions.map((room) => (
@@ -564,7 +562,7 @@ export default function Home() {
               </div>
             </li>
             <li className="planning-step-detailed">
-              <div className="step-heading"><span>3</span><strong>Bilder Ihres Wohnzimmers hochladen</strong></div>
+              <div className="step-heading"><span>3</span><strong>Foto hochladen</strong></div>
               {accountUser && <div className="photo-consent-panel">
                 <strong>Private Fotospeicherung</strong>
                 <p>Raumfotos können persönliche Details enthalten. Sie werden privat Ihrem Konto zugeordnet und ausschließlich für Ihre Raumplanung gespeichert.</p>
@@ -593,9 +591,20 @@ export default function Home() {
               </div>
             </li>
             <li className="planning-step-detailed">
-              <div className="step-heading"><span>4</span><strong>Postleitzahl und Budget festlegen</strong></div>
+              <div className="step-heading"><span>4</span><strong>Budget auswählen</strong></div>
               <div className="planning-fields">
-                <label htmlFor="postcode">Postleitzahl des Zuhauses</label>
+                <label htmlFor="budget">Budget: <strong>{budgetLabel} €</strong></label>
+                <input
+                  id="budget"
+                  type="range"
+                  min="100"
+                  max="10000"
+                  step="100"
+                  value={budget}
+                  onChange={(event) => { const nextBudget = Number(event.target.value); setBudget(nextBudget); updateActivePlan({ budget: nextBudget }); setShowSummary(false); }}
+                />
+                <div className="range-labels"><span>100 €</span><span>10.000 €</span></div>
+                <label htmlFor="postcode">Postleitzahl <small>(optional)</small></label>
                 <input
                   id="postcode"
                   value={postcode}
@@ -609,31 +618,15 @@ export default function Home() {
                   maxLength={5}
                   placeholder="z. B. 10115"
                   aria-describedby="postcode-help"
+                  aria-invalid={Boolean(postcode && !postcodeIsValid)}
                 />
-                <small id="postcode-help">Für spätere regionale Empfehlungen in Deutschland. Eine vollständige Adresse ist nicht erforderlich.</small>
-                <label htmlFor="budget">Budget: <strong>{budgetLabel} €</strong></label>
-                <input
-                  id="budget"
-                  type="range"
-                  min="100"
-                  max="10000"
-                  step="100"
-                  value={budget}
-                  onChange={(event) => { const nextBudget = Number(event.target.value); setBudget(nextBudget); updateActivePlan({ budget: nextBudget }); setShowSummary(false); }}
-                />
-                <div className="range-labels"><span>100 €</span><span>10.000 €</span></div>
+                <small id="postcode-help">Nur für spätere regionale Händlerempfehlungen in Deutschland. Sie können die Angabe vorerst leer lassen.</small>
               </div>
             </li>
           </ol>
-          <FurniturePlanner
-            review={activeProject.livingRoom.furnitureReview}
-            imageCount={images.length}
-            imageUrl={images[0]?.previewUrl}
-            onChange={(furnitureReview) => updateActivePlan({ furnitureReview })}
-          />
           <div className="generate-panel">
             <button type="button" disabled={!briefingIsComplete} onClick={createSummary}>Planung zusammenfassen</button>
-            <small>{briefingIsComplete ? "Alle Angaben sind vollständig." : "Wählen Sie einen Stil, mindestens ein Foto und eine gültige Postleitzahl."}</small>
+            <small>{briefingIsComplete ? "Die vier Grundschritte sind vollständig." : "Wählen Sie einen Stil und mindestens ein Foto. Das Budget ist bereits vorbelegt."}</small>
             {error && <p className="form-error" role="alert">{error}</p>}
           </div>
           </div>
@@ -646,20 +639,18 @@ export default function Home() {
                   <div><dt>Raum</dt><dd>Wohnzimmer</dd></div>
                   <div><dt>Designstil</dt><dd>{style}</dd></div>
                   <div><dt>Fotos</dt><dd>{images.length}</dd></div>
-                  <div><dt>Postleitzahl</dt><dd>{postcode}</dd></div>
+                  <div><dt>Postleitzahl</dt><dd>{postcodeIsValid ? postcode : "Noch nicht angegeben"}</dd></div>
                   <div><dt>Budget</dt><dd>{budgetLabel} €</dd></div>
-                  <div><dt>Möbelangaben</dt><dd>{activeProject.livingRoom.furnitureReview.items.length || "Keine Vorgabe"}</dd></div>
                 </dl>
-                <div className="prototype-note"><strong>Noch keine KI-Ausführung</strong><p>Die Fotos bleiben lokal in diesem Browserfenster. Eine KI-Erstellung und dauerhafte Speicherung sind in dieser Phase nicht aktiv.</p></div>
+                <div className="prototype-note"><strong>Bereit für den späteren Inspirationsentwurf</strong><p>In diesem Teststand wird noch kein Bild durch eine externe KI erzeugt. Es werden keine Fotos an einen KI-Anbieter übertragen und keine KI-Kosten verursacht.</p></div>
                 <button type="button" onClick={() => setShowSummary(false)}>Angaben bearbeiten</button>
               </div>
             ) : (
               <div>
                 <h2 id="design-results-title">Ihre Planung</h2>
-                <p>Vervollständigen Sie links die Angaben. Danach können Sie hier lokale Testentwürfe erstellen.</p>
+                <p>Vervollständigen Sie die vier Grundschritte. Danach sehen Sie hier die geprüfte Grundlage für Ihren späteren Inspirationsentwurf.</p>
               </div>
             )}
-            <DraftResults plan={activeProject.livingRoom} canCreate={briefingIsComplete} onChange={(drafts) => updateActivePlan({ drafts })} />
           </aside>
           </> : <div className="no-project-message"><h2>Wählen Sie zuerst ein Zuhause</h2><p>Legen Sie oben ein Projekt an oder öffnen Sie ein vorhandenes Zuhause, um das Wohnzimmer zu planen.</p></div>}
           </div>

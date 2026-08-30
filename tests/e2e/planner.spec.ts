@@ -62,10 +62,7 @@ test("speichert ein Wohnzimmerprojekt lokal und öffnet es erneut", async ({ pag
   await expect(summaryButton).toBeDisabled();
 
   await page.getByRole("button", { name: /Japandi/ }).click();
-  await page.getByLabel("Postleitzahl des Zuhauses").fill("123");
-  await expect(summaryButton).toBeDisabled();
-
-  await page.getByLabel("Postleitzahl des Zuhauses").fill("10115");
+  await page.getByLabel("Postleitzahl (optional)").fill("10115");
   await page.locator('input[type="file"]').setInputFiles({
     name: "wohnzimmer.png",
     mimeType: "image/png",
@@ -81,7 +78,7 @@ test("speichert ein Wohnzimmerprojekt lokal und öffnet es erneut", async ({ pag
   await expect(result).toContainText("Japandi");
   await expect(result).toContainText("10115");
   await expect(result).toContainText("1.500 €");
-  await expect(result).toContainText("Noch keine KI-Ausführung");
+  await expect(result).toContainText("keine Fotos an einen KI-Anbieter übertragen");
 
   await page.reload();
   await page.waitForLoadState("networkidle");
@@ -89,7 +86,7 @@ test("speichert ein Wohnzimmerprojekt lokal und öffnet es erneut", async ({ pag
   await expect(projectCard).toBeVisible();
   await projectCard.getByRole("button", { name: "Öffnen" }).click();
   await expect(page.getByRole("button", { name: /Japandi/ })).toHaveAttribute("aria-pressed", "true");
-  await expect(page.getByLabel("Postleitzahl des Zuhauses")).toHaveValue("10115");
+  await expect(page.getByLabel("Postleitzahl (optional)")).toHaveValue("10115");
   await expect(page.getByAltText("Vorschau: wohnzimmer.png")).toHaveCount(0);
   await expect(page.getByText("Fotos werden nicht dauerhaft gespeichert.")).toBeVisible();
 });
@@ -117,154 +114,34 @@ test("verwaltet mehrere lokale Zuhause-Projekte", async ({ page }) => {
   await expect(page.getByText("Wohnung Hamburg", { exact: true })).toBeVisible();
 });
 
-test("prüft, korrigiert und ergänzt Möbel mit freiwilligen Angaben", async ({ page }) => {
+test("führt durch den einfachen Grundablauf ohne Möbelanalyse oder externe KI", async ({ page }) => {
   await page.goto("/");
   await page.waitForLoadState("networkidle");
-  await page.getByLabel("Neues Zuhause").fill("Möbeltest");
+  await page.getByLabel("Neues Zuhause").fill("Einfacher Ablauf");
   await page.getByRole("button", { name: "Zuhause anlegen" }).click();
 
-  const simulationButton = page.getByRole("button", { name: "Test-Erkennung starten" });
-  await expect(simulationButton).toBeDisabled();
-  await page.locator('input[type="file"]').setInputFiles({ name: "raum.png", mimeType: "image/png", buffer: onePixelPng });
-  await expect(simulationButton).toBeEnabled();
-  await simulationButton.click();
+  await expect(page.getByText("Zimmer auswählen", { exact: true })).toBeVisible();
+  await expect(page.getByText("Designstil wählen", { exact: true })).toBeVisible();
+  await expect(page.getByText("Foto hochladen", { exact: true })).toBeVisible();
+  await expect(page.getByText("Budget auswählen", { exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Lokale KI-Erkennung starten" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Test-Erkennung starten" })).toHaveCount(0);
+  await expect(page.locator(".draft-results")).toHaveCount(0);
 
-  await expect(page.locator(".furniture-selector button")).toHaveCount(6);
-  await expect(page.getByRole("button", { name: /Sofa \/ Couch Simuliert erkannt/ })).toHaveAttribute("aria-pressed", "true");
-  const sofaCard = page.locator(".furniture-card");
-  await expect(sofaCard.getByLabel("Keine Vorgabe")).toBeChecked();
-  await sofaCard.getByLabel("Behalten").check();
-  await sofaCard.getByLabel("Freiwilliger Kommentar").fill("Dieses Sofa muss bleiben.");
-  await page.getByLabel("Allgemeine Raumnotiz").fill("Keine schwarzen Möbel.");
-
-  await sofaCard.getByText("Erkennung korrigieren").click();
-  await sofaCard.getByLabel("Tatsächliche Möbelart").selectOption("armchair");
-  const correctedCard = page.locator(".furniture-card");
-  await expect(correctedCard).toContainText("Vom Nutzer korrigiert");
-  await expect(correctedCard.getByLabel("Behalten")).toBeChecked();
-  await expect(correctedCard.getByLabel("Freiwilliger Kommentar")).toHaveValue("Dieses Sofa muss bleiben.");
-
-  await correctedCard.getByRole("button", { name: "Falsch erkannt – entfernen" }).click();
-  await page.getByRole("button", { name: "Rückgängig" }).click();
-  await expect(page.getByRole("button", { name: /Sessel Vom Nutzer korrigiert/ })).toHaveAttribute("aria-pressed", "true");
-
-  await page.getByText("Möbel ergänzen").click();
-  await page.getByLabel("Möbelart", { exact: true }).selectOption("dining-chair");
-  await page.getByLabel("Anzahl").selectOption("4");
-  await page.getByRole("button", { name: "Zur Planung hinzufügen" }).click();
-  await expect(page.locator(".furniture-card")).toContainText("Esszimmerstuhl (4×)");
-  await expect(page.locator(".furniture-card")).toContainText("Vom Nutzer ergänzt");
-
-  await page.reload();
-  await page.waitForLoadState("networkidle");
-  await page.locator(".project-grid article").filter({ hasText: "Möbeltest" }).getByRole("button", { name: "Öffnen" }).click();
-  await expect(page.locator(".furniture-selector button")).toHaveCount(7);
-  await expect(page.getByLabel("Allgemeine Raumnotiz")).toHaveValue("Keine schwarzen Möbel.");
-  await expect(page.getByAltText("Vorschau: raum.png")).toHaveCount(0);
-});
-
-test("startet die lokale KI-Erkennung nur nach ausdrücklicher Foto-Erlaubnis", async ({ page }) => {
-  await page.goto("/");
-  await page.waitForLoadState("networkidle");
-  await page.getByLabel("Neues Zuhause").fill("Lokaler KI-Test");
-  await page.getByRole("button", { name: "Zuhause anlegen" }).click();
-
-  const detectionButton = page.getByRole("button", { name: "Lokale KI-Erkennung starten" });
-  await expect(detectionButton).toBeDisabled();
-  await page.locator('input[type="file"]').setInputFiles({
-    name: "raum.png",
-    mimeType: "image/png",
-    buffer: onePixelPng,
-  });
-  await expect(detectionButton).toBeDisabled();
-  await expect(page.getByText(/Das Raumfoto bleibt auf diesem Gerät/)).toBeVisible();
-
-  await page.getByLabel("Ich erlaube die lokale KI-Analyse dieses Fotos.").check();
-  await expect(detectionButton).toBeEnabled();
-});
-
-test("migriert bestehende Version-1-Projekte und erlaubt eine leere Möbelliste", async ({ page }) => {
-  await page.addInitScript(() => {
-    localStorage.setItem("raumly.local-projects", JSON.stringify({
-      version: 1,
-      projects: [{
-        id: "altes-projekt", name: "Bestehende Wohnung",
-        createdAt: "2026-08-20T10:00:00.000Z", updatedAt: "2026-08-20T10:00:00.000Z",
-        livingRoom: { style: "Japandi", postcode: "10115", budget: 2400 },
-      }],
-    }));
-  });
-  await page.goto("/");
-  await page.waitForLoadState("networkidle");
-  await page.locator(".project-grid article").filter({ hasText: "Bestehende Wohnung" }).getByRole("button", { name: "Öffnen" }).click();
-  await expect(page.getByRole("button", { name: /Japandi/ })).toHaveAttribute("aria-pressed", "true");
-  await expect(page.getByLabel("Postleitzahl des Zuhauses")).toHaveValue("10115");
-  await expect(page.getByText("Budget:").locator(".." )).toContainText("2.400 €");
-  expect(await page.evaluate(() => JSON.parse(localStorage.getItem("raumly.local-projects")!).version)).toBe(3);
-
-  await page.locator('input[type="file"]').setInputFiles({ name: "alt.png", mimeType: "image/png", buffer: onePixelPng });
-  await page.getByRole("button", { name: "Test-Erkennung starten" }).click();
-  for (let index = 0; index < 6; index += 1) {
-    await page.locator(".furniture-card").getByRole("button", { name: "Falsch erkannt – entfernen" }).click();
-  }
-  await expect(page.locator(".furniture-selector button")).toHaveCount(0);
-  await expect(page.locator(".furniture-card")).toHaveCount(0);
-  await expect(page.getByText("Keine Möbel in der Planung.")).toBeVisible();
-});
-
-test("erstellt höchstens drei unveränderliche Testentwürfe und vergleicht sie vertikal", async ({ page }) => {
-  await page.goto("/");
-  await page.waitForLoadState("networkidle");
-  await page.getByLabel("Neues Zuhause").fill("Entwurfstest");
-  await page.getByRole("button", { name: "Zuhause anlegen" }).click();
-
-  const createDraftButton = page.getByRole("button", { name: "3 Testentwürfe erstellen" });
-  await expect(createDraftButton).toBeDisabled();
   await page.getByRole("button", { name: /Japandi/ }).click();
-  await page.getByLabel("Postleitzahl des Zuhauses").fill("10115");
-  await page.locator('input[type="file"]').setInputFiles({ name: "entwurf.png", mimeType: "image/png", buffer: onePixelPng });
-  await createDraftButton.click();
-
-  await expect(page.locator(".draft-card")).toHaveCount(3);
-  await expect(page.locator(".draft-card").nth(0)).toContainText("Ruhige Basis");
-  await expect(page.locator(".draft-card").nth(1)).toContainText("Warme Akzente");
-  await expect(page.locator(".draft-card").nth(2)).toContainText("Klare Kontraste");
-  await expect(page.getByRole("button", { name: "Fehlenden Testentwurf ergänzen" })).toBeDisabled();
-  await expect(page.getByText("Die Grenze von drei Testentwürfen ist erreicht.")).toBeVisible();
-
-  await page.getByRole("button", { name: /Modern/ }).click();
   await page.getByLabel(/Budget:/).fill("3000");
-  const firstDraft = page.locator(".draft-card").nth(0);
-  const secondDraft = page.locator(".draft-card").nth(1);
-  await firstDraft.getByRole("button", { name: "Entwurf öffnen" }).click();
-  const selectedDetail = firstDraft.locator(".draft-detail");
-  await expect(selectedDetail).toContainText("Japandi");
-  await expect(selectedDetail).toContainText("1.500 €");
-  await secondDraft.getByRole("button", { name: "Entwurf öffnen" }).click();
-  await expect(firstDraft.locator(".draft-detail")).toHaveCount(0);
-  await expect(secondDraft.locator(".draft-detail")).toContainText("Warme Akzente");
-
-  await firstDraft.getByLabel("Für Vergleich auswählen").check();
-  await secondDraft.getByLabel("Für Vergleich auswählen").check();
-  await expect(page.locator(".draft-comparison .draft-detail")).toHaveCount(2);
-  await expect(page.locator(".draft-comparison")).toContainText("2 Entwürfe werden untereinander verglichen.");
-
-  await firstDraft.getByRole("button", { name: "Entwurf löschen" }).click();
-  await expect(page.locator(".draft-card")).toHaveCount(2);
-  await page.locator(".draft-undo").getByRole("button", { name: "Rückgängig" }).click();
-  await expect(page.locator(".draft-card")).toHaveCount(3);
-  await page.locator(".draft-card").first().getByRole("button", { name: "Entwurf löschen" }).click();
-  await page.getByRole("button", { name: "Fehlenden Testentwurf ergänzen" }).click();
-  await expect(page.locator(".draft-card")).toHaveCount(3);
-
-  await page.reload();
-  await page.waitForLoadState("networkidle");
-  await page.locator(".project-grid article").filter({ hasText: "Entwurfstest" }).getByRole("button", { name: "Öffnen" }).click();
-  await expect(page.locator(".draft-card")).toHaveCount(3);
-  await expect(page.getByAltText("Vorschau: entwurf.png")).toHaveCount(0);
+  await page.locator('input[type="file"]').setInputFiles({ name: "raum.png", mimeType: "image/png", buffer: onePixelPng });
+  const summaryButton = page.getByRole("button", { name: "Planung zusammenfassen" });
+  await expect(summaryButton).toBeEnabled();
+  await summaryButton.click();
+  const result = page.getByRole("complementary", { name: "Ihre Zusammenfassung" });
+  await expect(result).toContainText("Japandi");
+  await expect(result).toContainText("3.000 €");
+  await expect(result).toContainText("Noch nicht angegeben");
+  await expect(result).toContainText("keine KI-Kosten verursacht");
 });
 
-test("migriert Möbelprojekte von Version 2 ohne Datenverlust auf Version 3", async ({ page }) => {
+test("bewahrt vorhandene Möbel- und Entwurfsdaten unsichtbar und ohne Verlust", async ({ page }) => {
   await page.addInitScript(() => {
     localStorage.setItem("raumly.local-projects", JSON.stringify({
       version: 2,
@@ -280,9 +157,10 @@ test("migriert Möbelprojekte von Version 2 ohne Datenverlust auf Version 3", as
   await page.goto("/");
   await page.waitForLoadState("networkidle");
   await page.getByRole("button", { name: "Öffnen" }).click();
-  await expect(page.getByLabel("Allgemeine Raumnotiz")).toHaveValue("Helle Farben");
-  await expect(page.locator(".furniture-card").getByLabel("Behalten")).toBeChecked();
-  await expect(page.locator(".furniture-card").getByLabel("Freiwilliger Kommentar")).toHaveValue("Bitte behalten");
-  await expect(page.locator(".draft-card")).toHaveCount(0);
-  expect(await page.evaluate(() => JSON.parse(localStorage.getItem("raumly.local-projects")!).version)).toBe(3);
+  await expect(page.locator(".furniture-planner")).toHaveCount(0);
+  await expect(page.locator(".draft-results")).toHaveCount(0);
+  const stored = await page.evaluate(() => JSON.parse(localStorage.getItem("raumly.local-projects")!));
+  expect(stored.version).toBe(3);
+  expect(stored.projects[0].livingRoom.furnitureReview.generalNote).toBe("Helle Farben");
+  expect(stored.projects[0].livingRoom.furnitureReview.items[0].comment).toBe("Bitte behalten");
 });
