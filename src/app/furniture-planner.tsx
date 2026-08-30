@@ -1,23 +1,28 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { detectFurnitureLocally } from "@/lib/ai/local-furniture-detection";
 import { furnitureCatalog, simulatedFurnitureIds } from "@/lib/furniture-catalog";
 import type { FurnitureItem, FurniturePreference, FurnitureReview } from "@/lib/local-projects";
 
-type Props = { review: FurnitureReview; imageCount: number; onChange: (review: FurnitureReview) => void };
+type Props = { review: FurnitureReview; imageCount: number; imageUrl?: string; onChange: (review: FurnitureReview) => void };
 type RemovedItem = { item: FurnitureItem; index: number } | null;
 
 const sourceLabels = {
   simulated: "Simuliert erkannt",
+  ai: "Lokal durch KI erkannt",
   corrected: "Vom Nutzer korrigiert",
   manual: "Vom Nutzer ergänzt",
 };
 
-export default function FurniturePlanner({ review, imageCount, onChange }: Props) {
+export default function FurniturePlanner({ review, imageCount, imageUrl, onChange }: Props) {
   const [catalogId, setCatalogId] = useState(furnitureCatalog[0].id);
   const [quantity, setQuantity] = useState(1);
   const [removedItem, setRemovedItem] = useState<RemovedItem>(null);
   const [selectedItemId, setSelectedItemId] = useState<string | null>(review.items[0]?.id ?? null);
+  const [localAiConsent, setLocalAiConsent] = useState(false);
+  const [detectionStatus, setDetectionStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
+  const [detectionMessage, setDetectionMessage] = useState("");
   const catalogGroups = useMemo(() => [...new Set(furnitureCatalog.map(({ group }) => group))], []);
   const selectedItem = review.items.find((item) => item.id === selectedItemId) ?? review.items[0] ?? null;
 
@@ -27,7 +32,29 @@ export default function FurniturePlanner({ review, imageCount, onChange }: Props
       return { id: crypto.randomUUID(), catalogId: id, label: catalogItem.label, source: "simulated", preference: "none", comment: "", quantity: 1 } satisfies FurnitureItem;
     });
     setSelectedItemId(items[0]?.id ?? null);
-    onChange({ ...review, status: "ready", items });
+    onChange({ ...review, status: "ready", method: "simulation", items });
+  }
+
+  async function startLocalDetection() {
+    if (!imageUrl || !localAiConsent) return;
+    setDetectionStatus("loading");
+    setDetectionMessage("Das kostenlose Erkennungsmodell wird vorbereitet. Beim ersten Mal kann das etwas dauern.");
+    try {
+      const detections = await detectFurnitureLocally(imageUrl);
+      const items = detections.map(({ catalogId, label, confidence }) => ({
+        id: crypto.randomUUID(), catalogId, label, confidence,
+        source: "ai", preference: "none", comment: "", quantity: 1,
+      } satisfies FurnitureItem));
+      setSelectedItemId(items[0]?.id ?? null);
+      onChange({ ...review, status: "ready", method: "local_ai", items });
+      setDetectionStatus("done");
+      setDetectionMessage(items.length
+        ? `${items.length} passende Möbel wurden lokal erkannt. Bitte prüfen und korrigieren Sie das Ergebnis.`
+        : "Die lokale KI hat kein unterstütztes Möbel sicher erkannt. Sie können Möbel ergänzen oder die Simulation verwenden.");
+    } catch {
+      setDetectionStatus("error");
+      setDetectionMessage("Die lokale KI konnte auf diesem Gerät nicht gestartet werden. Es wurden keine Fotos übertragen und keine Kosten verursacht.");
+    }
   }
 
   function updateItem(id: string, changes: Partial<FurnitureItem>) {
@@ -36,7 +63,7 @@ export default function FurniturePlanner({ review, imageCount, onChange }: Props
 
   function correctItem(id: string, nextCatalogId: string) {
     const catalogItem = furnitureCatalog.find((item) => item.id === nextCatalogId);
-    if (catalogItem) updateItem(id, { catalogId: catalogItem.id, label: catalogItem.label, source: "corrected", quantity: 1 });
+    if (catalogItem) updateItem(id, { catalogId: catalogItem.id, label: catalogItem.label, source: "corrected", quantity: 1, confidence: undefined });
   }
 
   function removeItem(id: string) {
@@ -75,15 +102,23 @@ export default function FurniturePlanner({ review, imageCount, onChange }: Props
 
   if (review.status === "not_started") return (
     <section className="furniture-planner" aria-labelledby="furniture-title">
-      <div className="furniture-heading"><span>5</span><div><h2 id="furniture-title">Möbel und Wünsche prüfen</h2><p>Dieser Schritt verwendet vorbereitete Testdaten. Ihr Foto wird nicht analysiert.</p></div></div>
-      <button className="simulation-button" type="button" disabled={imageCount === 0} onClick={startSimulation}>Test-Erkennung starten</button>
-      <small>{imageCount ? "Die Simulation ist bereit." : "Wählen Sie zuerst mindestens ein Foto in dieser Sitzung aus."}</small>
+      <div className="furniture-heading"><span>5</span><div><h2 id="furniture-title">Möbel und Wünsche prüfen</h2><p>Ein kostenloses Testmodell kann das erste Foto direkt in diesem Browser untersuchen.</p></div></div>
+      <div className="local-ai-consent">
+        <label><input type="checkbox" checked={localAiConsent} onChange={(event) => setLocalAiConsent(event.target.checked)} /> Ich erlaube die lokale KI-Analyse dieses Fotos.</label>
+        <small>Das Raumfoto bleibt auf diesem Gerät und wird nicht an OpenAI, Google oder Raumly übertragen. Nur die Modelldateien werden einmalig von Hugging Face geladen und anschließend im Browser gespeichert.</small>
+      </div>
+      <button className="simulation-button" type="button" disabled={!imageUrl || !localAiConsent || detectionStatus === "loading"} onClick={startLocalDetection}>{detectionStatus === "loading" ? "Lokale KI wird vorbereitet …" : "Lokale KI-Erkennung starten"}</button>
+      {detectionMessage && <p className={`detection-status ${detectionStatus}`} role="status">{detectionMessage}</p>}
+      <div className="simulation-fallback"><small>Alternativ ohne Fotoanalyse:</small><button type="button" disabled={imageCount === 0} onClick={startSimulation}>Test-Erkennung starten</button></div>
+      <small>{imageCount ? "Das erste ausgewählte Foto wird für den lokalen Test verwendet." : "Wählen Sie zuerst mindestens ein Foto in dieser Sitzung aus."}</small>
     </section>
   );
 
   return (
     <section className="furniture-planner" aria-labelledby="furniture-title">
-      <div className="furniture-heading"><span>5</span><div><h2 id="furniture-title">Möbel und Wünsche prüfen</h2><p><strong>Testsimulation:</strong> Die Einträge wurden nicht aus Ihrem Foto erkannt. Alle Angaben sind freiwillig.</p></div></div>
+      <div className="furniture-heading"><span>5</span><div><h2 id="furniture-title">Möbel und Wünsche prüfen</h2><p>{review.method === "local_ai" || review.items.some((item) => item.source === "ai") ? <><strong>Lokaler KI-Test:</strong> Bitte prüfen und korrigieren Sie das Ergebnis.</> : <><strong>Testsimulation:</strong> Die Einträge wurden nicht aus Ihrem Foto erkannt.</>} Alle Angaben sind freiwillig.</p></div></div>
+
+      {detectionMessage && <p className={`detection-status ${detectionStatus}`} role="status">{detectionMessage}</p>}
 
       <label className="general-note" htmlFor="general-room-note">Allgemeine Raumnotiz <small>{review.generalNote.length}/500</small></label>
       <textarea id="general-room-note" maxLength={500} value={review.generalNote} onChange={(event) => onChange({ ...review, generalNote: event.target.value })} placeholder="z. B. Keine schwarzen Möbel und möglichst viel geschlossener Stauraum" />
@@ -92,7 +127,7 @@ export default function FurniturePlanner({ review, imageCount, onChange }: Props
       {review.items.length === 0 && <p className="empty-furniture">Keine Möbel in der Planung. Sie können unten Möbel ergänzen oder den Ablauf ohne Vorgaben fortsetzen.</p>}
 
       {review.items.length > 0 && <div className="furniture-selector" aria-label="Möbel auswählen">
-        {review.items.map((item) => <button className={selectedItem?.id === item.id ? "selected" : ""} type="button" aria-pressed={selectedItem?.id === item.id} onClick={() => setSelectedItemId(item.id)} key={item.id}><span>{item.label}{item.quantity > 1 ? ` (${item.quantity}×)` : ""}</span><small>{sourceLabels[item.source]}</small></button>)}
+        {review.items.map((item) => <button className={selectedItem?.id === item.id ? "selected" : ""} type="button" aria-pressed={selectedItem?.id === item.id} onClick={() => setSelectedItemId(item.id)} key={item.id}><span>{item.label}{item.quantity > 1 ? ` (${item.quantity}×)` : ""}</span><small>{sourceLabels[item.source]}{item.confidence ? ` · ${Math.round(item.confidence * 100)} %` : ""}</small></button>)}
       </div>}
 
       {selectedItem && <article className="furniture-card" key={selectedItem.id}>

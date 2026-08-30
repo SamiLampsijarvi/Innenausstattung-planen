@@ -163,6 +163,26 @@ test("prüft, korrigiert und ergänzt Möbel mit freiwilligen Angaben", async ({
   await expect(page.getByAltText("Vorschau: raum.png")).toHaveCount(0);
 });
 
+test("startet die lokale KI-Erkennung nur nach ausdrücklicher Foto-Erlaubnis", async ({ page }) => {
+  await page.goto("/");
+  await page.waitForLoadState("networkidle");
+  await page.getByLabel("Neues Zuhause").fill("Lokaler KI-Test");
+  await page.getByRole("button", { name: "Zuhause anlegen" }).click();
+
+  const detectionButton = page.getByRole("button", { name: "Lokale KI-Erkennung starten" });
+  await expect(detectionButton).toBeDisabled();
+  await page.locator('input[type="file"]').setInputFiles({
+    name: "raum.png",
+    mimeType: "image/png",
+    buffer: onePixelPng,
+  });
+  await expect(detectionButton).toBeDisabled();
+  await expect(page.getByText(/Das Raumfoto bleibt auf diesem Gerät/)).toBeVisible();
+
+  await page.getByLabel("Ich erlaube die lokale KI-Analyse dieses Fotos.").check();
+  await expect(detectionButton).toBeEnabled();
+});
+
 test("migriert bestehende Version-1-Projekte und erlaubt eine leere Möbelliste", async ({ page }) => {
   await page.addInitScript(() => {
     localStorage.setItem("raumly.local-projects", JSON.stringify({

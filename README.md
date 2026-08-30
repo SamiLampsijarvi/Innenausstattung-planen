@@ -38,6 +38,7 @@ Bei Pull Requests nach `main` und Änderungen an `main` führt GitHub Actions di
 - Mehrere lokal gespeicherte Zuhause-Projekte anlegen, öffnen, umbenennen und löschen
 - Stil, Postleitzahl und Budget versioniert im Browser speichern und nach einem Neuladen weiterbearbeiten
 - Möbel mit klar gekennzeichneten Testdaten simulieren und über eine kompakte Auswahl einzeln bearbeiten, korrigieren, entfernen oder ergänzen
+- eine kostenlose lokale KI-Möbelerkennung im Browser starten; Fotos verlassen bei diesem Test das Gerät nicht; auf dem Testrechner läuft sie bewusst im zuverlässigeren Prozessormodus
 - Freiwillige Vorgaben und Kommentare je Möbelstück sowie eine allgemeine Raumnotiz lokal speichern
 - Bis zu drei klar gekennzeichnete lokale Testentwürfe erstellen, untereinander anzeigen, öffnen, löschen und vergleichen
 - Konto mit E-Mail-Bestätigung anlegen, anmelden und abmelden
@@ -54,7 +55,7 @@ Bei Pull Requests nach `main` und Änderungen an `main` führt GitHub Actions di
 
 - Der verwendete kostenlose Supabase-Tarif erstellt keine automatischen Datenbanksicherungen; vor einer öffentlichen Veröffentlichung wird ein passendes Sicherungs- und Löschkonzept benötigt
 - Rechtlich verbindliche Anbieter- und Verantwortlichenangaben sowie die abschließende Datenschutzerklärung benötigen vor einer Veröffentlichung eine juristische Prüfung
-- Noch keine echte KI-Möbelerkennung oder Bildgenerierung; die angezeigten Möbel sind ausdrücklich Testdaten
+- Die lokale KI-Möbelerkennung befindet sich im Machbarkeitstest und unterstützt zunächst nur ausgewählte Wohnzimmerobjekte; die Bildgenerierung bleibt simuliert
 - Testentwürfe enthalten vorbereitete Konzepte und Farbpaletten, aber noch keine erzeugten Raumbilder
 - Manuelle KI-Versuche lieferten überzeugende Inspirationsbilder, bewahrten vorhandene Möbel, Raumdetails und Budgets aber nicht zuverlässig exakt; zukünftige KI-Bilder sind daher keine maßgenaue Planung oder Kostengarantie
 - Noch keine Live-Produktpreise oder Händlerverfügbarkeit
