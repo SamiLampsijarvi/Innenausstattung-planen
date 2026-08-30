@@ -48,3 +48,11 @@ Raumtreue und Nutzbarkeit zählen jeweils doppelt. Bei nahezu gleicher Qualität
 - Bild-KI im normalen Nutzerablauf aktivieren
 - Veröffentlichung für echte Nutzer
 
+## Freigegebene Vertex-Testvorbereitung
+
+- Das offizielle Google Gen AI SDK ist serverseitig und auf Version 2 festgelegt.
+- Der Vertex-Adapter verwendet `gemini-3.1-flash-image`, 1K-Ausgabe und Application Default Credentials; ein API-Schlüssel wird weder im Browser noch im Repository vorgesehen.
+- Die externe Ausführung bleibt über `RAUMLY_IMAGE_AI_ENABLED=false` ausgeschaltet.
+- Der Testwächter begrenzt den Vergleich auf fünf Fotos, zwei Versuche je Foto und insgesamt 500 Cent reserviertes Budget.
+- Die endgültigen tatsächlichen Kosten werden später mit Google Cloud Billing abgeglichen, weil Vertex sie nicht unmittelbar in der Bildantwort meldet.
+
