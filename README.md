@@ -55,13 +55,14 @@ Bei Pull Requests nach `main` und Änderungen an `main` führt GitHub Actions di
 - Rechtlich verbindliche Anbieter- und Verantwortlichenangaben sowie die abschließende Datenschutzerklärung benötigen vor einer Veröffentlichung eine juristische Prüfung
 - Die vorhandene lokale Möbelerkennung und frühere Testentwürfe sind aus dem normalen Nutzerablauf genommen, bleiben im Code und in bestehenden Projektdaten aber erhalten
 - Der Ergebnisbereich bereitet die spätere Bild-KI vor, erzeugt derzeit jedoch noch kein individuelles Raumbild
+- Eine anbieterunabhängige, standardmäßig ausgeschaltete Bild-KI-Schnittstelle schützt die spätere Integration durch Einwilligungs-, Anbieter-, Zeit- und Kostenprüfungen
 - Manuelle KI-Versuche lieferten überzeugende Inspirationsbilder, bewahrten vorhandene Möbel, Raumdetails und Budgets aber nicht zuverlässig exakt; zukünftige KI-Bilder sind daher keine maßgenaue Planung oder Kostengarantie
 - Noch keine Live-Produktpreise oder Händlerverfügbarkeit
 - Noch keine Bezahlung
 
 ## Empfohlene nächste Phasen
 
-1. Eine austauschbare Bild-KI für klar gekennzeichnete Inspirationsbilder mit eigener Einwilligung und festem Kostenlimit auswählen und anbinden.
+1. Google Vertex AI und OpenAI nach `docs/IMAGE_PROVIDER_EVALUATION.md` mit freigegebenen Testbildern vergleichen; Konten, Schlüssel, Abrechnung und Fotoübertragung benötigen eine gesonderte Freigabe.
 2. Den vereinfachten Ablauf und die KI-Ergebnisse mit Testnutzern validieren.
 3. Eine manuelle Bereichsmarkierung für „behalten“ und „verändern“ getrennt prüfen.
 4. Zunächst 2–3 Händler-/Affiliate-Feeds für ein einziges Land integrieren.

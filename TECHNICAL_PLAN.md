@@ -265,6 +265,8 @@ Zentrale Möbel müssen zuverlässig erkannt werden. Kleine Fehler sind nur akze
 
 **Teilstatus vom 30. August 2026:** Für den ersten automatischen Erkennungstest wurde statt einer kostenpflichtigen API ein lokaler, austauschbarer Browser-Anbieter freigegeben. Transformers.js führt ein quantisiertes DETR-Modell über WebGPU und ersatzweise WASM aus. Das erste ausgewählte Foto bleibt im Browser; eine getrennte sitzungsbezogene Freigabe ist erforderlich. Erkannte COCO-Klassen werden auf den bestehenden Raumly-Möbelkatalog abgebildet und zusammen mit der Modellkonfidenz in den vorhandenen Korrekturablauf übernommen. Der bestehende simulierte Ablauf bleibt als klar gekennzeichneter Rückfall erhalten. Qualität und Laufzeit auf neutralen Testfotos sind noch praktisch zu messen.
 
+**Vorbereitung Bild-KI vom 30. August 2026:** Eine interne, anbieterunabhängige Schnittstelle für Google Vertex AI und OpenAI ist vorbereitet. Sie enthält noch keine Anbieterimplementierung und ist standardmäßig ausgeschaltet. Selbst eine spätere technische Anbieterimplementierung darf nur nach gültiger KI-Einwilligung, ausdrücklicher Anbieterfreigabe und ausreichendem Auftragskostenlimit ausgeführt werden; nach zwei Minuten wird der Auftrag abgebrochen. Der kontrollierte Qualitäts- und Kostenvergleich ist in `docs/IMAGE_PROVIDER_EVALUATION.md` festgelegt. API-Konten, Schlüssel, Abrechnung und Fotoübertragung sind weiterhin nicht freigegeben.
+
 **Freigabekriterium:** vereinbarte Qualitätskriterien werden erreicht und Kosten bleiben im Limit.
 
 ### Phase 7: KI in Raumly integrieren

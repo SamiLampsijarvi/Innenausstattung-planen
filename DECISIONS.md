@@ -260,6 +260,16 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 - **KI-Grenze:** In diesem Arbeitsabschnitt wird kein Bild extern erzeugt, kein Foto an einen KI-Anbieter übertragen und keine KI-Nutzungsgebühr verursacht. Die echte Bild-KI wird getrennt ausgewählt, kostenbegrenzt und datenschutzrechtlich freigegeben.
 - **Datenkontinuität:** Konten, Projekte, Fotos, Einwilligungen, Löschregeln sowie bestehende Möbel- und Entwurfsdaten werden nicht migriert oder gelöscht.
 
+### D-033: Austauschbare Grundlage und Vergleich für die spätere Bild-KI
+
+- **Status:** Bestätigt und technisch vorbereitet am 30. August 2026; Anbieterintegration und kostenpflichtige Nutzung nicht freigegeben
+- **Entscheidung:** Google Vertex AI und OpenAI werden vor der endgültigen Wahl mit denselben freigegebenen Wohnzimmer-Testfällen verglichen. Google Vertex AI ist die vorläufige Produktionsempfehlung, aber keine endgültige Bindung.
+- **Architektur:** Raumly verwendet eine eigene interne Bild-KI-Schnittstelle. Anbieterzugänge bleiben dadurch austauschbar und werden nicht direkt in den Planungsablauf eingebaut.
+- **Schutzschranken:** Externe Bildgenerierung ist standardmäßig ausgeschaltet. Jeder spätere Auftrag benötigt eine eigene KI-Einwilligung, einen freigegebenen Anbieter, ein Auftragskostenlimit und ein Zeitlimit von höchstens zwei Minuten.
+- **Auswahl:** Bewertet werden Raumtreue, Stiltreue, Realismus, Nutzbarkeit, Fehlerquote, Laufzeit und Kosten je brauchbarem Ergebnis. Datenschutz- oder Vertragsmängel schließen einen Anbieter unabhängig von der Bildqualität aus.
+- **Kosten und Daten:** Dieser vorbereitende Arbeitsstand enthält keine API-Schlüssel, überträgt keine Fotos und erzeugt keine KI-Kosten. Konten, Projekte, Fotos und der vereinfachte Hauptablauf bleiben unverändert.
+- **Prüfplan:** Die vollständigen Kriterien und die noch nicht freigegebenen Aktionen stehen in `docs/IMAGE_PROVIDER_EVALUATION.md`.
+
 ## Offene Entscheidungen
 
 - Markenname und visuelle Identität
