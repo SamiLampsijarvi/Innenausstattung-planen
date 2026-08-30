@@ -269,6 +269,7 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 - **Auswahl:** Bewertet werden Raumtreue, Stiltreue, Realismus, Nutzbarkeit, Fehlerquote, Laufzeit und Kosten je brauchbarem Ergebnis. Datenschutz- oder Vertragsmängel schließen einen Anbieter unabhängig von der Bildqualität aus.
 - **Kosten und Daten:** Dieser vorbereitende Arbeitsstand enthält keine API-Schlüssel, überträgt keine Fotos und erzeugt keine KI-Kosten. Konten, Projekte, Fotos und der vereinfachte Hauptablauf bleiben unverändert.
 - **Prüfplan:** Die vollständigen Kriterien und die noch nicht freigegebenen Aktionen stehen in `docs/IMAGE_PROVIDER_EVALUATION.md`.
+- **Vertex-Testgrenze:** Die technische Vorbereitung verwendet das offizielle serverseitige Google-SDK, das Modell `gemini-3.1-flash-image` mit 1K-Ausgabe sowie höchstens fünf freigegebene Fotos, zwei Versuche pro Foto und fünf Euro reserviertes Gesamtbudget. Zugang, Abrechnung und tatsächliche Ausführung bleiben getrennt gesperrt.
 
 ## Offene Entscheidungen
 
