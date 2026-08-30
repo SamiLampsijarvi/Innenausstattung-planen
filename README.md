@@ -55,7 +55,7 @@ Bei Pull Requests nach `main` und Änderungen an `main` führt GitHub Actions di
 
 - Der verwendete kostenlose Supabase-Tarif erstellt keine automatischen Datenbanksicherungen; vor einer öffentlichen Veröffentlichung wird ein passendes Sicherungs- und Löschkonzept benötigt
 - Rechtlich verbindliche Anbieter- und Verantwortlichenangaben sowie die abschließende Datenschutzerklärung benötigen vor einer Veröffentlichung eine juristische Prüfung
-- Die lokale KI-Möbelerkennung befindet sich im Machbarkeitstest und unterstützt zunächst nur ausgewählte Wohnzimmerobjekte; die Bildgenerierung bleibt simuliert
+- Die lokale KI-Möbelerkennung befindet sich im Machbarkeitstest und unterstützt zuverlässig zunächst Sofa, allgemeinen Stuhl beziehungsweise Sessel, Esstisch, Fernseher und Zimmerpflanze. Zusätzliche lokale Modelle waren auf dem Zielrechner nicht zuverlässig; alle übrigen Katalogmöbel bleiben manuell ergänzbar und die Bildgenerierung bleibt simuliert
 - Testentwürfe enthalten vorbereitete Konzepte und Farbpaletten, aber noch keine erzeugten Raumbilder
 - Manuelle KI-Versuche lieferten überzeugende Inspirationsbilder, bewahrten vorhandene Möbel, Raumdetails und Budgets aber nicht zuverlässig exakt; zukünftige KI-Bilder sind daher keine maßgenaue Planung oder Kostengarantie
 - Noch keine Live-Produktpreise oder Händlerverfügbarkeit

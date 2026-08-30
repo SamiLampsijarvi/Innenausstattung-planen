@@ -233,6 +233,24 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 - **Diagnose auf Zielhardware:** Auf dem Zielrechner wird bewusst der Prozessor-Modus (WASM) verwendet. Der schnellere WebGPU-Modus der integrierten Intel-Grafik lieferte bei einem realen Raumfoto fälschlich keine Treffer. Gleiche Möbelarten werden nur einmal mit dem jeweils sichersten Treffer angezeigt.
 - **Sicheres Projektspeichern:** Bestehende Privatprojekte werden ausschließlich über die freigegebenen veränderbaren Felder aktualisiert. Geschützte Identitäts- und Erstellungsfelder werden nur beim erstmaligen Anlegen geschrieben und nicht durch ein allgemeines Upsert überschrieben.
 
+### D-030: Bewertung zusätzlicher lokaler Erkennungsmodelle
+
+- **Status:** Abgeschlossen und verworfen am 30. August 2026; die stabile DETR-Basiserkennung wurde wiederhergestellt
+- **Ergebnis Grounding DINO:** Das Modell lieferte auf den freigegebenen Raumfotos deutliche Fehlklassifikationen und wurde nicht in das Produkt übernommen.
+- **Ergebnis OWL-ViT:** Das Modell erkannte im technischen Vergleich zusätzliche Möbelarten. Im echten Browser auf dem Zielrechner startete es jedoch weder mit allen Begriffen noch in kleinen Vierergruppen zuverlässig. Ein Start vor dem Basismodell führte sogar zum vollständigen Ausfall der Erkennung.
+- **Entscheidung:** OWL-ViT wird auf diesem Zielgerät nicht weiterverwendet. Weitere Grenzwert- oder Reihenfolgeexperimente finden nicht statt. Das bewährte quantisierte DETR-Modell bleibt die einzige automatische lokale Erkennung und unterstützt zuverlässig Sofa, allgemeinen Stuhl beziehungsweise Sessel, Esstisch, Fernseher und Zimmerpflanze.
+- **Katalog:** Alle 26 Wohnzimmer-Möbelarten bleiben weiterhin manuell ergänzbar und korrigierbar. Eine automatische Erkennung aller 26 Kategorien ist mit der aktuellen lokalen Technik ausdrücklich noch nicht erreicht.
+- **Kosten und Datenschutz:** Die Tests verursachten keine API-Kosten und übertrugen keine Raumfotos an einen KI-Dienst.
+- **Prüfung:** Drei echte Browser-Sichttests bestätigten den reproduzierbaren Ausfall des Zusatzmodells. Die Basiserkennung blieb beim sicheren Ablauf funktionsfähig und erkannte auf dem abschließenden Foto Fernseher, Sessel und Sofa korrekt.
+
+### D-031: Produktweg nach dem lokalen Erkennungstest
+
+- **Status:** Bestätigt am 30. August 2026
+- **Entscheidung:** Für das Testprodukt bleibt die stabile kostenlose DETR-Erkennung als freiwillige Hilfe bestehen. Fehlende oder falsche Möbel werden über den vorhandenen vollständigen Katalog vom Nutzer ergänzt beziehungsweise korrigiert.
+- **Verlässliche Grundlage:** Nicht das ungeprüfte KI-Ergebnis, sondern ausschließlich die anschließend vom Nutzer bestätigte Möbelliste darf für Einrichtungsvorschläge, Budgetplanung und spätere Händlerzuordnungen verwendet werden.
+- **Priorität:** Weitere lokale Erkennungsmodelle, ein eigenes Training und kostenpflichtige Cloud-KI werden vorerst nicht weiterverfolgt. Die Produktentwicklung konzentriert sich als Nächstes auf den Nutzen der bestätigten Planungsangaben.
+- **Kosten und Datenschutz:** Dieser Weg erzeugt keine zusätzlichen KI-Kosten und überträgt keine Raumfotos an externe KI-Dienste.
+
 ## Offene Entscheidungen
 
 - Markenname und visuelle Identität

@@ -24,30 +24,35 @@ const cocoFurnitureMap: Record<string, string> = {
   "potted plant": "large-plant",
 };
 
+export const LOCALLY_DETECTABLE_FURNITURE_IDS = [...new Set(Object.values(cocoFurnitureMap))];
+
 let detectorPromise: Promise<FurnitureDetector> | null = null;
 
 async function createDetector() {
   const { pipeline } = await import("@huggingface/transformers");
-  const options = { dtype: "q8" as const };
   // The integrated Intel graphics used for the prototype returned empty results
   // with WebGPU. WASM is slower but produced reliable detections on the target PC.
-  return pipeline("object-detection", LOCAL_DETECTION_MODEL, { ...options, device: "wasm" });
+  return pipeline("object-detection", LOCAL_DETECTION_MODEL, { dtype: "q8", device: "wasm" });
+}
+
+export function mergeLocalFurnitureDetections(detections: LocalFurnitureDetection[]) {
+  const bestDetectionByCatalogId = new Map<string, LocalFurnitureDetection>();
+  detections.forEach((detection) => {
+    const previous = bestDetectionByCatalogId.get(detection.catalogId);
+    if (!previous || detection.confidence > previous.confidence) {
+      bestDetectionByCatalogId.set(detection.catalogId, detection);
+    }
+  });
+  return [...bestDetectionByCatalogId.values()].sort((a, b) => b.confidence - a.confidence);
 }
 
 export async function detectFurnitureLocally(imageUrl: string): Promise<LocalFurnitureDetection[]> {
   detectorPromise ??= createDetector() as unknown as Promise<FurnitureDetector>;
-  const detector = await detectorPromise;
-  const rawDetections = await detector(imageUrl, { threshold: 0.6 });
-  const bestDetectionByCatalogId = new Map<string, LocalFurnitureDetection>();
-
-  rawDetections.forEach(({ label, score }) => {
+  const rawDetections = await (await detectorPromise)(imageUrl, { threshold: 0.6 });
+  const detections = rawDetections.flatMap(({ label, score }) => {
     const catalogId = cocoFurnitureMap[label.toLowerCase()];
     const catalogItem = furnitureCatalog.find((item) => item.id === catalogId);
-    const previousDetection = bestDetectionByCatalogId.get(catalogId);
-    if (catalogItem && (!previousDetection || score > previousDetection.confidence)) {
-      bestDetectionByCatalogId.set(catalogId, { catalogId, label: catalogItem.label, confidence: score });
-    }
+    return catalogItem ? [{ catalogId, label: catalogItem.label, confidence: score }] : [];
   });
-
-  return [...bestDetectionByCatalogId.values()].slice(0, 12);
+  return mergeLocalFurnitureDetections(detections);
 }
