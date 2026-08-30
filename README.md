@@ -29,6 +29,7 @@ Bei Pull Requests nach `main` und Änderungen an `main` führt GitHub Actions di
 
 - Responsive Landingpage
 - Geführter lokaler Planungsablauf
+- Vereinfachter Hauptablauf: Zimmer, Designstil, Foto und Budget mit anschließender Zusammenfassung
 - Wohnzimmerplanung mit 9 Designstilen
 - Responsive Navigation nach der bestätigten Seitenskizze
 - Lokale Bildvorschau für bis zu fünf Fotos
@@ -37,10 +38,7 @@ Bei Pull Requests nach `main` und Änderungen an `main` führt GitHub Actions di
 - Lokale Zusammenfassung des Planungsbriefings ohne Übertragung oder Speicherung
 - Mehrere lokal gespeicherte Zuhause-Projekte anlegen, öffnen, umbenennen und löschen
 - Stil, Postleitzahl und Budget versioniert im Browser speichern und nach einem Neuladen weiterbearbeiten
-- Möbel mit klar gekennzeichneten Testdaten simulieren und über eine kompakte Auswahl einzeln bearbeiten, korrigieren, entfernen oder ergänzen
-- eine kostenlose lokale KI-Möbelerkennung im Browser starten; Fotos verlassen bei diesem Test das Gerät nicht; auf dem Testrechner läuft sie bewusst im zuverlässigeren Prozessormodus
-- Freiwillige Vorgaben und Kommentare je Möbelstück sowie eine allgemeine Raumnotiz lokal speichern
-- Bis zu drei klar gekennzeichnete lokale Testentwürfe erstellen, untereinander anzeigen, öffnen, löschen und vergleichen
+- Vorhandene Möbelprüfungs- und Testentwurfsdaten weiterhin verlustfrei speichern, ohne sie im vereinfachten Hauptablauf anzuzeigen
 - Konto mit E-Mail-Bestätigung anlegen, anmelden und abmelden
 - Private Zuhause-Projekte und Raumfotos in Supabase speichern und nach einer erneuten Anmeldung laden
 - Passwort-Wiederherstellung starten
@@ -55,17 +53,17 @@ Bei Pull Requests nach `main` und Änderungen an `main` führt GitHub Actions di
 
 - Der verwendete kostenlose Supabase-Tarif erstellt keine automatischen Datenbanksicherungen; vor einer öffentlichen Veröffentlichung wird ein passendes Sicherungs- und Löschkonzept benötigt
 - Rechtlich verbindliche Anbieter- und Verantwortlichenangaben sowie die abschließende Datenschutzerklärung benötigen vor einer Veröffentlichung eine juristische Prüfung
-- Die lokale KI-Möbelerkennung befindet sich im Machbarkeitstest und unterstützt zuverlässig zunächst Sofa, allgemeinen Stuhl beziehungsweise Sessel, Esstisch, Fernseher und Zimmerpflanze. Zusätzliche lokale Modelle waren auf dem Zielrechner nicht zuverlässig; alle übrigen Katalogmöbel bleiben manuell ergänzbar und die Bildgenerierung bleibt simuliert
-- Testentwürfe enthalten vorbereitete Konzepte und Farbpaletten, aber noch keine erzeugten Raumbilder
+- Die vorhandene lokale Möbelerkennung und frühere Testentwürfe sind aus dem normalen Nutzerablauf genommen, bleiben im Code und in bestehenden Projektdaten aber erhalten
+- Der Ergebnisbereich bereitet die spätere Bild-KI vor, erzeugt derzeit jedoch noch kein individuelles Raumbild
 - Manuelle KI-Versuche lieferten überzeugende Inspirationsbilder, bewahrten vorhandene Möbel, Raumdetails und Budgets aber nicht zuverlässig exakt; zukünftige KI-Bilder sind daher keine maßgenaue Planung oder Kostengarantie
 - Noch keine Live-Produktpreise oder Händlerverfügbarkeit
 - Noch keine Bezahlung
 
 ## Empfohlene nächste Phasen
 
-1. Den offenen API-Teil des KI-Machbarkeitstests mit Einwilligung und festem Kostenlimit durchführen.
-2. KI-Bildbearbeitung als klar gekennzeichnete Inspiration mit Moderation, Fehlerbehandlung und Kostenlimit anbinden.
-3. Bestätigte Zielgruppe, Planungsablauf und KI-Ergebnisse später mit Testnutzern validieren.
+1. Eine austauschbare Bild-KI für klar gekennzeichnete Inspirationsbilder mit eigener Einwilligung und festem Kostenlimit auswählen und anbinden.
+2. Den vereinfachten Ablauf und die KI-Ergebnisse mit Testnutzern validieren.
+3. Eine manuelle Bereichsmarkierung für „behalten“ und „verändern“ getrennt prüfen.
 4. Zunächst 2–3 Händler-/Affiliate-Feeds für ein einziges Land integrieren.
 5. Mit Testnutzern Qualität, Kaufabsicht und Zahlungsbereitschaft messen.
 

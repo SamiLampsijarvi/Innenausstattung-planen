@@ -251,6 +251,15 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 - **Priorität:** Weitere lokale Erkennungsmodelle, ein eigenes Training und kostenpflichtige Cloud-KI werden vorerst nicht weiterverfolgt. Die Produktentwicklung konzentriert sich als Nächstes auf den Nutzen der bestätigten Planungsangaben.
 - **Kosten und Datenschutz:** Dieser Weg erzeugt keine zusätzlichen KI-Kosten und überträgt keine Raumfotos an externe KI-Dienste.
 
+### D-032: Vereinfachter Hauptablauf vor der Bild-KI
+
+- **Status:** Bestätigt und umgesetzt am 30. August 2026
+- **Hauptablauf:** Das Testprodukt führt durch Zimmerauswahl, Designstil, Foto und Budget. Danach werden die Angaben zusammengefasst und der spätere Inspirationsentwurf vorbereitet.
+- **Möbelerkennung:** Die lokale Erkennung, Nutzerkorrektur und bisherigen Testentwürfe bleiben technisch und in gespeicherten Projektdaten erhalten, sind aber kein Bestandteil des normalen Nutzerablaufs mehr. Diese Entscheidung ersetzt insoweit die Hauptablauf-Priorität aus D-031.
+- **Postleitzahl:** Die Postleitzahl bleibt als optionale Vorbereitung für spätere regionale Händlerempfehlungen erhalten und blockiert die Zusammenfassung nicht.
+- **KI-Grenze:** In diesem Arbeitsabschnitt wird kein Bild extern erzeugt, kein Foto an einen KI-Anbieter übertragen und keine KI-Nutzungsgebühr verursacht. Die echte Bild-KI wird getrennt ausgewählt, kostenbegrenzt und datenschutzrechtlich freigegeben.
+- **Datenkontinuität:** Konten, Projekte, Fotos, Einwilligungen, Löschregeln sowie bestehende Möbel- und Entwurfsdaten werden nicht migriert oder gelöscht.
+
 ## Offene Entscheidungen
 
 - Markenname und visuelle Identität
