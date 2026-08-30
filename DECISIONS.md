@@ -243,6 +243,14 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 - **Kosten und Datenschutz:** Die Tests verursachten keine API-Kosten und übertrugen keine Raumfotos an einen KI-Dienst.
 - **Prüfung:** Drei echte Browser-Sichttests bestätigten den reproduzierbaren Ausfall des Zusatzmodells. Die Basiserkennung blieb beim sicheren Ablauf funktionsfähig und erkannte auf dem abschließenden Foto Fernseher, Sessel und Sofa korrekt.
 
+### D-031: Produktweg nach dem lokalen Erkennungstest
+
+- **Status:** Bestätigt am 30. August 2026
+- **Entscheidung:** Für das Testprodukt bleibt die stabile kostenlose DETR-Erkennung als freiwillige Hilfe bestehen. Fehlende oder falsche Möbel werden über den vorhandenen vollständigen Katalog vom Nutzer ergänzt beziehungsweise korrigiert.
+- **Verlässliche Grundlage:** Nicht das ungeprüfte KI-Ergebnis, sondern ausschließlich die anschließend vom Nutzer bestätigte Möbelliste darf für Einrichtungsvorschläge, Budgetplanung und spätere Händlerzuordnungen verwendet werden.
+- **Priorität:** Weitere lokale Erkennungsmodelle, ein eigenes Training und kostenpflichtige Cloud-KI werden vorerst nicht weiterverfolgt. Die Produktentwicklung konzentriert sich als Nächstes auf den Nutzen der bestätigten Planungsangaben.
+- **Kosten und Datenschutz:** Dieser Weg erzeugt keine zusätzlichen KI-Kosten und überträgt keine Raumfotos an externe KI-Dienste.
+
 ## Offene Entscheidungen
 
 - Markenname und visuelle Identität
