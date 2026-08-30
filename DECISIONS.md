@@ -233,15 +233,15 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 - **Diagnose auf Zielhardware:** Auf dem Zielrechner wird bewusst der Prozessor-Modus (WASM) verwendet. Der schnellere WebGPU-Modus der integrierten Intel-Grafik lieferte bei einem realen Raumfoto fälschlich keine Treffer. Gleiche Möbelarten werden nur einmal mit dem jeweils sichersten Treffer angezeigt.
 - **Sicheres Projektspeichern:** Bestehende Privatprojekte werden ausschließlich über die freigegebenen veränderbaren Felder aktualisiert. Geschützte Identitäts- und Erstellungsfelder werden nur beim erstmaligen Anlegen geschrieben und nicht durch ein allgemeines Upsert überschrieben.
 
-### D-030: Hybride lokale Wohnzimmer-Möbelerkennung
+### D-030: Bewertung zusätzlicher lokaler Erkennungsmodelle
 
-- **Status:** Bestätigt und technisch umgesetzt am 30. August 2026; manuelle Browser-Abnahme mit einem echten Wohnzimmerfoto offen
-- **Entscheidung:** Das bewährte quantisierte DETR-Modell bleibt für seine festen, zuverlässigen Kategorien erhalten. Ein quantisiertes OWL-ViT-Modell ergänzt ausschließlich die übrigen Kategorien des bestätigten Wohnzimmer-Möbelkatalogs. Grounding DINO Tiny wurde nach deutlichen Fehlklassifikationen auf den freigegebenen Raumfotos verworfen.
-- **Abdeckung:** Zusammen decken die lokalen Modelle alle 26 Einträge des bestehenden Möbelkatalogs ab. Das bedeutet, dass jede Kategorie gesucht werden kann; es ist keine Garantie, dass jedes sichtbare Möbelstück auf jedem Foto erkannt wird.
-- **Fehlerschutz:** Die Modelle laufen getrennt. Fällt eines aus, bleiben die Ergebnisse des anderen verfügbar. Pro Möbelart wird nur der sicherste Treffer angezeigt; zusätzliche kategorienabhängige Mindestwerte filtern unsichere Ergebnisse.
-- **Nutzerkontrolle:** Erkannte Möbel bleiben Vorschläge und müssen korrigierbar, entfernbar und manuell ergänzbar sein. Die Anzahl von Esszimmerstühlen sowie ein Stauraumbedarf werden nicht als sichere Bildaussage behandelt und bleiben Nutzereingaben.
-- **Kosten und Datenschutz:** Es werden keine kostenpflichtigen API-Schlüssel oder Cloud-KI-Aufrufe verwendet. Die Modelldateien werden einmalig geladen; das Raumfoto bleibt bei der Analyse im Browser.
-- **Prüfung:** Modellvergleich mit zwei Wohnzimmern, Küche und Bad durchgeführt; Grounding DINO verworfen und OWL-ViT ausgewählt. Produktions-Build, Typprüfung, Codeprüfung sowie 26 Desktop- und Mobiltests sind erfolgreich. Die lokale Browser-Sicherheitsregel blockierte die zusätzliche sichtbare `localhost`-Abnahme; sie wird deshalb nicht als erledigt dokumentiert.
+- **Status:** Abgeschlossen und verworfen am 30. August 2026; die stabile DETR-Basiserkennung wurde wiederhergestellt
+- **Ergebnis Grounding DINO:** Das Modell lieferte auf den freigegebenen Raumfotos deutliche Fehlklassifikationen und wurde nicht in das Produkt übernommen.
+- **Ergebnis OWL-ViT:** Das Modell erkannte im technischen Vergleich zusätzliche Möbelarten. Im echten Browser auf dem Zielrechner startete es jedoch weder mit allen Begriffen noch in kleinen Vierergruppen zuverlässig. Ein Start vor dem Basismodell führte sogar zum vollständigen Ausfall der Erkennung.
+- **Entscheidung:** OWL-ViT wird auf diesem Zielgerät nicht weiterverwendet. Weitere Grenzwert- oder Reihenfolgeexperimente finden nicht statt. Das bewährte quantisierte DETR-Modell bleibt die einzige automatische lokale Erkennung und unterstützt zuverlässig Sofa, allgemeinen Stuhl beziehungsweise Sessel, Esstisch, Fernseher und Zimmerpflanze.
+- **Katalog:** Alle 26 Wohnzimmer-Möbelarten bleiben weiterhin manuell ergänzbar und korrigierbar. Eine automatische Erkennung aller 26 Kategorien ist mit der aktuellen lokalen Technik ausdrücklich noch nicht erreicht.
+- **Kosten und Datenschutz:** Die Tests verursachten keine API-Kosten und übertrugen keine Raumfotos an einen KI-Dienst.
+- **Prüfung:** Drei echte Browser-Sichttests bestätigten den reproduzierbaren Ausfall des Zusatzmodells. Die Basiserkennung blieb beim sicheren Ablauf funktionsfähig und erkannte auf dem abschließenden Foto Fernseher, Sessel und Sofa korrekt.
 
 ## Offene Entscheidungen
 

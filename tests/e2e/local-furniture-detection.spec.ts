@@ -1,13 +1,12 @@
 import { expect, test } from "@playwright/test";
-import { furnitureCatalog } from "../../src/lib/furniture-catalog";
 import {
   LOCALLY_DETECTABLE_FURNITURE_IDS,
   mergeLocalFurnitureDetections,
 } from "../../src/lib/ai/local-furniture-detection";
 
-test("deckt den vollständigen Wohnzimmer-Möbelkatalog ab", () => {
+test("dokumentiert die zuverlässig unterstützten lokalen Möbelarten", () => {
   expect(new Set(LOCALLY_DETECTABLE_FURNITURE_IDS)).toEqual(
-    new Set(furnitureCatalog.map(({ id }) => id)),
+    new Set(["sofa", "armchair", "dining-table", "television", "large-plant"]),
   );
 });
 

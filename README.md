@@ -38,7 +38,7 @@ Bei Pull Requests nach `main` und Änderungen an `main` führt GitHub Actions di
 - Mehrere lokal gespeicherte Zuhause-Projekte anlegen, öffnen, umbenennen und löschen
 - Stil, Postleitzahl und Budget versioniert im Browser speichern und nach einem Neuladen weiterbearbeiten
 - Möbel mit klar gekennzeichneten Testdaten simulieren und über eine kompakte Auswahl einzeln bearbeiten, korrigieren, entfernen oder ergänzen
-- eine kostenlose hybride KI-Möbelerkennung im Browser starten; Fotos verlassen bei diesem Test das Gerät nicht; auf dem Testrechner laufen beide lokalen Modelle bewusst im zuverlässigeren Prozessormodus
+- eine kostenlose lokale KI-Möbelerkennung im Browser starten; Fotos verlassen bei diesem Test das Gerät nicht; auf dem Testrechner läuft sie bewusst im zuverlässigeren Prozessormodus
 - Freiwillige Vorgaben und Kommentare je Möbelstück sowie eine allgemeine Raumnotiz lokal speichern
 - Bis zu drei klar gekennzeichnete lokale Testentwürfe erstellen, untereinander anzeigen, öffnen, löschen und vergleichen
 - Konto mit E-Mail-Bestätigung anlegen, anmelden und abmelden
@@ -55,7 +55,7 @@ Bei Pull Requests nach `main` und Änderungen an `main` führt GitHub Actions di
 
 - Der verwendete kostenlose Supabase-Tarif erstellt keine automatischen Datenbanksicherungen; vor einer öffentlichen Veröffentlichung wird ein passendes Sicherungs- und Löschkonzept benötigt
 - Rechtlich verbindliche Anbieter- und Verantwortlichenangaben sowie die abschließende Datenschutzerklärung benötigen vor einer Veröffentlichung eine juristische Prüfung
-- Die lokale KI-Möbelerkennung befindet sich im Machbarkeitstest. Der vollständige Wohnzimmer-Möbelkatalog kann gesucht werden, einzelne Treffer können je nach Foto dennoch fehlen oder falsch sein und bleiben deshalb korrigierbar; die Bildgenerierung bleibt simuliert
+- Die lokale KI-Möbelerkennung befindet sich im Machbarkeitstest und unterstützt zuverlässig zunächst Sofa, allgemeinen Stuhl beziehungsweise Sessel, Esstisch, Fernseher und Zimmerpflanze. Zusätzliche lokale Modelle waren auf dem Zielrechner nicht zuverlässig; alle übrigen Katalogmöbel bleiben manuell ergänzbar und die Bildgenerierung bleibt simuliert
 - Testentwürfe enthalten vorbereitete Konzepte und Farbpaletten, aber noch keine erzeugten Raumbilder
 - Manuelle KI-Versuche lieferten überzeugende Inspirationsbilder, bewahrten vorhandene Möbel, Raumdetails und Budgets aber nicht zuverlässig exakt; zukünftige KI-Bilder sind daher keine maßgenaue Planung oder Kostengarantie
 - Noch keine Live-Produktpreise oder Händlerverfügbarkeit

@@ -38,7 +38,7 @@ export default function FurniturePlanner({ review, imageCount, imageUrl, onChang
   async function startLocalDetection() {
     if (!imageUrl || !localAiConsent) return;
     setDetectionStatus("loading");
-    setDetectionMessage("Die kostenlosen Erkennungsmodelle werden vorbereitet. Beim ersten Mal kann das etwas dauern.");
+    setDetectionMessage("Das kostenlose Erkennungsmodell wird vorbereitet. Beim ersten Mal kann das etwas dauern.");
     try {
       const detections = await detectFurnitureLocally(imageUrl);
       const items = detections.map(({ catalogId, label, confidence }) => ({
@@ -102,7 +102,7 @@ export default function FurniturePlanner({ review, imageCount, imageUrl, onChang
 
   if (review.status === "not_started") return (
     <section className="furniture-planner" aria-labelledby="furniture-title">
-      <div className="furniture-heading"><span>5</span><div><h2 id="furniture-title">Möbel und Wünsche prüfen</h2><p>Kostenlose lokale Testmodelle können das erste Foto direkt in diesem Browser auf Wohnzimmermöbel untersuchen.</p></div></div>
+      <div className="furniture-heading"><span>5</span><div><h2 id="furniture-title">Möbel und Wünsche prüfen</h2><p>Ein kostenloses Testmodell kann das erste Foto direkt in diesem Browser untersuchen.</p></div></div>
       <div className="local-ai-consent">
         <label><input type="checkbox" checked={localAiConsent} onChange={(event) => setLocalAiConsent(event.target.checked)} /> Ich erlaube die lokale KI-Analyse dieses Fotos.</label>
         <small>Das Raumfoto bleibt auf diesem Gerät und wird nicht an OpenAI, Google oder Raumly übertragen. Nur die Modelldateien werden einmalig von Hugging Face geladen und anschließend im Browser gespeichert.</small>
