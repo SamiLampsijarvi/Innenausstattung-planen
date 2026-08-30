@@ -628,6 +628,7 @@ export default function Home() {
           <FurniturePlanner
             review={activeProject.livingRoom.furnitureReview}
             imageCount={images.length}
+            imageUrl={images[0]?.previewUrl}
             onChange={(furnitureReview) => updateActivePlan({ furnitureReview })}
           />
           <div className="generate-panel">

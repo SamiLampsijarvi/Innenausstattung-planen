@@ -2,15 +2,16 @@ export const LOCAL_PROJECTS_KEY = "raumly.local-projects";
 export const LOCAL_PROJECTS_VERSION = 3;
 
 export type FurniturePreference = "none" | "keep" | "replace" | "add";
-export type FurnitureSource = "simulated" | "corrected" | "manual";
+export type FurnitureSource = "simulated" | "ai" | "corrected" | "manual";
 
 export type FurnitureItem = {
   id: string; catalogId: string; label: string; source: FurnitureSource;
-  preference: FurniturePreference; comment: string; quantity: number;
+  preference: FurniturePreference; comment: string; quantity: number; confidence?: number;
 };
 
 export type FurnitureReview = {
   status: "not_started" | "ready";
+  method?: "simulation" | "local_ai";
   generalNote: string;
   items: FurnitureItem[];
 };
@@ -109,6 +110,7 @@ function isLocalProject(value: unknown): value is LocalProject {
     && typeof project.createdAt === "string" && typeof project.updatedAt === "string"
     && typeof plan?.style === "string" && typeof plan?.postcode === "string"
     && typeof plan?.budget === "number" && (review?.status === "not_started" || review?.status === "ready")
+    && (review.method === undefined || review.method === "simulation" || review.method === "local_ai")
     && typeof review.generalNote === "string" && Array.isArray(review.items)
     && review.items.every(isFurnitureItem) && Array.isArray(plan.drafts) && plan.drafts.every(isDesignDraft);
 }
@@ -130,7 +132,8 @@ function isFurnitureItem(value: unknown): value is FurnitureItem {
   if (!value || typeof value !== "object") return false;
   const item = value as Partial<FurnitureItem>;
   return typeof item.id === "string" && typeof item.catalogId === "string" && typeof item.label === "string"
-    && ["simulated", "corrected", "manual"].includes(item.source ?? "")
+    && ["simulated", "ai", "corrected", "manual"].includes(item.source ?? "")
     && ["none", "keep", "replace", "add"].includes(item.preference ?? "")
-    && typeof item.comment === "string" && typeof item.quantity === "number";
+    && typeof item.comment === "string" && typeof item.quantity === "number"
+    && (item.confidence === undefined || typeof item.confidence === "number");
 }

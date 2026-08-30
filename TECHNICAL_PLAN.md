@@ -263,6 +263,8 @@ Zentrale Möbel müssen zuverlässig erkannt werden. Kleine Fehler sind nur akze
 
 **Teilstatus vom 26. August 2026:** Die Bildbearbeitung wurde manuell mit drei Raumarten und unterschiedlichen Stilen und Budgets qualitativ geprüft. Stilgerechte Inspirationsbilder gelangen zuverlässig. Die exakte Bewahrung vorhandener Möbel, Raumdetails, Perspektive und Budgetvorgaben gelang nicht zuverlässig. Deshalb wird Raumly KI-Bilder zunächst nur als Inspiration kennzeichnen. API-Integration, automatische Möbelerkennung, Laufzeit und API-Kosten wurden noch nicht geprüft und bleiben vor Phase 7 offen.
 
+**Teilstatus vom 30. August 2026:** Für den ersten automatischen Erkennungstest wurde statt einer kostenpflichtigen API ein lokaler, austauschbarer Browser-Anbieter freigegeben. Transformers.js führt ein quantisiertes DETR-Modell über WebGPU und ersatzweise WASM aus. Das erste ausgewählte Foto bleibt im Browser; eine getrennte sitzungsbezogene Freigabe ist erforderlich. Erkannte COCO-Klassen werden auf den bestehenden Raumly-Möbelkatalog abgebildet und zusammen mit der Modellkonfidenz in den vorhandenen Korrekturablauf übernommen. Der bestehende simulierte Ablauf bleibt als klar gekennzeichneter Rückfall erhalten. Qualität und Laufzeit auf neutralen Testfotos sind noch praktisch zu messen.
+
 **Freigabekriterium:** vereinbarte Qualitätskriterien werden erreicht und Kosten bleiben im Limit.
 
 ### Phase 7: KI in Raumly integrieren

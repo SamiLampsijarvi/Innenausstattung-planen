@@ -4,6 +4,7 @@ export const furnitureCatalog: FurnitureCatalogItem[] = [
   { id: "sofa", label: "Sofa / Couch", group: "Grundmöbel" },
   { id: "coffee-table", label: "Couchtisch", group: "Grundmöbel" },
   { id: "tv-lowboard", label: "TV-Lowboard oder TV-Schrank", group: "Grundmöbel" },
+  { id: "television", label: "Fernseher", group: "Grundmöbel" },
   { id: "rug", label: "Teppich", group: "Grundmöbel" },
   { id: "floor-lamp", label: "Stehlampe", group: "Grundmöbel" },
   { id: "side-table", label: "Beistelltisch", group: "Grundmöbel" },
