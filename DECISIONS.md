@@ -233,6 +233,16 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 - **Diagnose auf Zielhardware:** Auf dem Zielrechner wird bewusst der Prozessor-Modus (WASM) verwendet. Der schnellere WebGPU-Modus der integrierten Intel-Grafik lieferte bei einem realen Raumfoto fälschlich keine Treffer. Gleiche Möbelarten werden nur einmal mit dem jeweils sichersten Treffer angezeigt.
 - **Sicheres Projektspeichern:** Bestehende Privatprojekte werden ausschließlich über die freigegebenen veränderbaren Felder aktualisiert. Geschützte Identitäts- und Erstellungsfelder werden nur beim erstmaligen Anlegen geschrieben und nicht durch ein allgemeines Upsert überschrieben.
 
+### D-030: Hybride lokale Wohnzimmer-Möbelerkennung
+
+- **Status:** Bestätigt und technisch umgesetzt am 30. August 2026; manuelle Browser-Abnahme mit einem echten Wohnzimmerfoto offen
+- **Entscheidung:** Das bewährte quantisierte DETR-Modell bleibt für seine festen, zuverlässigen Kategorien erhalten. Ein quantisiertes OWL-ViT-Modell ergänzt ausschließlich die übrigen Kategorien des bestätigten Wohnzimmer-Möbelkatalogs. Grounding DINO Tiny wurde nach deutlichen Fehlklassifikationen auf den freigegebenen Raumfotos verworfen.
+- **Abdeckung:** Zusammen decken die lokalen Modelle alle 26 Einträge des bestehenden Möbelkatalogs ab. Das bedeutet, dass jede Kategorie gesucht werden kann; es ist keine Garantie, dass jedes sichtbare Möbelstück auf jedem Foto erkannt wird.
+- **Fehlerschutz:** Die Modelle laufen getrennt. Fällt eines aus, bleiben die Ergebnisse des anderen verfügbar. Pro Möbelart wird nur der sicherste Treffer angezeigt; zusätzliche kategorienabhängige Mindestwerte filtern unsichere Ergebnisse.
+- **Nutzerkontrolle:** Erkannte Möbel bleiben Vorschläge und müssen korrigierbar, entfernbar und manuell ergänzbar sein. Die Anzahl von Esszimmerstühlen sowie ein Stauraumbedarf werden nicht als sichere Bildaussage behandelt und bleiben Nutzereingaben.
+- **Kosten und Datenschutz:** Es werden keine kostenpflichtigen API-Schlüssel oder Cloud-KI-Aufrufe verwendet. Die Modelldateien werden einmalig geladen; das Raumfoto bleibt bei der Analyse im Browser.
+- **Prüfung:** Modellvergleich mit zwei Wohnzimmern, Küche und Bad durchgeführt; Grounding DINO verworfen und OWL-ViT ausgewählt. Produktions-Build, Typprüfung, Codeprüfung sowie 26 Desktop- und Mobiltests sind erfolgreich. Die lokale Browser-Sicherheitsregel blockierte die zusätzliche sichtbare `localhost`-Abnahme; sie wird deshalb nicht als erledigt dokumentiert.
+
 ## Offene Entscheidungen
 
 - Markenname und visuelle Identität
