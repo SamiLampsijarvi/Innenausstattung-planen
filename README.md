@@ -38,7 +38,7 @@ Bei Pull Requests nach `main` und Änderungen an `main` führt GitHub Actions di
 - Mehrere lokal gespeicherte Zuhause-Projekte anlegen, öffnen, umbenennen und löschen
 - Stil, Postleitzahl und Budget versioniert im Browser speichern und nach einem Neuladen weiterbearbeiten
 - Möbel mit klar gekennzeichneten Testdaten simulieren und über eine kompakte Auswahl einzeln bearbeiten, korrigieren, entfernen oder ergänzen
-- eine kostenlose lokale KI-Möbelerkennung im Browser starten; Fotos verlassen bei diesem Test das Gerät nicht
+- eine kostenlose lokale KI-Möbelerkennung im Browser starten; Fotos verlassen bei diesem Test das Gerät nicht; auf dem Testrechner läuft sie bewusst im zuverlässigeren Prozessormodus
 - Freiwillige Vorgaben und Kommentare je Möbelstück sowie eine allgemeine Raumnotiz lokal speichern
 - Bis zu drei klar gekennzeichnete lokale Testentwürfe erstellen, untereinander anzeigen, öffnen, löschen und vergleichen
 - Konto mit E-Mail-Bestätigung anlegen, anmelden und abmelden

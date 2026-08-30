@@ -227,9 +227,10 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 - **Entscheidung:** Vor einer kostenpflichtigen Cloud-API wird die automatische Möbelerkennung mit einem austauschbaren lokalen Browser-Modell geprüft. Diese Entscheidung ersetzt für den ersten Erkennungstest den in D-012 genannten OpenAI-API-Kandidaten; OpenAI bleibt eine spätere, nicht freigegebene Option für Bildbearbeitung.
 - **Kosten:** Der Test erzeugt keine API-Nutzungsgebühren und hinterlegt keinen kostenpflichtigen KI-Schlüssel. Das Erkennungsmodell wird beim ersten Start von Hugging Face geladen und anschließend im Browser zwischengespeichert.
 - **Datenschutz:** Das Raumfoto wird für diesen Test nur im Browser verarbeitet. Vor der Analyse ist eine ausdrückliche, sitzungsbezogene Freigabe erforderlich. Das Foto wird nicht an Hugging Face, OpenAI, Google oder Raumly übertragen.
-- **Gerätegrenze:** Der Entwicklungsrechner besitzt 16 GB Arbeitsspeicher und eine integrierte Intel-UHD-620-Grafik. Deshalb wird zunächst ein quantisiertes DETR-Modell mit WebGPU- und WASM-Rückfall verwendet; große lokale Modelle sind für diesen Rechner nicht vorgesehen.
+- **Gerätegrenze:** Der Entwicklungsrechner besitzt 16 GB Arbeitsspeicher und eine integrierte Intel-UHD-620-Grafik. Deshalb wird ein quantisiertes DETR-Modell im Prozessormodus (WASM) verwendet; große lokale Modelle sind für diesen Rechner nicht vorgesehen.
 - **Qualitätsgrenze:** Der erste Test erkennt nur vom COCO-Modell unterstützte Wohnzimmerobjekte, darunter Sofa, Stuhl, Esstisch, Fernseher und Zimmerpflanze. Nutzerkorrekturen bleiben zwingender Bestandteil des Ablaufs.
 - **Abbruchregel:** Ist die Erkennung auf mehreren neutralen Bildern zu langsam oder bei zentralen Möbeln unzuverlässig, wird dieser Modellweg nicht weiter ausgebaut. Dann wird erneut zwischen einem anderen lokalen Modell und einem ausdrücklich freigegebenen, kostenbegrenzten Cloud-Test entschieden.
+- **Diagnose auf Zielhardware:** Auf dem Zielrechner wird bewusst der Prozessor-Modus (WASM) verwendet. Der schnellere WebGPU-Modus der integrierten Intel-Grafik lieferte bei einem realen Raumfoto fälschlich keine Treffer. Gleiche Möbelarten werden nur einmal mit dem jeweils sichersten Treffer angezeigt.
 
 ## Offene Entscheidungen
 

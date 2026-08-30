@@ -29,13 +29,8 @@ let detectorPromise: Promise<FurnitureDetector> | null = null;
 async function createDetector() {
   const { pipeline } = await import("@huggingface/transformers");
   const options = { dtype: "q8" as const };
-  try {
-    if ("gpu" in navigator) {
-      return await pipeline("object-detection", LOCAL_DETECTION_MODEL, { ...options, device: "webgpu" });
-    }
-  } catch {
-    // Some integrated graphics advertise WebGPU but cannot run every model.
-  }
+  // The integrated Intel graphics used for the prototype returned empty results
+  // with WebGPU. WASM is slower but produced reliable detections on the target PC.
   return pipeline("object-detection", LOCAL_DETECTION_MODEL, { ...options, device: "wasm" });
 }
 
@@ -43,10 +38,16 @@ export async function detectFurnitureLocally(imageUrl: string): Promise<LocalFur
   detectorPromise ??= createDetector() as unknown as Promise<FurnitureDetector>;
   const detector = await detectorPromise;
   const rawDetections = await detector(imageUrl, { threshold: 0.6 });
+  const bestDetectionByCatalogId = new Map<string, LocalFurnitureDetection>();
 
-  return rawDetections.flatMap(({ label, score }) => {
+  rawDetections.forEach(({ label, score }) => {
     const catalogId = cocoFurnitureMap[label.toLowerCase()];
     const catalogItem = furnitureCatalog.find((item) => item.id === catalogId);
-    return catalogItem ? [{ catalogId, label: catalogItem.label, confidence: score }] : [];
-  }).slice(0, 12);
+    const previousDetection = bestDetectionByCatalogId.get(catalogId);
+    if (catalogItem && (!previousDetection || score > previousDetection.confidence)) {
+      bestDetectionByCatalogId.set(catalogId, { catalogId, label: catalogItem.label, confidence: score });
+    }
+  });
+
+  return [...bestDetectionByCatalogId.values()].slice(0, 12);
 }
