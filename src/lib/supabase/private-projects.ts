@@ -30,7 +30,19 @@ export async function readPrivateProjects(supabase: SupabaseClient): Promise<Pri
 }
 
 export async function savePrivateProject(supabase: SupabaseClient, user: User, project: LocalProject) {
-  const { error } = await supabase.from("projects").upsert({
+  const { data: updatedProjects, error: updateError } = await supabase
+    .from("projects")
+    .update({
+      name: project.name,
+      living_room: project.livingRoom,
+      updated_at: project.updatedAt,
+    })
+    .eq("id", project.id)
+    .select("id");
+  if (updateError) throw updateError;
+  if (updatedProjects?.length) return;
+
+  const { error: insertError } = await supabase.from("projects").insert({
     id: project.id,
     user_id: user.id,
     name: project.name,
@@ -38,7 +50,7 @@ export async function savePrivateProject(supabase: SupabaseClient, user: User, p
     created_at: project.createdAt,
     updated_at: project.updatedAt,
   });
-  if (error) throw error;
+  if (insertError) throw insertError;
 }
 
 export async function movePrivateProjectToTrash(supabase: SupabaseClient, projectId: string) {

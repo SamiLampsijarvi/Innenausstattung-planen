@@ -231,6 +231,7 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 - **Qualitätsgrenze:** Der erste Test erkennt nur vom COCO-Modell unterstützte Wohnzimmerobjekte, darunter Sofa, Stuhl, Esstisch, Fernseher und Zimmerpflanze. Nutzerkorrekturen bleiben zwingender Bestandteil des Ablaufs.
 - **Abbruchregel:** Ist die Erkennung auf mehreren neutralen Bildern zu langsam oder bei zentralen Möbeln unzuverlässig, wird dieser Modellweg nicht weiter ausgebaut. Dann wird erneut zwischen einem anderen lokalen Modell und einem ausdrücklich freigegebenen, kostenbegrenzten Cloud-Test entschieden.
 - **Diagnose auf Zielhardware:** Auf dem Zielrechner wird bewusst der Prozessor-Modus (WASM) verwendet. Der schnellere WebGPU-Modus der integrierten Intel-Grafik lieferte bei einem realen Raumfoto fälschlich keine Treffer. Gleiche Möbelarten werden nur einmal mit dem jeweils sichersten Treffer angezeigt.
+- **Sicheres Projektspeichern:** Bestehende Privatprojekte werden ausschließlich über die freigegebenen veränderbaren Felder aktualisiert. Geschützte Identitäts- und Erstellungsfelder werden nur beim erstmaligen Anlegen geschrieben und nicht durch ein allgemeines Upsert überschrieben.
 
 ## Offene Entscheidungen
 
