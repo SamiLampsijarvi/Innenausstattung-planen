@@ -85,7 +85,8 @@ async function resetCase() {
   await q('update public.image_test_campaign set enabled=false, reserved_cents=0, photo_count=0, active_attempt=null, closed_at=null, actual_cents=null, billing_checked_at=null');
   await consent();
   const response = await call({ action: 'approve', photoId });
-  assert.equal(response.status, 200, 'Own photo approval through HTTP failed');
+  const approvalResponse = await response.json();
+  assert.equal(response.status, 200, `Own photo approval through HTTP failed: ${approvalResponse.error ?? 'no error message'}`);
   testPhotoId = (await (await call()).json()).photos[0].id;
 }
 async function arm() {
