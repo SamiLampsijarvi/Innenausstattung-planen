@@ -2,9 +2,9 @@
 
 ## Auftrag und aktueller Stand
 
-Der Nutzer hat am 31.08.2026 die zuvor erläuterte Gesamtphase beauftragt, mit Rückfrage vor Kosten. Diese Phase erweitert den älteren Abschnitt „Zwei interne Testpersonen“ um die zuvor fehlende echte KI-Erprobung und den Anbieterentscheid. Ausgangspunkt ist GitHub-main `36b91f4` nach Phase 7. Google bleibt ausgeschaltet. Dieser Stand erledigt die kostenfreie Vorbereitung, nicht die gesamte Phase 8.
+Der Nutzer hat am 31.08.2026 die zuvor erläuterte Gesamtphase beauftragt, mit Rückfrage vor Kosten. Diese Phase erweitert den älteren Abschnitt „Zwei interne Testpersonen“ um die zuvor fehlende echte KI-Erprobung und den Anbieterentscheid. Ausgangspunkt ist GitHub-main `36b91f4` nach Phase 7. Google bleibt ausgeschaltet. Dieser Stand erledigt die kostenfreie Vorbereitung und die nachfolgende Kostenbremse, nicht die gesamte Phase 8.
 
-Kostenfreier Umfang: aktuelle Anbieterunterlagen prüfen, die Eingabegrenze korrigieren, Testfälle und Bewertungsregeln vorbereiten, eine lokale Auswertung mit Tests bereitstellen und alles auf dem eigenen Branch speichern. Kein neues Cloudprojekt, kein Abrechnungskonto, keine Schlüssel, Migration, Testmitglieder oder echten Fotoübertragungen. Der normale Planungsablauf bleibt unverändert. Die vorhandenen 5-Foto-/2-Versuche-/300-Cent-Grenzen werden nicht zurückgesetzt oder erweitert.
+Kostenfreier Umfang: aktuelle Anbieterunterlagen prüfen, die Eingabegrenze korrigieren, Testfälle und Bewertungsregeln vorbereiten, eine lokale Auswertung mit Tests bereitstellen und alles auf dem eigenen Branch speichern. Anschließend wurde mit Nutzerfreigabe ein separates Google-Testprojekt mit verknüpfter Abrechnung angelegt und eine monatliche Vertex-AI-Ausgabenobergrenze von 4 € eingerichtet. Sie gilt nur für dieses Projekt und Vertex AI, pausiert den Dienst bei Erreichen und benachrichtigt bei 50 %, 80 % und 100 %. Google weist weiterhin auf mögliche Verzögerungen und geringfügige Überschreitungen bei bereits laufenden Anfragen hin; die 4 € lassen deshalb Puffer zum 5-€-Ziel. Die Vertex-AI-API ist weiterhin deaktiviert. Es gibt keine Schlüssel, Testmitglieder oder echten Fotoübertragungen. Der normale Planungsablauf bleibt unverändert. Die vorhandenen 5-Foto-/2-Versuche-/300-Cent-Grenzen werden nicht zurückgesetzt oder erweitert.
 
 ## Arbeitsabschnitte und Abschlussbedingungen
 
