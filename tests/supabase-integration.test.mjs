@@ -1,6 +1,6 @@
 import { before, after, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { execFileSync, spawn } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { createClient } from '@supabase/supabase-js';
@@ -46,6 +46,7 @@ async function startServer() {
     detached: true, stdio: 'ignore', env: { ...process.env,
       NEXT_PUBLIC_SUPABASE_URL: config.API_URL, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: config.ANON_KEY,
       SUPABASE_SERVICE_ROLE_KEY: config.SERVICE_ROLE_KEY, RAUMLY_IMAGE_TEST_ENABLED: 'true',
+      RAUMLY_IMAGE_TEST_ORIGIN: origin,
       RAUMLY_IMAGE_AI_ENABLED: 'false', GOOGLE_CLOUD_PROJECT: '',
     },
   });
@@ -84,10 +85,9 @@ async function resetCase() {
   await q('truncate public.image_test_results, public.image_test_attempts, public.image_test_photos');
   await q('update public.image_test_campaign set enabled=false, reserved_cents=0, photo_count=0, active_attempt=null, closed_at=null, actual_cents=null, billing_checked_at=null');
   await consent();
-  const response = await call({ action: 'approve', photoId });
-  const approvalResponse = await response.json();
-  assert.equal(response.status, 200, `Own photo approval through HTTP failed: ${approvalResponse.error ?? 'no error message'}`);
-  testPhotoId = (await (await call()).json()).photos[0].id;
+  // Prepare fixtures independently so an HTTP regression cannot hide SQL failures.
+  testPhotoId = await rpc('image_test_approve', { target_user: owner.id, target_photo: photoId,
+    photo_hash: createHash('sha256').update(image).digest('hex'), target_style: 'Japandi', target_budget: 1500 });
 }
 async function arm() {
   await q("update public.image_test_campaign set enabled=true, approved_until=now()+interval '10 minutes', price_review='isolated test only; Google disabled', reservation_cents=30, billing_checked_at=clock_timestamp()");
@@ -142,6 +142,9 @@ test('real HTTP consent and approval do not activate Google', async () => {
   assert.equal((await call({ action: 'approve', photoId })).status, 403);
   assert.equal((await call({ action: 'grant' })).status, 200);
   await resetCase();
+  const approval = await call({ action: 'approve', photoId });
+  const approvalBody = await approval.json();
+  assert.equal(approval.status, 200, `Own photo approval through HTTP failed: ${approvalBody.error ?? 'no error message'}`);
   await arm();
   const response = await call({ action: 'generate', testPhotoId, requestId: randomUUID() });
   assert.equal(response.status, 403);

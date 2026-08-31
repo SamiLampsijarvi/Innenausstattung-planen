@@ -1,6 +1,7 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { hashTestPhoto, runImageTest } from "../../../../lib/ai/image-generation/test-runner";
 import { createVertexImageProvider } from "../../../../lib/ai/image-generation/vertex-provider.server";
+import { isTrustedImageTestOrigin } from "../../../../lib/ai/image-generation/test-origin";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -63,7 +64,9 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     // No cookie authentication: bearer token plus same-origin mutation checks.
-    if (request.headers.get("origin") !== new URL(request.url).origin) throw new Error("Ungültiger Ursprung.");
+    if (!isTrustedImageTestOrigin(request.headers.get("origin"), process.env.RAUMLY_IMAGE_TEST_ORIGIN)) {
+      throw new Error("Ungültiger Ursprung oder fehlende serverseitige Testadresse.");
+    }
     if (Number(request.headers.get("content-length")) > 4096) throw new Error("Anfrage zu groß.");
     const raw = await request.text();
     if (raw.length > 4096) throw new Error("Anfrage zu groß.");

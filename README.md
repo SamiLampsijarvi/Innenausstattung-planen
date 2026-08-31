@@ -23,6 +23,7 @@ Die aktuelle Anwendung basiert auf Next.js und TypeScript. Nach der Installation
 - `pnpm lint`: statische Codeprüfung
 - `pnpm test:e2e`: vollständiger Planungsablauf in Desktop- und Mobilgröße
 - `pnpm test:db`: lokale PostgreSQL-Prüfung der dauerhaften Phase-7-Testbuchhaltung ohne Cloud-Zugriff
+- `pnpm test:integration`: vollständige Supabase-Prüfung ausschließlich im isolierten GitHub-Testjob, mit künstlichen Daten und ausgeschalteter Google-KI
 
 Bei Pull Requests nach `main` und Änderungen an `main` führt GitHub Actions diese Prüfungen automatisch aus. Ein Playwright-Bericht wird nur bei einem Fehler für sieben Tage als GitHub-Artefakt gespeichert.
 

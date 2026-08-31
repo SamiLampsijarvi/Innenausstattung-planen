@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import type { ImageGenerationProvider, ImageGenerationResult } from "../../src/lib/ai/image-generation/contracts";
 import { runImageTest, type TestLedger } from "../../src/lib/ai/image-generation/test-runner";
 import { assertImageTestWithinLimits } from "../../src/lib/ai/image-generation/test-limits";
+import { isTrustedImageTestOrigin } from "../../src/lib/ai/image-generation/test-origin";
 
 const result: ImageGenerationResult = { provider: "google-vertex", providerRequestId: "fake", image: new Uint8Array([1]),
   imageMimeType: "image/png", durationMs: 1, reservedCents: 30, actualChargedCents: null };
@@ -52,6 +53,15 @@ test("Speicherfehler führen nicht zu zweiter Generierung", async () => {
 test("ungültige Geldbeträge werden gesperrt", () => {
   for (const cents of [NaN, Infinity, -1, 0, 0.1]) {
     expect(() => assertImageTestWithinLimits({ distinctPhotoCount: 1, attemptsForPhoto: 0, reservedTotalCents: 0 }, cents)).toThrow();
+  }
+});
+test("Herkunftsprüfung nutzt nur die ausdrücklich konfigurierte Testadresse", () => {
+  expect(isTrustedImageTestOrigin("http://127.0.0.1:3102", "http://127.0.0.1:3102")).toBe(true);
+  for (const origin of [null, "null", "https://evil.example", "http://localhost:3102"]) {
+    expect(isTrustedImageTestOrigin(origin, "http://127.0.0.1:3102")).toBe(false);
+  }
+  for (const configured of [undefined, "null", "invalid", "https://example.test/path", "https://user:pass@example.test"]) {
+    expect(isTrustedImageTestOrigin(configured ?? null, configured)).toBe(false);
   }
 });
 test("interner Bereich ist ohne Konfiguration gesperrt und mobil lesbar", async ({ page, request }) => {
