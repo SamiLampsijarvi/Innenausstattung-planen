@@ -28,7 +28,9 @@ export type ImageGenerationResult = {
   image: Uint8Array;
   imageMimeType: "image/jpeg" | "image/png" | "image/webp";
   durationMs: number;
-  chargedCents: number;
+  reservedCents: number;
+  actualChargedCents: number | null;
+  usage?: { promptTokens?: number; responseTokens?: number; totalTokens?: number };
 };
 
 export interface ImageGenerationProvider {

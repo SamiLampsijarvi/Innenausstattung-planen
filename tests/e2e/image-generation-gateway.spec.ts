@@ -36,7 +36,8 @@ function createProvider(onCall: () => void): ImageGenerationProvider {
         image: new Uint8Array([4, 5, 6]),
         imageMimeType: "image/png",
         durationMs: 25,
-        chargedCents: 8,
+        reservedCents: 8,
+        actualChargedCents: null,
       };
     },
   };
@@ -90,6 +91,6 @@ test("ruft ausschließlich den vollständig freigegebenen Testanbieter auf", asy
 
   expect(calls).toBe(1);
   expect(result.provider).toBe("google-vertex");
-  expect(result.chargedCents).toBe(8);
+  expect(result.reservedCents).toBe(8);
 });
 

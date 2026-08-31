@@ -16,6 +16,7 @@ temp/
 
 # Abhängigkeiten und Build-Ausgaben
 node_modules/
+.pnpm-store/
 dist/
 build/
 .next/

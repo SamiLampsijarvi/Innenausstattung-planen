@@ -10,12 +10,12 @@ Vor einer endgültigen Anbieterwahl werden Google Vertex AI und OpenAI mit dense
 - Keine API-Schlüssel im Browser, Quellcode, Git oder Testbericht speichern. Spätere Schlüssel liegen ausschließlich serverseitig in einem Secret-Manager.
 - Die externe Generierung bleibt standardmäßig technisch ausgeschaltet.
 - Jeder Auftrag benötigt eine eigene KI-Einwilligung, einen ausdrücklich freigegebenen Anbieter und ein Kostenlimit.
-- Pro Anbieter gelten höchstens zwei automatische Versuche und insgesamt höchstens zwei Minuten je Versuch. Ein dritter Versuch darf nur bewusst gestartet werden.
+- Für den separaten Phase-7-Test gelten höchstens zwei bewusst einzeln gestartete Versuche je Foto und zwei Minuten je Versuch. Automatische Wiederholungen und ein dritter Versuch sind ausgeschlossen. Die ältere allgemeine Produktregel gilt nicht für diesen Test.
 - Vor echten Nutzern sind Auftragsverarbeitung, Verarbeitungsregion, Speicherfristen, Löschung und Datenschutzhinweise juristisch zu prüfen.
 
 ## Vergleichsbestand
 
-Der erste aussagekräftige Vergleich verwendet 20 bis 30 Wohnzimmerbilder mit unterschiedlichen Lichtverhältnissen, Perspektiven, Raumgrößen und Einrichtungsdichten. Beide Anbieter erhalten je Bild dieselbe Stil- und Budgetvorgabe. Anbietername und Reihenfolge werden bei der menschlichen Bewertung verborgen.
+Der spätere aussagekräftige Vergleich sieht 20 bis 30 Wohnzimmerbilder mit unterschiedlichen Lichtverhältnissen, Perspektiven, Raumgrößen und Einrichtungsdichten vor; er ist noch nicht freigegeben. Beide Anbieter sollen je Bild dieselbe Stil- und Budgetvorgabe erhalten. Anbietername und Reihenfolge werden bei der menschlichen Bewertung verborgen. Phase 7 bereitet ausschließlich einen begrenzten Vertex-Test mit maximal fünf Fotos vor und liefert keine endgültige Anbieterentscheidung.
 
 ## Bewertung je Ergebnis
 
@@ -53,6 +53,8 @@ Raumtreue und Nutzbarkeit zählen jeweils doppelt. Bei nahezu gleicher Qualität
 - Das offizielle Google Gen AI SDK ist serverseitig und auf Version 2 festgelegt.
 - Der Vertex-Adapter verwendet `gemini-3.1-flash-image`, 1K-Ausgabe und Application Default Credentials; ein API-Schlüssel wird weder im Browser noch im Repository vorgesehen.
 - Die externe Ausführung bleibt über `RAUMLY_IMAGE_AI_ENABLED=false` ausgeschaltet.
-- Der Testwächter begrenzt den Vergleich auf fünf Fotos, zwei Versuche je Foto und insgesamt 500 Cent reserviertes Budget.
+- Die dauerhafte Testbuchhaltung begrenzt die einmalige Kampagne auf fünf Fotos, zwei Versuche je Foto und nach der ergänzenden Bestätigung insgesamt 300 Cent reserviertes Budget. Die Differenz zum gewünschten 5-Euro-Gesamtbudget ist keine garantierte Absicherung gegen Google-Abrechnungsabweichungen.
 - Die endgültigen tatsächlichen Kosten werden später mit Google Cloud Billing abgeglichen, weil Vertex sie nicht unmittelbar in der Bildantwort meldet.
+- Jede Reservierung schaltet die Kampagne wieder aus. Der nächste Versuch verlangt einen dokumentierten späteren Abrechnungsabgleich und erneute Freigabe.
+- Technische Umsetzung, Sicherheitsnachweise, Grenzen und die späteren Google-Schritte: `docs/PHASE_7_CONTROLLED_VERTEX_TEST.md`.
 

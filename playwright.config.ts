@@ -16,9 +16,17 @@ export default defineConfig({
     { name: "mobile", use: { ...devices["Pixel 7"] } },
   ],
   webServer: {
-    command: "next dev -p 3100",
+    command: `"${process.execPath}" "${require.resolve("next/dist/bin/next")}" dev -p 3100`,
     url: "http://localhost:3100",
-    reuseExistingServer: true,
+    reuseExistingServer: false,
+    env: {
+      NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "sb_publishable_ci_placeholder",
+      RAUMLY_IMAGE_TEST_ENABLED: "false",
+      RAUMLY_IMAGE_AI_ENABLED: "false",
+      SUPABASE_SERVICE_ROLE_KEY: "",
+      GOOGLE_CLOUD_PROJECT: "",
+    },
     timeout: 120_000,
   },
 });

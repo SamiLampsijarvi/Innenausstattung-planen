@@ -22,6 +22,8 @@ Die aktuelle Anwendung basiert auf Next.js und TypeScript. Nach der Installation
 - `pnpm build`: Produktions-Build und TypeScript-Prüfung
 - `pnpm lint`: statische Codeprüfung
 - `pnpm test:e2e`: vollständiger Planungsablauf in Desktop- und Mobilgröße
+- `pnpm test:db`: lokale PostgreSQL-Prüfung der dauerhaften Phase-7-Testbuchhaltung ohne Cloud-Zugriff
+- `pnpm test:integration`: vollständige Supabase-Prüfung ausschließlich im isolierten GitHub-Testjob, mit künstlichen Daten und ausgeschalteter Google-KI
 
 Bei Pull Requests nach `main` und Änderungen an `main` führt GitHub Actions diese Prüfungen automatisch aus. Ein Playwright-Bericht wird nur bei einem Fehler für sieben Tage als GitHub-Artefakt gespeichert.
 
@@ -50,6 +52,8 @@ Bei Pull Requests nach `main` und Änderungen an `main` führt GitHub Actions di
 - Foto-Einwilligung nachweisbar erteilen und widerrufen; beim Widerruf gespeicherte Fotos löschen
 
 ## Bewusste MVP-Grenzen
+
+- Phase 7 bereitet unter `/internal/image-test` einen getrennten internen Vertex-Test vor: fünf Fotos, zwei bewusste Versuche und 3 € Reservierungsgrenze bei 5 € gewünschtem Gesamtbudget. Google bleibt ausgeschaltet; [Freigaben und offene Betriebsprüfungen](docs/PHASE_7_CONTROLLED_VERTEX_TEST.md) sind vor echter Nutzung erforderlich.
 
 - Der verwendete kostenlose Supabase-Tarif erstellt keine automatischen Datenbanksicherungen; vor einer öffentlichen Veröffentlichung wird ein passendes Sicherungs- und Löschkonzept benötigt
 - Rechtlich verbindliche Anbieter- und Verantwortlichenangaben sowie die abschließende Datenschutzerklärung benötigen vor einer Veröffentlichung eine juristische Prüfung

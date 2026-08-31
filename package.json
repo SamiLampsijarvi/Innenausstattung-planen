@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:db": "node --test tests/image-test-database.test.mjs",
+    "test:integration": "node --test --test-reporter=spec tests/supabase-integration.test.mjs"
   },
   "dependencies": {
     "@google/genai": "2.19.0",
@@ -19,12 +21,14 @@
     "react-dom": "19.2.8"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "0.5.8",
     "@playwright/test": "^1.62.1",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.3.1",
+    "pg": "8.23.0",
     "typescript": "^5"
   },
   "packageManager": "pnpm@11.19.0"
