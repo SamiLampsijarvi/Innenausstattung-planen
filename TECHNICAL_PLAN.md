@@ -271,6 +271,8 @@ Zentrale Möbel müssen zuverlässig erkannt werden. Kleine Fehler sind nur akze
 
 ### Phase 7: KI in Raumly integrieren
 
+**Aktuelle Eingrenzung vom 31. August 2026:** Zunächst ausschließlich ein separater kontrollierter Vertex-Test nach D-034. Technische Umsetzung und Offline-Prüfung sind freigegeben; echte Ausführung und Google-Einrichtung nicht. Fünf Fotos, zwei bewusst gestartete Versuche, 3 € interne Reservierungen. Der normale Produktablauf bleibt unverändert. Die nachfolgenden breiteren Integrationspunkte sind damit noch nicht freigegeben. Details: `docs/PHASE_7_CONTROLLED_VERTEX_TEST.md`.
+
 - interne Warteliste
 - Versuchs- und Zeitlogik
 - Entwurfserstellung und Farbpaletten

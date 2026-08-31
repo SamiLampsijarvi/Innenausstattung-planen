@@ -1,7 +1,7 @@
 export const IMAGE_TEST_LIMITS = {
   maximumPhotos: 5,
   maximumAttemptsPerPhoto: 2,
-  maximumTotalCents: 500,
+  maximumTotalCents: 300,
 } as const;
 
 export class ImageTestLimitError extends Error {
@@ -25,6 +25,11 @@ export function assertImageTestWithinLimits(
   usage: ImageTestUsage,
   nextRequestMaximumCents: number,
 ) {
+  if (![usage.distinctPhotoCount, usage.attemptsForPhoto, usage.reservedTotalCents].every(
+    (value) => Number.isSafeInteger(value) && value >= 0,
+  ) || !Number.isSafeInteger(nextRequestMaximumCents) || nextRequestMaximumCents <= 0) {
+    throw new ImageTestLimitError("Ungültige Testbuchhaltung oder Kostenreservierung.");
+  }
   if (usage.distinctPhotoCount > IMAGE_TEST_LIMITS.maximumPhotos) {
     throw new ImageTestLimitError("Der Test ist auf fünf freigegebene Fotos begrenzt.");
   }
@@ -34,7 +39,7 @@ export function assertImageTestWithinLimits(
   }
 
   if (usage.reservedTotalCents + nextRequestMaximumCents > IMAGE_TEST_LIMITS.maximumTotalCents) {
-    throw new ImageTestLimitError("Das freigegebene Testbudget von fünf Euro ist erreicht.");
+    throw new ImageTestLimitError("Das interne Testbudget von drei Euro ist erreicht.");
   }
 }
 

@@ -64,6 +64,9 @@ jobs:
       - name: Codequalität prüfen
         run: pnpm lint
 
+      - name: Persistente Testbuchhaltung lokal prüfen
+        run: pnpm test:db
+
       - name: Chromium für Browsertests installieren
         run: pnpm exec playwright install --with-deps chromium
 

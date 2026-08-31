@@ -6,11 +6,11 @@ import type {
 } from "./contracts";
 
 const MODEL_ID = "gemini-3.1-flash-image";
-const MAXIMUM_REQUEST_CENTS = 10;
 
 type VertexProviderConfig = {
   projectId: string;
   location?: string;
+  maximumRequestCents: number;
 };
 
 type VertexResponse = Awaited<ReturnType<GoogleGenAI["models"]["generateContent"]>>;
@@ -33,9 +33,13 @@ export function createVertexImageProvider(
 ): ImageGenerationProvider {
   const projectId = config.projectId.trim();
   const location = config.location?.trim() || "global";
+  if (location !== "global") throw new VertexImageResponseError("Für diesen Test ist nur der geprüfte globale Endpunkt vorgesehen.");
 
   if (!projectId) {
     throw new VertexImageResponseError("Die Google-Cloud-Projektkennung fehlt.");
+  }
+  if (!Number.isSafeInteger(config.maximumRequestCents) || config.maximumRequestCents < 1 || config.maximumRequestCents > 300) {
+    throw new VertexImageResponseError("Eine geprüfte Kostenreservierung fehlt.");
   }
 
   const client = injectedClient ?? new GoogleGenAI({
@@ -43,12 +47,14 @@ export function createVertexImageProvider(
     project: projectId,
     location,
     apiVersion: "v1",
+    httpOptions: { retryOptions: { attempts: 1 }, timeout: 120_000 },
   });
 
   return {
     id: "google-vertex",
-    maximumChargeCentsPerRequest: MAXIMUM_REQUEST_CENTS,
+    maximumChargeCentsPerRequest: config.maximumRequestCents,
     async generate(request, signal) {
+      signal.throwIfAborted();
       const startedAt = Date.now();
       const response = await client.models.generateContent({
         model: MODEL_ID,
@@ -66,12 +72,16 @@ export function createVertexImageProvider(
         }],
         config: {
           abortSignal: signal,
+          candidateCount: 1,
+          maxOutputTokens: 2048,
+          httpOptions: { retryOptions: { attempts: 1 }, timeout: 120_000 },
           responseModalities: [Modality.TEXT, Modality.IMAGE],
           imageConfig: { imageSize: "1K" },
         },
       });
 
-      return toImageResult(response, Date.now() - startedAt);
+      signal.throwIfAborted();
+      return toImageResult(response, Date.now() - startedAt, config.maximumRequestCents);
     },
   };
 }
@@ -87,7 +97,7 @@ function buildRoomPrompt(request: ImageGenerationRequest) {
   ].join(" ");
 }
 
-function toImageResult(response: VertexResponse, durationMs: number): ImageGenerationResult {
+function toImageResult(response: VertexResponse, durationMs: number, reservedCents: number): ImageGenerationResult {
   const parts = response.candidates?.[0]?.content?.parts ?? [];
   const imagePart = parts.find((part) => part.inlineData?.data);
   const data = imagePart?.inlineData?.data;
@@ -105,7 +115,13 @@ function toImageResult(response: VertexResponse, durationMs: number): ImageGener
     durationMs,
     // Vertex reports final costs asynchronously. The test ledger reserves the
     // conservative per-request ceiling and reconciles it with Cloud Billing.
-    chargedCents: MAXIMUM_REQUEST_CENTS,
+    reservedCents,
+    actualChargedCents: null,
+    usage: {
+      promptTokens: response.usageMetadata?.promptTokenCount,
+      responseTokens: response.usageMetadata?.candidatesTokenCount,
+      totalTokens: response.usageMetadata?.totalTokenCount,
+    },
   };
 }
 

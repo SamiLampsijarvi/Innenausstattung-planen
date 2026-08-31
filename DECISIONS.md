@@ -271,6 +271,18 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 - **Prüfplan:** Die vollständigen Kriterien und die noch nicht freigegebenen Aktionen stehen in `docs/IMAGE_PROVIDER_EVALUATION.md`.
 - **Vertex-Testgrenze:** Die technische Vorbereitung verwendet das offizielle serverseitige Google-SDK, das Modell `gemini-3.1-flash-image` mit 1K-Ausgabe sowie höchstens fünf freigegebene Fotos, zwei Versuche pro Foto und fünf Euro reserviertes Gesamtbudget. Zugang, Abrechnung und tatsächliche Ausführung bleiben getrennt gesperrt.
 
+### D-034: Kontrollierter interner Vertex-Test in Phase 7
+
+- **Status:** Technische Umsetzung und Offline-Prüfung am 31. August 2026 ausdrücklich freigegeben; Google-Einrichtung, Abrechnung, Fotoübertragung und Veröffentlichung weiterhin nicht freigegeben.
+- **Umfang:** Separater interner Testbereich; normaler Planungsablauf unverändert. Bestehendes Google-SDK und Modell `gemini-3.1-flash-image`, globaler Endpunkt, ein 1K-Ergebnis, maximal 2048 Ausgabetokens.
+- **Grenzen:** Eine einmalige Kampagne mit höchstens fünf ausdrücklich zugelassenen Fotos und zwei bewusst einzeln gestarteten Versuchen pro Foto. Keine automatischen Wiederholungen. Diese Testregel ersetzt die ältere Drei-Versuche-Regel ausschließlich für diesen Test.
+- **Kosten:** Nach der ergänzenden Abstimmung gelten 300 Cent interne Reservierungen bei 5 Euro gewünschtem Gesamtbudget. Die 2 Euro Differenz sind ein Risikopuffer, keine Garantie für Googles Rechnung. Ein geprüfter Höchstbetrag je Anfrage einschließlich Nebenkosten ist vor Aktivierung erforderlich; keine feste 10-Cent-Kostenzusage.
+- **Buchhaltung:** Supabase reserviert Versuch und Budget atomar, dauerhaft und vor jedem Versand. Jede Reservierung sperrt die Kampagne erneut. Weitere Versuche benötigen einen späteren Abrechnungsabgleich und erneute Betreiberfreigabe. Unklare Ausgänge behalten ihre Reservierung und blockieren den nächsten Aufruf.
+- **Einwilligung:** Getrennte, versionierte KI-Einwilligung plus Freigabe des konkreten Fotoinhalts. Nach Widerruf und erneuter Einwilligung muss das Foto erneut bestätigt werden, ohne Kontingente zurückzusetzen.
+- **Daten:** Ergebnisse werden für den kleinen Test privat in der Datenbank gespeichert, nicht in öffentlichen Dateien oder Produktentwürfen. Sie werden spätestens nach 30 Tagen (bei funktionierendem Löschzeitplan) beziehungsweise bei Widerruf oder zugehöriger endgültiger Löschung entfernt. Beim Löschen eines freigegebenen Originalfotos wird die Kampagne geschlossen, bevor dessen Fingerabdruck entfernt wird; erneutes Hochladen eröffnet somit keine neuen Versuche.
+- **Grenze der Prüfung:** Offline-PostgreSQL-Ausführung ist zusätzlich über eine reine Entwicklungsabhängigkeit abgesichert. Reale Supabase-Integration, gleichzeitige separate Datenbankverbindungen, tatsächlicher Löschzeitplan, Google-Authentifizierung, Preisprüfung und Bildqualität bleiben Freigabevoraussetzungen.
+- **Betriebsanleitung:** `docs/PHASE_7_CONTROLLED_VERTEX_TEST.md` beschreibt Sperren, Google-Schritte und Abnahme.
+
 ## Offene Entscheidungen
 
 - Markenname und visuelle Identität

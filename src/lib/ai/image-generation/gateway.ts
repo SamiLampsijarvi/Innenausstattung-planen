@@ -21,14 +21,14 @@ type GatewayOptions = {
 /**
  * Server-side safety boundary for future image providers.
  *
- * The gateway intentionally ships without a provider implementation. Adding an
- * API key or provider adapter alone can therefore never activate photo transfer.
+ * Persistent authorization and reservation are enforced by the test runner.
  */
 export function createImageGenerationGateway(
   providers: readonly ImageGenerationProvider[],
   options: GatewayOptions,
 ) {
-  const timeoutMs = options.timeoutMs ?? 120_000;
+  const timeoutMs = Math.min(options.timeoutMs ?? 120_000, 120_000);
+  if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) throw new ImageGenerationBlockedError("Ungültiges Zeitlimit.");
 
   return {
     async generate(request: ImageGenerationRequest): Promise<ImageGenerationResult> {
@@ -49,17 +49,25 @@ export function createImageGenerationGateway(
         throw new ImageGenerationBlockedError("Der freigegebene Bild-KI-Anbieter ist nicht eingerichtet.");
       }
 
-      if (request.maximumChargeCents < provider.maximumChargeCentsPerRequest) {
+      if (!Number.isSafeInteger(request.maximumChargeCents) || request.maximumChargeCents <= 0 ||
+        !Number.isSafeInteger(provider.maximumChargeCentsPerRequest) || provider.maximumChargeCentsPerRequest <= 0 ||
+        request.maximumChargeCents < provider.maximumChargeCentsPerRequest) {
         throw new ImageGenerationBlockedError("Das Kostenlimit reicht für diesen Auftrag nicht aus.");
       }
 
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), timeoutMs);
+      let timer: ReturnType<typeof setTimeout>;
+      const deadline = new Promise<never>((_, reject) => {
+        timer = setTimeout(() => {
+          controller.abort();
+          reject(new ImageGenerationBlockedError("Das Zeitlimit wurde erreicht; der Ausgang bleibt ungeklärt."));
+        }, timeoutMs);
+      });
 
       try {
-        return await provider.generate(request, controller.signal);
+        return await Promise.race([provider.generate(request, controller.signal), deadline]);
       } finally {
-        clearTimeout(timer);
+        clearTimeout(timer!);
       }
     },
   };

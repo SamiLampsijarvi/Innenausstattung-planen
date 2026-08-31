@@ -1,0 +1,8 @@
+.panel { margin-top: 24px; line-height: 1.6; overflow-wrap: anywhere; }
+.panel fieldset, .panel article { margin: 20px 0; padding: 18px; border: 1px solid #b8c2bc; border-radius: 10px; min-width: 0; }
+.panel button { padding: 10px 14px; margin: 6px 8px 6px 0; border: 1px solid #557364; border-radius: 6px; background: #eef4f0; color: #183b2c; cursor: pointer; max-width: 100%; }
+.panel button:disabled { opacity: .55; cursor: not-allowed; }
+.panel select { display: block; width: 100%; padding: 10px; }
+.panel input { margin-right: 8px; }
+.panel img { max-width: 100%; height: auto; }
+.panel figure { margin: 16px 0; }

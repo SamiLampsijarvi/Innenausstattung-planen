@@ -22,15 +22,17 @@ const request: ImageGenerationRequest = {
 };
 
 test("verlangt eine Google-Cloud-Projektkennung, ohne eine Verbindung aufzubauen", () => {
-  expect(() => createVertexImageProvider({ projectId: "" })).toThrow(VertexImageResponseError);
+  expect(() => createVertexImageProvider({ projectId: "", maximumRequestCents: 10 })).toThrow(VertexImageResponseError);
 });
 
 test("wandelt eine kontrollierte Vertex-Testantwort in das gemeinsame Format um", async () => {
   let receivedModel = "";
+  let receivedConfig: unknown;
   const client = {
     models: {
-      async generateContent(parameters: { model: string }) {
+      async generateContent(parameters: { model: string; config: unknown }) {
         receivedModel = parameters.model;
+        receivedConfig = parameters.config;
         return {
           responseId: "vertex-test-response",
           candidates: [{ content: { parts: [{ inlineData: { data: "BAUG", mimeType: "image/png" } }] } }],
@@ -38,23 +40,25 @@ test("wandelt eine kontrollierte Vertex-Testantwort in das gemeinsame Format um"
       },
     },
   };
-  const provider = createVertexImageProvider({ projectId: "raumly-test" }, client as never);
+  const provider = createVertexImageProvider({ projectId: "raumly-test", maximumRequestCents: 10 }, client as never);
 
   const result = await provider.generate(request, new AbortController().signal);
 
   expect(receivedModel).toBe("gemini-3.1-flash-image");
+  expect(receivedConfig).toMatchObject({ candidateCount: 1, maxOutputTokens: 2048, imageConfig: { imageSize: "1K" }, httpOptions: { retryOptions: { attempts: 1 }, timeout: 120000 } });
   expect(result.provider).toBe("google-vertex");
   expect(result.providerRequestId).toBe("vertex-test-response");
   expect(result.imageMimeType).toBe("image/png");
   expect(result.image).toEqual(new Uint8Array([4, 5, 6]));
-  expect(result.chargedCents).toBe(10);
+  expect(result.reservedCents).toBe(10);
+  expect(result.actualChargedCents).toBeNull();
 });
 
-test("erzwingt fünf Fotos, zwei Versuche und fünf Euro Gesamtbudget", () => {
-  expect(IMAGE_TEST_LIMITS).toEqual({ maximumPhotos: 5, maximumAttemptsPerPhoto: 2, maximumTotalCents: 500 });
-  expect(() => assertImageTestWithinLimits({ distinctPhotoCount: 5, attemptsForPhoto: 1, reservedTotalCents: 490 }, 10)).not.toThrow();
+test("erzwingt fünf Fotos, zwei Versuche und drei Euro internes Budget", () => {
+  expect(IMAGE_TEST_LIMITS).toEqual({ maximumPhotos: 5, maximumAttemptsPerPhoto: 2, maximumTotalCents: 300 });
+  expect(() => assertImageTestWithinLimits({ distinctPhotoCount: 5, attemptsForPhoto: 1, reservedTotalCents: 290 }, 10)).not.toThrow();
   expect(() => assertImageTestWithinLimits({ distinctPhotoCount: 6, attemptsForPhoto: 0, reservedTotalCents: 0 }, 10)).toThrow("fünf freigegebene Fotos");
   expect(() => assertImageTestWithinLimits({ distinctPhotoCount: 5, attemptsForPhoto: 2, reservedTotalCents: 0 }, 10)).toThrow("zwei Versuche");
-  expect(() => assertImageTestWithinLimits({ distinctPhotoCount: 5, attemptsForPhoto: 0, reservedTotalCents: 495 }, 10)).toThrow("fünf Euro");
+  expect(() => assertImageTestWithinLimits({ distinctPhotoCount: 5, attemptsForPhoto: 0, reservedTotalCents: 295 }, 10)).toThrow("drei Euro");
 });
 
