@@ -282,6 +282,8 @@ Zentrale Möbel müssen zuverlässig erkannt werden. Kleine Fehler sind nur akze
 
 ### Phase 8: Zwei interne Testpersonen
 
+**Erweiterter Auftrag vom 31. August 2026:** Die Phase umfasst nun die noch fehlende reale Bild-KI-Erprobung bis zur Produktentscheidung und anschließend, bei ausreichender Qualität und entsprechender Freigabe, die zwei internen Testpersonen. Zuerst kostenfreie Vorbereitung, dann gesonderte Kostenentscheidung für den Vertex-Pilot. Ein größerer Anbietervergleich und die breite Produktintegration behalten ihre eigenen Voraussetzungen; keine Veröffentlichung. Aktueller Arbeitsplan und Abgrenzung: `docs/PHASE_8_IMAGE_VALIDATION.md`.
+
 - erst nach Datenschutzprüfung und gesonderter Zustimmung
 - noch keine öffentliche Veröffentlichung
 - Ergebnisse dokumentieren und Produktprobleme priorisieren

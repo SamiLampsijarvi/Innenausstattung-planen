@@ -1,0 +1,8 @@
+{
+  "stage": "pilot",
+  "caseIds": ["F01", "F02", "F03", "F04", "F05"],
+  "variants": ["A"],
+  "budgetCents": 500,
+  "privacyReviewed": false,
+  "attempts": []
+}

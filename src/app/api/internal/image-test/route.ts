@@ -2,6 +2,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { hashTestPhoto, runImageTest } from "../../../../lib/ai/image-generation/test-runner";
 import { createVertexImageProvider } from "../../../../lib/ai/image-generation/vertex-provider.server";
 import { isTrustedImageTestOrigin } from "../../../../lib/ai/image-generation/test-origin";
+import { MAXIMUM_VERTEX_SOURCE_BYTES } from "../../../../lib/ai/image-generation/test-limits";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -34,7 +35,8 @@ async function photo(client: SupabaseClient, id: string) {
   const { data, error } = await client.from("project_photos").select("id, storage_path, project_id").eq("id", id).single();
   if (error || !data) throw new Error("Foto nicht verfügbar.");
   const { data: blob, error: downloadError } = await client.storage.from("room-photos").download(data.storage_path);
-  if (downloadError || !blob || blob.size > 10 * 1024 * 1024) throw new Error("Foto nicht verfügbar.");
+  if (downloadError || !blob) throw new Error("Foto nicht verfügbar.");
+  if (!blob.size || blob.size > MAXIMUM_VERTEX_SOURCE_BYTES) throw new Error("Das Testfoto muss zwischen 1 Byte und 7 MB groß sein.");
   const bytes = new Uint8Array(await blob.arrayBuffer());
   // File signatures, not browser-provided content types.
   const mime: "image/jpeg" | "image/png" | "image/webp" | null = bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff ? "image/jpeg" :

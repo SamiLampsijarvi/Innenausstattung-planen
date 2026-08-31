@@ -1,4 +1,5 @@
 import { GoogleGenAI, Modality } from "@google/genai";
+import { MAXIMUM_VERTEX_SOURCE_BYTES } from "./test-limits";
 import type {
   ImageGenerationProvider,
   ImageGenerationRequest,
@@ -55,6 +56,9 @@ export function createVertexImageProvider(
     maximumChargeCentsPerRequest: config.maximumRequestCents,
     async generate(request, signal) {
       signal.throwIfAborted();
+      if (!request.input.sourceImage.length || request.input.sourceImage.length > MAXIMUM_VERTEX_SOURCE_BYTES) {
+        throw new VertexImageResponseError("Das Testfoto muss zwischen 1 Byte und 7 MB groß sein.");
+      }
       const startedAt = Date.now();
       const response = await client.models.generateContent({
         model: MODEL_ID,

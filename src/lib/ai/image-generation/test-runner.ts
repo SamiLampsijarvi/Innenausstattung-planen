@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import type { ImageGenerationProvider, ImageGenerationResult } from "./contracts";
 import { createImageGenerationGateway } from "./gateway";
+import { MAXIMUM_VERTEX_SOURCE_BYTES } from "./test-limits";
 
 export type Reservation = { reservedCents: number; style: string; budgetEuro: number; grantedAt: string; policyVersion: string };
 export type TestLedger = {
@@ -22,7 +23,7 @@ export async function runImageTest(options: {
   timeoutMs?: number;
 }) {
   if (!options.enabled) throw new Error("Externe Bild-KI ist ausgeschaltet.");
-  if (!options.bytes.length || options.bytes.length > 10 * 1024 * 1024) throw new Error("Ungültige Fotogröße.");
+  if (!options.bytes.length || options.bytes.length > MAXIMUM_VERTEX_SOURCE_BYTES) throw new Error("Das Testfoto muss zwischen 1 Byte und 7 MB groß sein.");
   // Never retry a failed/ambiguous reservation: its database commit may have succeeded.
   const reservation = await options.ledger.reserve(hashTestPhoto(options.bytes));
   try {

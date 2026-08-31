@@ -24,6 +24,8 @@ Die aktuelle Anwendung basiert auf Next.js und TypeScript. Nach der Installation
 - `pnpm test:e2e`: vollständiger Planungsablauf in Desktop- und Mobilgröße
 - `pnpm test:db`: lokale PostgreSQL-Prüfung der dauerhaften Phase-7-Testbuchhaltung ohne Cloud-Zugriff
 - `pnpm test:integration`: vollständige Supabase-Prüfung ausschließlich im isolierten GitHub-Testjob, mit künstlichen Daten und ausgeschalteter Google-KI
+- `pnpm test:evaluation`: Regeln der lokalen Phase-8-Bildauswertung
+- `pnpm evaluate:images docs/templates/image-evaluation.example.json`: leere Auswertung ohne Fotos, Netzwerk oder KI-Kosten
 
 Bei Pull Requests nach `main` und Änderungen an `main` führt GitHub Actions diese Prüfungen automatisch aus. Ein Playwright-Bericht wird nur bei einem Fehler für sieben Tage als GitHub-Artefakt gespeichert.
 
@@ -65,6 +67,8 @@ Bei Pull Requests nach `main` und Änderungen an `main` führt GitHub Actions di
 - Noch keine Bezahlung
 
 ## Empfohlene nächste Phasen
+
+Phase 8 ist als Gesamtphase beauftragt; die kostenfreie Vorbereitung und verbleibenden Freigaben stehen in `docs/PHASE_8_IMAGE_VALIDATION.md`. Echte KI-Aufrufe und eine Veröffentlichung sind noch nicht erfolgt.
 
 1. Google Vertex AI und OpenAI nach `docs/IMAGE_PROVIDER_EVALUATION.md` mit freigegebenen Testbildern vergleichen; Konten, Schlüssel, Abrechnung und Fotoübertragung benötigen eine gesonderte Freigabe.
 2. Den vereinfachten Ablauf und die KI-Ergebnisse mit Testnutzern validieren.

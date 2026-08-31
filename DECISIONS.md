@@ -285,6 +285,15 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 - **Weiterhin offen:** Benanntes Testkonto und sichere Serverkonfiguration, laufende Kontrolle des Löschbetriebs, Google-Authentifizierung, Preisprüfung, Datenschutzfreigabe und echte Bildqualität. Die Vorbereitungsabnahme ist keine Freigabe zur Fotoübertragung.
 - **Betriebsanleitung:** `docs/PHASE_7_CONTROLLED_VERTEX_TEST.md` beschreibt Sperren, Google-Schritte und Abnahme.
 
+### D-035: Phase 8 – Bild-KI-Erprobung bis zur Produktentscheidung
+
+- **Status:** Am 31. August 2026 nach Erläuterung des erweiterten Plans beauftragt; vor Kosten nachfragen. Der erste Arbeitsstand umfasst ausschließlich kostenfreie Vorbereitung, keine echte KI-Ausführung.
+- **Umfang:** Testfälle, separate Datenschutz- und Kostenprüfung, begrenzter Vertex-Pilot, anschließend gegebenenfalls gesondert budgetierter Anbietervergleich, Produktintegration und zwei interne Testpersonen unter den im Plan genannten Voraussetzungen.
+- **Kontinuität:** Die Phase-7-Grenzen und die abgeschaltete externe KI bleiben erhalten. Keine Freigabe für neue Kosten, konkrete Fotoübertragungen oder Veröffentlichung aus dem allgemeinen Entwicklungsauftrag ableiten.
+- **Vorbereitung:** Lokale Auswertung mit anonymen Fall-/Variantenkennungen; Fehlversuche zählen mit, unbekannte Kosten bleiben unbekannt, fünf Fotos erlauben keine endgültige Anbieterentscheidung. Echte Auswertungsdaten bleiben außerhalb Git.
+- **Anbieterkorrektur:** Der separate Vertex-Testpfad begrenzt Inline-Eingabefotos gemäß erneut geprüfter Modelldokumentation auf konservative 7.000.000 Bytes, vor Reservierung und vor Versand. Der normale Fotoablauf bleibt unverändert.
+- **Plan und Nachweise:** `docs/PHASE_8_IMAGE_VALIDATION.md`. Die gesamte Phase bleibt bis zu realen Ergebnissen und dokumentierter Produktentscheidung offen.
+
 ## Offene Entscheidungen
 
 - Markenname und visuelle Identität

@@ -90,7 +90,7 @@ export default function ImageTestPanel() {
             {state.availablePhotos.map((photo) => <option key={photo.id} value={photo.id}>{photo.original_name}</option>)}
           </select>
         </label>
-        <p>Nur eigene oder zur KI-Verarbeitung berechtigte Bilder ohne Personen, Dokumente oder andere sensible Details verwenden.</p>
+        <p>Für den KI-Test höchstens 7 MB je Foto. Nur eigene oder zur KI-Verarbeitung berechtigte Bilder ohne Personen, Dokumente oder andere sensible Details verwenden.</p>
         <button disabled={!photoId} onClick={() => act({ action: "approve", photoId })}>Dieses Foto für den KI-Test freigeben</button>
       </fieldset>
       {state.photos.map((photo, index) => <article key={photo.id}>

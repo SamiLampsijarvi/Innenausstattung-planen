@@ -2,7 +2,7 @@ name: Qualität
 
 on:
   push:
-    branches: [main, codex/phase-7-controlled-vertex-test]
+    branches: [main, codex/phase-7-controlled-vertex-test, codex/phase-8-image-evaluation]
   pull_request:
     branches: [main]
 
@@ -88,6 +88,9 @@ jobs:
 
       - name: Persistente Testbuchhaltung lokal prüfen
         run: pnpm test:db
+
+      - name: Offline-Bildauswertung prüfen
+        run: pnpm test:evaluation
 
       - name: Chromium für Browsertests installieren
         run: pnpm exec playwright install --with-deps chromium

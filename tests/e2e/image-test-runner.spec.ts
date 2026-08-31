@@ -3,6 +3,7 @@ import type { ImageGenerationProvider, ImageGenerationResult } from "../../src/l
 import { runImageTest, type TestLedger } from "../../src/lib/ai/image-generation/test-runner";
 import { assertImageTestWithinLimits } from "../../src/lib/ai/image-generation/test-limits";
 import { isTrustedImageTestOrigin } from "../../src/lib/ai/image-generation/test-origin";
+import { MAXIMUM_VERTEX_SOURCE_BYTES } from "../../src/lib/ai/image-generation/test-limits";
 
 const result: ImageGenerationResult = { provider: "google-vertex", providerRequestId: "fake", image: new Uint8Array([1]),
   imageMimeType: "image/png", durationMs: 1, reservedCents: 30, actualChargedCents: null };
@@ -23,6 +24,18 @@ test("ohne Aktivierung weder Buchung noch Anbieterzugriff", async () => {
   const f = fixture();
   await expect(runImageTest({ ...f.options, enabled: false })).rejects.toThrow("ausgeschaltet");
   expect(f.events).toEqual([]);
+});
+
+test("zu großes Eingabefoto verbraucht weder Versuch noch Reservierung", async () => {
+  const f = fixture();
+  await expect(runImageTest({ ...f.options, bytes: new Uint8Array(MAXIMUM_VERTEX_SOURCE_BYTES + 1) })).rejects.toThrow("7 MB");
+  expect(f.events).toEqual([]);
+});
+
+test("Foto genau an der Eingabegrenze bleibt zulässig", async () => {
+  const f = fixture();
+  await runImageTest({ ...f.options, bytes: new Uint8Array(MAXIMUM_VERTEX_SOURCE_BYTES) });
+  expect(f.events).toEqual(["reserve", "consent", "google", "result"]);
 });
 test("bucht vor dem Versand und prüft unmittelbar vorher die Einwilligung", async () => {
   const f = fixture();

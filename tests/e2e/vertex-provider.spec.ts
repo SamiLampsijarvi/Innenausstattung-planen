@@ -62,3 +62,11 @@ test("erzwingt fünf Fotos, zwei Versuche und drei Euro internes Budget", () => 
   expect(() => assertImageTestWithinLimits({ distinctPhotoCount: 5, attemptsForPhoto: 0, reservedTotalCents: 295 }, 10)).toThrow("drei Euro");
 });
 
+test("weist übergroße Fotos auch bei direktem Adapteraufruf ohne Netzaufruf ab", async () => {
+  let called = false;
+  const client = { models: { async generateContent() { called = true; return {}; } } };
+  const provider = createVertexImageProvider({ projectId: "raumly-test", maximumRequestCents: 30 }, client as never);
+  await expect(provider.generate({ ...request, input: { ...request.input, sourceImage: new Uint8Array(7_000_001) } }, new AbortController().signal)).rejects.toThrow("7 MB");
+  expect(called).toBe(false);
+});
+
