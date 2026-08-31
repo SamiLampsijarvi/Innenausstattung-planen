@@ -2,7 +2,7 @@ name: Qualität
 
 on:
   push:
-    branches: [main]
+    branches: [main, codex/phase-7-controlled-vertex-test]
   pull_request:
     branches: [main]
 
@@ -28,11 +28,33 @@ jobs:
         with:
           version: latest
 
+      - name: pnpm einrichten
+        uses: pnpm/action-setup@v6
+
+      - name: Node.js einrichten
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Testabhängigkeiten installieren
+        run: pnpm install --frozen-lockfile
+
       - name: Lokale Testdatenbank starten
-        run: supabase start
+        run: |
+          if ! supabase start > "$RUNNER_TEMP/supabase-start.log" 2>&1; then
+            echo "Isolierter Supabase-Start fehlgeschlagen; keine Zugangsdaten werden ausgegeben."
+            exit 1
+          fi
 
       - name: Zugriffs- und Löschregeln prüfen
         run: supabase test db
+
+      - name: Echte Parallelzugriffe, Authentifizierung und Löschzeitplan prüfen
+        env:
+          RAUMLY_ISOLATED_SUPABASE: '1'
+          RAUMLY_IMAGE_AI_ENABLED: 'false'
+        run: pnpm test:integration
 
   quality:
     name: Build, Lint und Browsertests
