@@ -1,5 +1,7 @@
 # Phase 9 – Raumtreue und Ergebnisqualität
 
+**Stand 1. September 2026:** Der kostenfreie erste Abschnitt ist implementiert. Die Datenbankmigration wurde additiv in das Supabase-Entwicklungsprojekt übernommen. Vertex AI blieb ausgeschaltet; es wurde kein Foto übertragen und keine KI-Anfrage ausgelöst.
+
 ## Verbindliches Ziel
 
 Ein Inspirationsbild darf nur dann als brauchbar gelten, wenn sichtbare Türen, Fenster, Durchgänge, Wände, Boden und Perspektive des Ausgangsfotos erhalten bleiben. Möbel, Farben, Textilien und Dekoration dürfen sich im Rahmen des gewählten Stils und Budgets ändern. Ein erfundenes Architekturelement – etwa eine zusätzliche Tür – ist ein Ablehnungsgrund.
@@ -29,3 +31,11 @@ Eine automatische Bildprüfung kann nur ein Vorfilter sein, keine absolute Garan
 Bildmodelle können trotz genauer Anweisungen Architekturdetails verändern. Die verlässliche Schutzmaßnahme der ersten Ausbaustufe ist daher die Sperre bis zur menschlichen Prüfung. Google dokumentiert Bildgenerierung und Bildbearbeitung, aber keine Garantie für unveränderte Raumgeometrie; Raumly darf eine solche Garantie nicht behaupten. [Google-Dokumentation](https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/capabilities/image-generation?hl=fr)
 
 Die Umsetzung erfolgt auf einem eigenen Branch, ohne neue Bildaufrufe. Eine spätere automatische Prüfschicht benötigt eine neue, konkrete Kosten- und Datenschutzfreigabe.
+
+## Technische Abnahme des ersten Abschnitts
+
+- Das Raumtreue-Profil wird in Supabase dauerhaft am freigegebenen Testfoto gespeichert und kann nach dem ersten Versuch nicht mehr geändert werden.
+- Datenbank, Serverroute und Testläufer blockieren einen Auftrag ohne gültiges Profil.
+- Der interne Bereich zeigt Original und Ergebnis gemeinsam. Eine Annahme verlangt die bewusste Kontrolle aller sechs Merkmale; eine Ablehnung entfernt das private Ergebnis und erhält die Testbuchhaltung.
+- Lint, Produktionsbuild, 18 lokale Datenbankprüfungen, 11 Auswertungsprüfungen und 60 Desktop-/Mobilprüfungen liefen erfolgreich.
+- Der bestehende destruktive Supabase-Integrationstest wurde nicht gegen das befüllte Entwicklungsprojekt wiederholt, weil er zu Beginn die gesamte Testkampagne leert. Seine Phase-9-Testvorbereitung wurde für den nächsten isolierten Lauf ergänzt.

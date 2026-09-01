@@ -88,6 +88,8 @@ async function resetCase() {
   // Prepare fixtures independently so an HTTP regression cannot hide SQL failures.
   testPhotoId = await rpc('image_test_approve', { target_user: owner.id, target_photo: photoId,
     photo_hash: createHash('sha256').update(image).digest('hex'), target_style: 'Japandi', target_budget: 1500 });
+  await rpc('image_test_set_room_fidelity', { target_user: owner.id, target_test_photo: testPhotoId,
+    profile: { doors: 1, windows: 2, openings: 0, protectedArchitecture: true } });
 }
 async function arm() {
   await q("update public.image_test_campaign set enabled=true, approved_until=now()+interval '10 minutes', price_review='isolated test only; Google disabled', reservation_cents=30, billing_checked_at=clock_timestamp()");

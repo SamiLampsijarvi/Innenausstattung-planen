@@ -1,5 +1,6 @@
 import { GoogleGenAI, Modality } from "@google/genai";
 import { MAXIMUM_VERTEX_SOURCE_BYTES } from "./test-limits";
+import { roomFidelityInstruction } from "./room-fidelity";
 import type {
   ImageGenerationProvider,
   ImageGenerationRequest,
@@ -98,6 +99,7 @@ function buildRoomPrompt(request: ImageGenerationRequest) {
     "Bewahre Raumgeometrie, Perspektive, Fenster, Türen, Wände und Boden so genau wie möglich.",
     "Erzeuge keine Personen, Texte, Logos, Grundrisse oder Maßangaben.",
     "Das Ergebnis ist eine Inspiration und keine maßgenaue Planung.",
+    roomFidelityInstruction(request.input.roomFidelity),
   ].join(" ");
 }
 

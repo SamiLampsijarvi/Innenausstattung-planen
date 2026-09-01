@@ -14,7 +14,11 @@ const request = (n) => `bbbbbbbb-bbbb-4bbb-8bbb-${String(n).padStart(12, '0')}`;
 const hash = (n) => String(n).padStart(64, 'a');
 const scalar = async (sql, params = []) => Object.values((await db.query(sql, params)).rows[0])[0];
 const approve = (n, owner = user) => scalar('select public.image_test_approve($1,$2,$3,$4,$5)', [owner, photo(n), hash(n), 'Japandi', 1500]);
-const reserve = (id, n, h = hash(1), owner = user) => scalar('select public.image_test_reserve($1,$2,$3,$4)', [owner, id, request(n), h]);
+const setFidelity = (id, owner = user, profile = { doors: 1, windows: 2, openings: 0, protectedArchitecture: true }) => scalar('select public.image_test_set_room_fidelity($1,$2,$3)', [owner, id, JSON.stringify(profile)]);
+const reserve = async (id, n, h = hash(1), owner = user) => {
+  if (await scalar('select room_fidelity_profile is null from public.image_test_photos where id=$1', [id])) await setFidelity(id, owner);
+  return scalar('select public.image_test_reserve($1,$2,$3,$4)', [owner, id, request(n), h]);
+};
 const arm = () => db.exec("update public.image_test_campaign set enabled=true, approved_until=now()+interval '1 hour', price_review='offline fixture only', reservation_cents=30, billing_checked_at=clock_timestamp()");
 const finish = (n, image = 'AQ==') => scalar('select public.image_test_finish($1,$2,$3,$4,$5,$6,$7)', [user, request(n), image, 'image/png', 20, 'fake-response', {}]);
 async function scenario(body) {
@@ -45,6 +49,8 @@ before(async () => {
   await db.exec(migration.replace('create extension if not exists pg_cron;', '-- pg_cron scheduler stubbed in this offline harness'));
   const operatorArm = await readFile(new URL('../supabase/migrations/202609010001_image_test_operator_arm.sql', import.meta.url), 'utf8');
   await db.exec(operatorArm);
+  const roomFidelity = await readFile(new URL('../supabase/migrations/202609010002_room_fidelity_gate.sql', import.meta.url), 'utf8');
+  await db.exec(roomFidelity);
   await db.exec(`insert into auth.users values('${user}'),('${other}');
     insert into public.projects values('${user}','${user}',null),('${other}','${other}',null);
     insert into public.image_test_members values('${user}'),('${other}');
@@ -60,6 +66,26 @@ test('database defaults remain disabled with no price authorization', () => scen
   const id = await approve(1);
   await assert.rejects(reserve(id, 1), /disabled/);
   assert.equal(await scalar('select reserved_cents from public.image_test_campaign'), 0);
+}));
+test('room fidelity profile is validated and required before reservation', () => scenario(async () => {
+  const id = await approve(1); await arm();
+  await assert.rejects(scalar('select public.image_test_reserve($1,$2,$3,$4)', [user, id, request(1), hash(1)]), /room fidelity profile required/);
+  await assert.rejects(setFidelity(id, user, { doors: -1, windows: 2, openings: 0, protectedArchitecture: true }), /invalid room fidelity profile/);
+  await setFidelity(id);
+  const reservation = await scalar('select public.image_test_reserve($1,$2,$3,$4)', [user, id, request(1), hash(1)]);
+  assert.deepEqual(reservation.roomFidelityProfile, { doors: 1, windows: 2, openings: 0, protectedArchitecture: true });
+}));
+test('successful result remains pending until accepted and rejection removes it', () => scenario(async () => {
+  const id = await approve(1); await arm(); await reserve(id, 1); await finish(1);
+  assert.equal(await scalar('select room_fidelity_status from public.image_test_attempts where id=$1', [request(1)]), 'pending');
+  await scalar('select public.image_test_review_room_fidelity($1,$2,true)', [user, request(1)]);
+  assert.equal(await scalar('select room_fidelity_status from public.image_test_attempts where id=$1', [request(1)]), 'accepted');
+  await db.exec("update public.image_test_campaign set enabled=true, billing_checked_at=clock_timestamp()");
+  await reserve(id, 2); await finish(2);
+  await scalar('select public.image_test_review_room_fidelity($1,$2,false)', [user, request(2)]);
+  assert.equal(await scalar('select status from public.image_test_attempts where id=$1', [request(2)]), 'discarded');
+  assert.equal(await scalar('select count(*) from public.image_test_results where attempt_id=$1', [request(2)]), 0);
+  assert.equal(await scalar('select reserved_cents from public.image_test_campaign'), 60);
 }));
 test('only server role can read state or mutate accounting', () => scenario(async () => {
   assert.equal(await scalar("select has_function_privilege('authenticated','public.image_test_reserve(uuid,uuid,uuid,text)','execute')"), false);

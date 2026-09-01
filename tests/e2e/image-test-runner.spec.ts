@@ -11,7 +11,7 @@ const result: ImageGenerationResult = { provider: "google-vertex", providerReque
 function fixture() {
   const events: string[] = [];
   const ledger: TestLedger = {
-    async reserve() { events.push("reserve"); return { reservedCents: 30, style: "Japandi", budgetEuro: 1500, grantedAt: new Date().toISOString(), policyVersion: "vertex-test-v1" }; },
+    async reserve() { events.push("reserve"); return { reservedCents: 30, style: "Japandi", budgetEuro: 1500, grantedAt: new Date().toISOString(), policyVersion: "vertex-test-v1", roomFidelityProfile: { doors: 1, windows: 2, openings: 0, protectedArchitecture: true } }; },
     async canDispatch() { events.push("consent"); return true; },
     async finish(value) { events.push(value ? "result" : "unknown"); return value ? "succeeded" : "unknown"; },
   };

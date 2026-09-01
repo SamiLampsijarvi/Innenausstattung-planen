@@ -3,6 +3,7 @@ import { hashTestPhoto, runImageTest } from "../../../../lib/ai/image-generation
 import { createVertexImageProvider } from "../../../../lib/ai/image-generation/vertex-provider.server";
 import { isTrustedImageTestOrigin } from "../../../../lib/ai/image-generation/test-origin";
 import { MAXIMUM_VERTEX_SOURCE_BYTES } from "../../../../lib/ai/image-generation/test-limits";
+import { isRoomFidelityProfile } from "../../../../lib/ai/image-generation/room-fidelity";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -52,6 +53,15 @@ export async function GET(request: Request) {
   try {
     const { admin, userClient, userId } = await authorize(request);
     const resultId = new URL(request.url).searchParams.get("result");
+    const sourceId = new URL(request.url).searchParams.get("source");
+    if (sourceId) {
+      if (!uuid.test(sourceId)) throw new Error("Ungültige Fotokennung.");
+      const state = await rpc(admin, "image_test_state", { target_user: userId });
+      const approved = state.photos.find((item: { id: string }) => item.id === sourceId);
+      if (!approved?.photo_id) throw new Error("Foto nicht freigegeben.");
+      const source = await photo(userClient, approved.photo_id);
+      return new Response(Buffer.from(source.bytes), { headers: { ...headers, "Content-Type": source.mime } });
+    }
     if (resultId) {
       if (!uuid.test(resultId)) throw new Error("Ungültige Ergebniskennung.");
       const result = await rpc(admin, "image_test_read_result", { target_user: userId, request_id: resultId });
@@ -88,6 +98,10 @@ export async function POST(request: Request) {
       await rpc(admin, "image_test_approve", { ...args, target_photo: body.photoId, photo_hash: hashTestPhoto(source.bytes), target_style: project.living_room.style, target_budget: project.living_room.budget });
     } else if (body.action === "delete" && uuid.test(body.requestId)) {
       await rpc(admin, "image_test_delete_result", { ...args, request_id: body.requestId });
+    } else if (body.action === "setRoomFidelity" && uuid.test(body.testPhotoId) && isRoomFidelityProfile(body.profile)) {
+      await rpc(admin, "image_test_set_room_fidelity", { ...args, target_test_photo: body.testPhotoId, profile: body.profile });
+    } else if (body.action === "reviewRoomFidelity" && uuid.test(body.requestId) && typeof body.accepted === "boolean") {
+      await rpc(admin, "image_test_review_room_fidelity", { ...args, request_id: body.requestId, accepted: body.accepted });
     } else if (body.action === "generate" && uuid.test(body.testPhotoId) && uuid.test(body.requestId)) {
       if (process.env.RAUMLY_IMAGE_AI_ENABLED !== "true") throw new Error("Externe Bild-KI ist ausgeschaltet.");
       if (!process.env.GOOGLE_CLOUD_PROJECT) throw new Error("Google-Projekt fehlt.");

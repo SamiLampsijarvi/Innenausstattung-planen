@@ -15,6 +15,7 @@ const validRequest: ImageGenerationRequest = {
     roomType: "living-room",
     style: "Japandi",
     budgetEuro: 3_000,
+    roomFidelity: { doors: 1, windows: 2, openings: 0, protectedArchitecture: true },
   },
   consent: {
     granted: true,

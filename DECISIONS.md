@@ -298,11 +298,13 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 
 ### D-036: Phase 9 – Raumtreue als Annahmegrenze
 
-- **Status:** Am 1. September 2026 als nächste große Phase bestätigt; Implementierung beginnt ohne neue Bildaufrufe.
+- **Status:** Der kostenfreie erste Abschnitt wurde am 1. September 2026 umgesetzt und geprüft; es erfolgte kein neuer Bildaufruf.
 - **Entscheidung:** Raumly behandelt sichtbare Türen, Fenster, Durchgänge, Wände, Boden und Perspektive als unveränderliche Raummerkmale. Ein Bild mit einem erfundenen oder fehlenden solchen Merkmal gilt als nicht brauchbar.
 - **Erster Umfang:** Raumtreue-Profil, strenger Bearbeitungsauftrag und verpflichtende menschliche Annahme oder Verwerfung im getrennten Testbereich. Der normale Ablauf bleibt unverändert.
 - **Grenze:** Eine automatische Bildprüfung ist zunächst nicht Teil der Umsetzung, weil sie ohne zusätzlichen Bild- oder Visiondienst keine belastbare Architekturprüfung leisten kann. Ein solcher Dienst benötigt eine separate Kosten- und Datenschutzfreigabe.
 - **Nachweis:** Details und Prüfkriterien stehen in `docs/PHASE_9_ROOM_FIDELITY.md`.
+- **Umsetzung:** Das Supabase-Entwicklungsprojekt verlangt vor jeder Reservierung ein serverseitig validiertes Raumtreue-Profil. Der Vertex-Auftrag erhält dieses Profil zwingend. Erfolgreich erzeugte Bilder bleiben bis zum geschützten Originalvergleich `pending`; Annahme wird protokolliert, Ablehnung löscht das Ergebnis, aber weder Versuch noch Reservierung.
+- **Weiterhin offen:** Eine pixelgenaue Garantie außerhalb eines markierten Änderungsbereichs ist nicht umgesetzt. Sie benötigt eine gesonderte Masken- und Kompositionslösung; eine automatische KI-Prüfung bleibt ebenfalls kosten- und datenschutzpflichtig und ausgeschaltet.
 
 ## Offene Entscheidungen
 

@@ -16,6 +16,7 @@ const request: ImageGenerationRequest = {
     roomType: "living-room",
     style: "Japandi",
     budgetEuro: 3_000,
+    roomFidelity: { doors: 1, windows: 2, openings: 0, protectedArchitecture: true },
   },
   consent: { granted: true, grantedAt: "2026-08-30T12:00:00.000Z", policyVersion: "test-v1" },
   maximumChargeCents: 10,
@@ -28,11 +29,13 @@ test("verlangt eine Google-Cloud-Projektkennung, ohne eine Verbindung aufzubauen
 test("wandelt eine kontrollierte Vertex-Testantwort in das gemeinsame Format um", async () => {
   let receivedModel = "";
   let receivedConfig: unknown;
+  let receivedPrompt = "";
   const client = {
     models: {
-      async generateContent(parameters: { model: string; config: unknown }) {
+      async generateContent(parameters: { model: string; config: unknown; contents: { parts: { text?: string }[] }[] }) {
         receivedModel = parameters.model;
         receivedConfig = parameters.config;
+        receivedPrompt = parameters.contents[0].parts.find((part) => part.text)?.text ?? "";
         return {
           responseId: "vertex-test-response",
           candidates: [{ content: { parts: [{ inlineData: { data: "BAUG", mimeType: "image/png" } }] } }],
@@ -46,6 +49,8 @@ test("wandelt eine kontrollierte Vertex-Testantwort in das gemeinsame Format um"
 
   expect(receivedModel).toBe("gemini-3.1-flash-image");
   expect(receivedConfig).toMatchObject({ candidateCount: 1, maxOutputTokens: 2048, imageConfig: { imageSize: "1K" }, httpOptions: { retryOptions: { attempts: 1 }, timeout: 120000 } });
+  expect(receivedPrompt).toContain("1 Türen, 2 Fenster");
+  expect(receivedPrompt).toContain("Füge keine Architektur hinzu");
   expect(result.provider).toBe("google-vertex");
   expect(result.providerRequestId).toBe("vertex-test-response");
   expect(result.imageMimeType).toBe("image/png");

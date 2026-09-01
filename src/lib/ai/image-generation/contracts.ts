@@ -1,3 +1,5 @@
+import type { RoomFidelityProfile } from "./room-fidelity";
+
 export const IMAGE_PROVIDER_IDS = ["google-vertex", "openai"] as const;
 
 export type ImageProviderId = (typeof IMAGE_PROVIDER_IDS)[number];
@@ -8,6 +10,7 @@ export type ImageGenerationInput = {
   roomType: "living-room";
   style: string;
   budgetEuro: number;
+  roomFidelity: RoomFidelityProfile;
 };
 
 export type ImageGenerationConsent = {
@@ -38,4 +41,3 @@ export interface ImageGenerationProvider {
   readonly maximumChargeCentsPerRequest: number;
   generate(request: ImageGenerationRequest, signal: AbortSignal): Promise<ImageGenerationResult>;
 }
-
