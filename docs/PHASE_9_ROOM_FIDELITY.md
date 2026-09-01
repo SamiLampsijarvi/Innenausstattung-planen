@@ -39,3 +39,4 @@ Die Umsetzung erfolgt auf einem eigenen Branch, ohne neue Bildaufrufe. Eine spä
 - Der interne Bereich zeigt Original und Ergebnis gemeinsam. Eine Annahme verlangt die bewusste Kontrolle aller sechs Merkmale; eine Ablehnung entfernt das private Ergebnis und erhält die Testbuchhaltung.
 - Lint, Produktionsbuild, 18 lokale Datenbankprüfungen, 11 Auswertungsprüfungen und 60 Desktop-/Mobilprüfungen liefen erfolgreich.
 - Der bestehende destruktive Supabase-Integrationstest wurde nicht gegen das befüllte Entwicklungsprojekt wiederholt, weil er zu Beginn die gesamte Testkampagne leert. Seine Phase-9-Testvorbereitung wurde für den nächsten isolierten Lauf ergänzt.
+- **Praktische Abnahme:** Das erste Vertex-Ergebnis mit der erfundenen Tür wurde am 1. September 2026 eindeutig als Raumtreuefehler verworfen. Das private Ergebnisbild wurde gelöscht; Versuch und 30-Cent-Reservierung bleiben dauerhaft nachvollziehbar. Es erfolgte kein neuer KI-Aufruf.

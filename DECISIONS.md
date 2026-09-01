@@ -305,6 +305,7 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 - **Nachweis:** Details und Prüfkriterien stehen in `docs/PHASE_9_ROOM_FIDELITY.md`.
 - **Umsetzung:** Das Supabase-Entwicklungsprojekt verlangt vor jeder Reservierung ein serverseitig validiertes Raumtreue-Profil. Der Vertex-Auftrag erhält dieses Profil zwingend. Erfolgreich erzeugte Bilder bleiben bis zum geschützten Originalvergleich `pending`; Annahme wird protokolliert, Ablehnung löscht das Ergebnis, aber weder Versuch noch Reservierung.
 - **Weiterhin offen:** Eine pixelgenaue Garantie außerhalb eines markierten Änderungsbereichs ist nicht umgesetzt. Sie benötigt eine gesonderte Masken- und Kompositionslösung; eine automatische KI-Prüfung bleibt ebenfalls kosten- und datenschutzpflichtig und ausgeschaltet.
+- **Praktische Abnahme:** Das bekannte Ergebnis mit einer erfundenen Tür wurde als Raumtreuefehler verworfen und das private Ergebnis gelöscht. Versuch und 30-Cent-Reservierung bleiben in der Testbuchhaltung erhalten; es wurde kein weiterer KI-Aufruf ausgelöst.
 
 ## Offene Entscheidungen
 
