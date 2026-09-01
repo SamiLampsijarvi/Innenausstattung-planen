@@ -7,6 +7,9 @@ import {
   writeLocalProjects,
 } from "@/lib/local-projects";
 import type { LocalProject } from "@/lib/local-projects";
+import AutomaticProductConcept from "./automatic-product-concept";
+import { syntheticProductCatalog } from "@/lib/product-catalog";
+import { createAutomaticProductConcept } from "@/lib/product-concept";
 import AuthPanel from "./auth-panel";
 import type { User } from "@supabase/supabase-js";
 import type { AccountDeletionRequest } from "@/lib/supabase/account-deletion";
@@ -90,6 +93,10 @@ export default function Home() {
   const briefingIsComplete = Boolean(style && images.length);
   const budgetLabel = useMemo(() => budget.toLocaleString("de-DE"), [budget]);
   const activeProject = projects.find((project) => project.id === activeProjectId) ?? null;
+  const productConcept = useMemo(
+    () => createAutomaticProductConcept(style, budget, syntheticProductCatalog),
+    [style, budget],
+  );
 
   useEffect(() => {
     const loadProjects = window.setTimeout(() => {
@@ -384,6 +391,7 @@ export default function Home() {
       return;
     }
     setError("");
+    updateActivePlan({ productConcept });
     setShowSummary(true);
   }
 
@@ -554,7 +562,7 @@ export default function Home() {
                     key={name}
                     type="button"
                     aria-pressed={style === name}
-                    onClick={() => { setStyle(name); updateActivePlan({ style: name }); setShowSummary(false); }}
+                    onClick={() => { setStyle(name); updateActivePlan({ style: name, productConcept: null }); setShowSummary(false); }}
                   >
                     <strong>{name}</strong><small>{description}</small>
                   </button>
@@ -601,7 +609,7 @@ export default function Home() {
                   max="10000"
                   step="100"
                   value={budget}
-                  onChange={(event) => { const nextBudget = Number(event.target.value); setBudget(nextBudget); updateActivePlan({ budget: nextBudget }); setShowSummary(false); }}
+                  onChange={(event) => { const nextBudget = Number(event.target.value); setBudget(nextBudget); updateActivePlan({ budget: nextBudget, productConcept: null }); setShowSummary(false); }}
                 />
                 <div className="range-labels"><span>100 €</span><span>10.000 €</span></div>
                 <label htmlFor="postcode">Postleitzahl <small>(optional)</small></label>
@@ -642,7 +650,7 @@ export default function Home() {
                   <div><dt>Postleitzahl</dt><dd>{postcodeIsValid ? postcode : "Noch nicht angegeben"}</dd></div>
                   <div><dt>Budget</dt><dd>{budgetLabel} €</dd></div>
                 </dl>
-                <div className="prototype-note"><strong>Bereit für den späteren Inspirationsentwurf</strong><p>In diesem Teststand wird noch kein Bild durch eine externe KI erzeugt. Es werden keine Fotos an einen KI-Anbieter übertragen und keine KI-Kosten verursacht.</p></div>
+                <AutomaticProductConcept concept={productConcept} />
                 <button type="button" onClick={() => setShowSummary(false)}>Angaben bearbeiten</button>
               </div>
             ) : (
