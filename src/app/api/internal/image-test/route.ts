@@ -2,6 +2,8 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { hashTestPhoto, runImageTest } from "../../../../lib/ai/image-generation/test-runner";
 import { createVertexImageProvider } from "../../../../lib/ai/image-generation/vertex-provider.server";
 import { isTrustedImageTestOrigin } from "../../../../lib/ai/image-generation/test-origin";
+import { MAXIMUM_VERTEX_SOURCE_BYTES } from "../../../../lib/ai/image-generation/test-limits";
+import { isRoomFidelityProfile } from "../../../../lib/ai/image-generation/room-fidelity";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -22,10 +24,12 @@ async function authorize(request: Request) {
   if (!url || !publicKey || !serverKey) throw new Error("Testbereich noch nicht eingerichtet.");
   const token = request.headers.get("authorization")?.match(/^Bearer (.+)$/)?.[1];
   if (!token) throw new Error("Bitte zuerst im normalen Raumly-Bereich anmelden.");
-  const userClient = createClient(url, publicKey, { global: { headers: { Authorization: `Bearer ${token}` } }, auth: { persistSession: false } });
-  const { data, error } = await userClient.auth.getUser(token);
-  if (error || !data.user) throw new Error("Anmeldung ungültig.");
   const admin = createClient(url, serverKey, { auth: { persistSession: false, autoRefreshToken: false } });
+  // Token validation is a server-only concern. Use the server credential for
+  // this check; all subsequent user data reads still use the supplied token.
+  const { data, error } = await admin.auth.getUser(token);
+  if (error || !data.user) throw new Error("Anmeldung ungültig.");
+  const userClient = createClient(url, publicKey, { global: { headers: { Authorization: `Bearer ${token}` } }, auth: { persistSession: false } });
   if (!await rpc(admin, "image_test_allowed", { target_user: data.user.id })) throw new Error("Dieses Konto ist nicht für den Test freigegeben.");
   return { userClient, admin, userId: data.user.id };
 }
@@ -34,7 +38,8 @@ async function photo(client: SupabaseClient, id: string) {
   const { data, error } = await client.from("project_photos").select("id, storage_path, project_id").eq("id", id).single();
   if (error || !data) throw new Error("Foto nicht verfügbar.");
   const { data: blob, error: downloadError } = await client.storage.from("room-photos").download(data.storage_path);
-  if (downloadError || !blob || blob.size > 10 * 1024 * 1024) throw new Error("Foto nicht verfügbar.");
+  if (downloadError || !blob) throw new Error("Foto nicht verfügbar.");
+  if (!blob.size || blob.size > MAXIMUM_VERTEX_SOURCE_BYTES) throw new Error("Das Testfoto muss zwischen 1 Byte und 7 MB groß sein.");
   const bytes = new Uint8Array(await blob.arrayBuffer());
   // File signatures, not browser-provided content types.
   const mime: "image/jpeg" | "image/png" | "image/webp" | null = bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff ? "image/jpeg" :
@@ -48,6 +53,15 @@ export async function GET(request: Request) {
   try {
     const { admin, userClient, userId } = await authorize(request);
     const resultId = new URL(request.url).searchParams.get("result");
+    const sourceId = new URL(request.url).searchParams.get("source");
+    if (sourceId) {
+      if (!uuid.test(sourceId)) throw new Error("Ungültige Fotokennung.");
+      const state = await rpc(admin, "image_test_state", { target_user: userId });
+      const approved = state.photos.find((item: { id: string }) => item.id === sourceId);
+      if (!approved?.photo_id) throw new Error("Foto nicht freigegeben.");
+      const source = await photo(userClient, approved.photo_id);
+      return new Response(Buffer.from(source.bytes), { headers: { ...headers, "Content-Type": source.mime } });
+    }
     if (resultId) {
       if (!uuid.test(resultId)) throw new Error("Ungültige Ergebniskennung.");
       const result = await rpc(admin, "image_test_read_result", { target_user: userId, request_id: resultId });
@@ -84,6 +98,10 @@ export async function POST(request: Request) {
       await rpc(admin, "image_test_approve", { ...args, target_photo: body.photoId, photo_hash: hashTestPhoto(source.bytes), target_style: project.living_room.style, target_budget: project.living_room.budget });
     } else if (body.action === "delete" && uuid.test(body.requestId)) {
       await rpc(admin, "image_test_delete_result", { ...args, request_id: body.requestId });
+    } else if (body.action === "setRoomFidelity" && uuid.test(body.testPhotoId) && isRoomFidelityProfile(body.profile)) {
+      await rpc(admin, "image_test_set_room_fidelity", { ...args, target_test_photo: body.testPhotoId, profile: body.profile });
+    } else if (body.action === "reviewRoomFidelity" && uuid.test(body.requestId) && typeof body.accepted === "boolean") {
+      await rpc(admin, "image_test_review_room_fidelity", { ...args, request_id: body.requestId, accepted: body.accepted });
     } else if (body.action === "generate" && uuid.test(body.testPhotoId) && uuid.test(body.requestId)) {
       if (process.env.RAUMLY_IMAGE_AI_ENABLED !== "true") throw new Error("Externe Bild-KI ist ausgeschaltet.");
       if (!process.env.GOOGLE_CLOUD_PROJECT) throw new Error("Google-Projekt fehlt.");

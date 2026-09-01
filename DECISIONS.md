@@ -284,6 +284,28 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 - **Übernahme am 31. August 2026:** Nach Erläuterung der Kennzeichnung „main Production“ wurde die Migration in das bestehende Supabase-Entwicklungsprojekt ausdrücklich freigegeben und transaktional übernommen. Nur lesende Betriebsprüfungen bestätigten Zugriffsrechte, Grenzen, gesperrte und leere Kampagne; der Löschjob lief um 09:51 UTC erfolgreich und steht wieder auf stündlich. Ein zusätzlicher Schreibtest wurde durch die Sicherheitsprüfung blockiert und nicht ausgeführt; sämtliche Verhaltenstests bleiben isoliert. Die Übernahme des geprüften Codes nach GitHub-`main` ist freigegeben. Google, Fotoübertragung und Veröffentlichung bleiben aus.
 - **Weiterhin offen:** Benanntes Testkonto und sichere Serverkonfiguration, laufende Kontrolle des Löschbetriebs, Google-Authentifizierung, Preisprüfung, Datenschutzfreigabe und echte Bildqualität. Die Vorbereitungsabnahme ist keine Freigabe zur Fotoübertragung.
 - **Betriebsanleitung:** `docs/PHASE_7_CONTROLLED_VERTEX_TEST.md` beschreibt Sperren, Google-Schritte und Abnahme.
+- **Betriebskorrektur am 1. September 2026:** Die befristete Betreiberfreigabe wird als ausschließlich für `service_role` ausführbare Datenbankfunktion und lokaler, bestätigungspflichtiger Befehl versioniert. Sie ersetzt keine Einwilligung und löst keine Google-Anfrage aus, verhindert aber eine Abhängigkeit von einer Dashboard-Anmeldung während des Tests. Die Migration muss vor Nutzung kontrolliert in das bestehende Entwicklungsprojekt übernommen werden.
+- **Erster echter Versuch am 1. September 2026:** Nach konkreter Foto- und Kostenfreigabe lief genau ein einzelner, serverseitig reservierter Vertex-Versuch. Er endete erfolgreich nach 18.104 ms; 30 Cent bleiben reserviert, der tatsächliche Rechnungsbetrag ist noch nicht abgeglichen. Externe KI wurde danach wieder ausgeschaltet. Ergebnisbild, Zuordnung und Bewertung bleiben privat; der Vorgang erweitert weder Kontingente noch Produktfunktionen.
+
+### D-035: Phase 8 – Bild-KI-Erprobung bis zur Produktentscheidung
+
+- **Status:** Am 31. August 2026 nach Erläuterung des erweiterten Plans beauftragt; vor Kosten nachfragen. Der erste Arbeitsstand umfasst ausschließlich kostenfreie Vorbereitung, keine echte KI-Ausführung.
+- **Umfang:** Testfälle, separate Datenschutz- und Kostenprüfung, begrenzter Vertex-Pilot, anschließend gegebenenfalls gesondert budgetierter Anbietervergleich, Produktintegration und zwei interne Testpersonen unter den im Plan genannten Voraussetzungen.
+- **Kontinuität:** Die Phase-7-Grenzen und die abgeschaltete externe KI bleiben erhalten. Keine Freigabe für neue Kosten, konkrete Fotoübertragungen oder Veröffentlichung aus dem allgemeinen Entwicklungsauftrag ableiten.
+- **Vorbereitung:** Lokale Auswertung mit anonymen Fall-/Variantenkennungen; Fehlversuche zählen mit, unbekannte Kosten bleiben unbekannt, fünf Fotos erlauben keine endgültige Anbieterentscheidung. Echte Auswertungsdaten bleiben außerhalb Git.
+- **Anbieterkorrektur:** Der separate Vertex-Testpfad begrenzt Inline-Eingabefotos gemäß erneut geprüfter Modelldokumentation auf konservative 7.000.000 Bytes, vor Reservierung und vor Versand. Der normale Fotoablauf bleibt unverändert.
+- **Plan und Nachweise:** `docs/PHASE_8_IMAGE_VALIDATION.md`. Die gesamte Phase bleibt bis zu realen Ergebnissen und dokumentierter Produktentscheidung offen.
+
+### D-036: Phase 9 – Raumtreue als Annahmegrenze
+
+- **Status:** Der kostenfreie erste Abschnitt wurde am 1. September 2026 umgesetzt und geprüft; es erfolgte kein neuer Bildaufruf.
+- **Entscheidung:** Raumly behandelt sichtbare Türen, Fenster, Durchgänge, Wände, Boden und Perspektive als unveränderliche Raummerkmale. Ein Bild mit einem erfundenen oder fehlenden solchen Merkmal gilt als nicht brauchbar.
+- **Erster Umfang:** Raumtreue-Profil, strenger Bearbeitungsauftrag und verpflichtende menschliche Annahme oder Verwerfung im getrennten Testbereich. Der normale Ablauf bleibt unverändert.
+- **Grenze:** Eine automatische Bildprüfung ist zunächst nicht Teil der Umsetzung, weil sie ohne zusätzlichen Bild- oder Visiondienst keine belastbare Architekturprüfung leisten kann. Ein solcher Dienst benötigt eine separate Kosten- und Datenschutzfreigabe.
+- **Nachweis:** Details und Prüfkriterien stehen in `docs/PHASE_9_ROOM_FIDELITY.md`.
+- **Umsetzung:** Das Supabase-Entwicklungsprojekt verlangt vor jeder Reservierung ein serverseitig validiertes Raumtreue-Profil. Der Vertex-Auftrag erhält dieses Profil zwingend. Erfolgreich erzeugte Bilder bleiben bis zum geschützten Originalvergleich `pending`; Annahme wird protokolliert, Ablehnung löscht das Ergebnis, aber weder Versuch noch Reservierung.
+- **Weiterhin offen:** Eine pixelgenaue Garantie außerhalb eines markierten Änderungsbereichs ist nicht umgesetzt. Sie benötigt eine gesonderte Masken- und Kompositionslösung; eine automatische KI-Prüfung bleibt ebenfalls kosten- und datenschutzpflichtig und ausgeschaltet.
+- **Praktische Abnahme:** Das bekannte Ergebnis mit einer erfundenen Tür wurde als Raumtreuefehler verworfen und das private Ergebnis gelöscht. Versuch und 30-Cent-Reservierung bleiben in der Testbuchhaltung erhalten; es wurde kein weiterer KI-Aufruf ausgelöst.
 
 ## Offene Entscheidungen
 

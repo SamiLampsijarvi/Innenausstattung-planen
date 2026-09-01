@@ -29,3 +29,6 @@ playwright-report/
 # Lokale Werkzeugausgaben
 .vercel/
 *.tsbuildinfo
+
+# Private evaluation records and reports; only empty templates belong in Git.
+private-evaluation/

@@ -1,8 +1,10 @@
 import { createHash } from "node:crypto";
 import type { ImageGenerationProvider, ImageGenerationResult } from "./contracts";
 import { createImageGenerationGateway } from "./gateway";
+import { MAXIMUM_VERTEX_SOURCE_BYTES } from "./test-limits";
+import type { RoomFidelityProfile } from "./room-fidelity";
 
-export type Reservation = { reservedCents: number; style: string; budgetEuro: number; grantedAt: string; policyVersion: string };
+export type Reservation = { reservedCents: number; style: string; budgetEuro: number; grantedAt: string; policyVersion: string; roomFidelityProfile: RoomFidelityProfile };
 export type TestLedger = {
   reserve(hash: string): Promise<Reservation>;
   canDispatch(): Promise<boolean>;
@@ -22,7 +24,7 @@ export async function runImageTest(options: {
   timeoutMs?: number;
 }) {
   if (!options.enabled) throw new Error("Externe Bild-KI ist ausgeschaltet.");
-  if (!options.bytes.length || options.bytes.length > 10 * 1024 * 1024) throw new Error("Ungültige Fotogröße.");
+  if (!options.bytes.length || options.bytes.length > MAXIMUM_VERTEX_SOURCE_BYTES) throw new Error("Das Testfoto muss zwischen 1 Byte und 7 MB groß sein.");
   // Never retry a failed/ambiguous reservation: its database commit may have succeeded.
   const reservation = await options.ledger.reserve(hashTestPhoto(options.bytes));
   try {
@@ -33,7 +35,7 @@ export async function runImageTest(options: {
     });
     const result = await gateway.generate({
       input: { sourceImage: options.bytes, sourceImageMimeType: options.mime, roomType: "living-room",
-        style: reservation.style, budgetEuro: reservation.budgetEuro },
+        style: reservation.style, budgetEuro: reservation.budgetEuro, roomFidelity: reservation.roomFidelityProfile },
       consent: { granted: true, grantedAt: reservation.grantedAt, policyVersion: reservation.policyVersion },
       maximumChargeCents: reservation.reservedCents,
     });

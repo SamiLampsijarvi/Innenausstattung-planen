@@ -1,4 +1,6 @@
 import { GoogleGenAI, Modality } from "@google/genai";
+import { MAXIMUM_VERTEX_SOURCE_BYTES } from "./test-limits";
+import { roomFidelityInstruction } from "./room-fidelity";
 import type {
   ImageGenerationProvider,
   ImageGenerationRequest,
@@ -55,6 +57,9 @@ export function createVertexImageProvider(
     maximumChargeCentsPerRequest: config.maximumRequestCents,
     async generate(request, signal) {
       signal.throwIfAborted();
+      if (!request.input.sourceImage.length || request.input.sourceImage.length > MAXIMUM_VERTEX_SOURCE_BYTES) {
+        throw new VertexImageResponseError("Das Testfoto muss zwischen 1 Byte und 7 MB groß sein.");
+      }
       const startedAt = Date.now();
       const response = await client.models.generateContent({
         model: MODEL_ID,
@@ -94,6 +99,7 @@ function buildRoomPrompt(request: ImageGenerationRequest) {
     "Bewahre Raumgeometrie, Perspektive, Fenster, Türen, Wände und Boden so genau wie möglich.",
     "Erzeuge keine Personen, Texte, Logos, Grundrisse oder Maßangaben.",
     "Das Ergebnis ist eine Inspiration und keine maßgenaue Planung.",
+    roomFidelityInstruction(request.input.roomFidelity),
   ].join(" ");
 }
 

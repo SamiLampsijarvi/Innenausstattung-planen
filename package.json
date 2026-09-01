@@ -9,7 +9,10 @@
     "lint": "eslint",
     "test:e2e": "playwright test",
     "test:db": "node --test tests/image-test-database.test.mjs",
-    "test:integration": "node --test --test-reporter=spec tests/supabase-integration.test.mjs"
+    "test:integration": "node --test --test-reporter=spec tests/supabase-integration.test.mjs",
+    "test:evaluation": "node --test tests/image-evaluation.test.mjs",
+    "evaluate:images": "node scripts/image-evaluation.mjs",
+    "arm:image-test": "node scripts/arm-controlled-image-test.mjs"
   },
   "dependencies": {
     "@google/genai": "2.19.0",

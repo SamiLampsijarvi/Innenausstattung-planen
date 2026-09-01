@@ -1,3 +1,6 @@
+// Google documents 7 MB for inline source images. Use decimal MB conservatively.
+export const MAXIMUM_VERTEX_SOURCE_BYTES = 7_000_000;
+
 export const IMAGE_TEST_LIMITS = {
   maximumPhotos: 5,
   maximumAttemptsPerPhoto: 2,
