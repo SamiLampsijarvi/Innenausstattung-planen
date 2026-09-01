@@ -285,6 +285,7 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 - **Weiterhin offen:** Benanntes Testkonto und sichere Serverkonfiguration, laufende Kontrolle des Löschbetriebs, Google-Authentifizierung, Preisprüfung, Datenschutzfreigabe und echte Bildqualität. Die Vorbereitungsabnahme ist keine Freigabe zur Fotoübertragung.
 - **Betriebsanleitung:** `docs/PHASE_7_CONTROLLED_VERTEX_TEST.md` beschreibt Sperren, Google-Schritte und Abnahme.
 - **Betriebskorrektur am 1. September 2026:** Die befristete Betreiberfreigabe wird als ausschließlich für `service_role` ausführbare Datenbankfunktion und lokaler, bestätigungspflichtiger Befehl versioniert. Sie ersetzt keine Einwilligung und löst keine Google-Anfrage aus, verhindert aber eine Abhängigkeit von einer Dashboard-Anmeldung während des Tests. Die Migration muss vor Nutzung kontrolliert in das bestehende Entwicklungsprojekt übernommen werden.
+- **Erster echter Versuch am 1. September 2026:** Nach konkreter Foto- und Kostenfreigabe lief genau ein einzelner, serverseitig reservierter Vertex-Versuch. Er endete erfolgreich nach 18.104 ms; 30 Cent bleiben reserviert, der tatsächliche Rechnungsbetrag ist noch nicht abgeglichen. Externe KI wurde danach wieder ausgeschaltet. Ergebnisbild, Zuordnung und Bewertung bleiben privat; der Vorgang erweitert weder Kontingente noch Produktfunktionen.
 
 ### D-035: Phase 8 – Bild-KI-Erprobung bis zur Produktentscheidung
 
