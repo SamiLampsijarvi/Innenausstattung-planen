@@ -43,6 +43,8 @@ before(async () => {
   await db.exec(phase5.slice(phase5.indexOf('create table if not exists public.consent_events'), phase5.indexOf('drop policy if exists "Users create own photo metadata"')));
   const migration = await readFile(new URL('../supabase/migrations/202608310001_controlled_image_test.sql', import.meta.url), 'utf8');
   await db.exec(migration.replace('create extension if not exists pg_cron;', '-- pg_cron scheduler stubbed in this offline harness'));
+  const operatorArm = await readFile(new URL('../supabase/migrations/202609010001_image_test_operator_arm.sql', import.meta.url), 'utf8');
+  await db.exec(operatorArm);
   await db.exec(`insert into auth.users values('${user}'),('${other}');
     insert into public.projects values('${user}','${user}',null),('${other}','${other}',null);
     insert into public.image_test_members values('${user}'),('${other}');
@@ -63,8 +65,12 @@ test('only server role can read state or mutate accounting', () => scenario(asyn
   assert.equal(await scalar("select has_function_privilege('authenticated','public.image_test_reserve(uuid,uuid,uuid,text)','execute')"), false);
   assert.equal(await scalar("select has_function_privilege('anon','public.image_test_state(uuid)','execute')"), false);
   assert.equal(await scalar("select has_table_privilege('authenticated','public.image_test_results','select')"), false);
+  assert.equal(await scalar("select has_function_privilege('authenticated','public.image_test_arm(text,integer,integer)','execute')"), false);
   await db.exec('set role service_role');
   assert.equal((await scalar('select public.image_test_state($1)', [user])).consent, true);
+  assert.equal((await scalar("select public.image_test_arm('offline test only',30,60)")).reservationCents, 30);
+  await db.exec('reset role');
+  assert.equal(await scalar('select enabled from public.image_test_campaign'), true);
 }));
 test('foreign photo and changed contents cannot be dispatched', () => scenario(async () => {
   await assert.rejects(approve(1, other), /unavailable/);

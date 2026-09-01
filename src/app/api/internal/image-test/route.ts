@@ -23,10 +23,12 @@ async function authorize(request: Request) {
   if (!url || !publicKey || !serverKey) throw new Error("Testbereich noch nicht eingerichtet.");
   const token = request.headers.get("authorization")?.match(/^Bearer (.+)$/)?.[1];
   if (!token) throw new Error("Bitte zuerst im normalen Raumly-Bereich anmelden.");
-  const userClient = createClient(url, publicKey, { global: { headers: { Authorization: `Bearer ${token}` } }, auth: { persistSession: false } });
-  const { data, error } = await userClient.auth.getUser(token);
-  if (error || !data.user) throw new Error("Anmeldung ungültig.");
   const admin = createClient(url, serverKey, { auth: { persistSession: false, autoRefreshToken: false } });
+  // Token validation is a server-only concern. Use the server credential for
+  // this check; all subsequent user data reads still use the supplied token.
+  const { data, error } = await admin.auth.getUser(token);
+  if (error || !data.user) throw new Error("Anmeldung ungültig.");
+  const userClient = createClient(url, publicKey, { global: { headers: { Authorization: `Bearer ${token}` } }, auth: { persistSession: false } });
   if (!await rpc(admin, "image_test_allowed", { target_user: data.user.id })) throw new Error("Dieses Konto ist nicht für den Test freigegeben.");
   return { userClient, admin, userId: data.user.id };
 }

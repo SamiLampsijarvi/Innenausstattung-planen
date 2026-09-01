@@ -15,9 +15,15 @@ const endpoint = "/api/internal/image-test";
 
 async function authenticatedFetch(url: string, init?: RequestInit) {
   const supabase = createSupabaseBrowserClient();
-  const { data } = await supabase.auth.getSession();
-  if (!data.session) throw new Error("Bitte zuerst im normalen Raumly-Bereich anmelden. Nur freigegebene Testkonten erhalten Zugriff.");
-  return fetch(url, { ...init, cache: "no-store", headers: { ...init?.headers, Authorization: `Bearer ${data.session.access_token}` } });
+  const { data: initial } = await supabase.auth.getSession();
+  if (!initial.session) throw new Error("Bitte zuerst im normalen Raumly-Bereich anmelden. Nur freigegebene Testkonten erhalten Zugriff.");
+  // The server verifies every bearer token. Refresh only an expiring session so
+  // a normal test action does not depend on a second authentication round trip.
+  const expiresSoon = !initial.session.expires_at || initial.session.expires_at * 1000 <= Date.now() + 30_000;
+  const { data, error } = expiresSoon ? await supabase.auth.refreshSession() : { data: initial, error: null };
+  const session = data.session;
+  if (error || !session) throw new Error("Bitte erneut im normalen Raumly-Bereich anmelden.");
+  return fetch(url, { ...init, cache: "no-store", headers: { ...init?.headers, Authorization: `Bearer ${session.access_token}` } });
 }
 
 export default function ImageTestPanel() {
