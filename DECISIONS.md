@@ -296,6 +296,14 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 - **Anbieterkorrektur:** Der separate Vertex-Testpfad begrenzt Inline-Eingabefotos gemäß erneut geprüfter Modelldokumentation auf konservative 7.000.000 Bytes, vor Reservierung und vor Versand. Der normale Fotoablauf bleibt unverändert.
 - **Plan und Nachweise:** `docs/PHASE_8_IMAGE_VALIDATION.md`. Die gesamte Phase bleibt bis zu realen Ergebnissen und dokumentierter Produktentscheidung offen.
 
+### D-036: Phase 9 – Raumtreue als Annahmegrenze
+
+- **Status:** Am 1. September 2026 als nächste große Phase bestätigt; Implementierung beginnt ohne neue Bildaufrufe.
+- **Entscheidung:** Raumly behandelt sichtbare Türen, Fenster, Durchgänge, Wände, Boden und Perspektive als unveränderliche Raummerkmale. Ein Bild mit einem erfundenen oder fehlenden solchen Merkmal gilt als nicht brauchbar.
+- **Erster Umfang:** Raumtreue-Profil, strenger Bearbeitungsauftrag und verpflichtende menschliche Annahme oder Verwerfung im getrennten Testbereich. Der normale Ablauf bleibt unverändert.
+- **Grenze:** Eine automatische Bildprüfung ist zunächst nicht Teil der Umsetzung, weil sie ohne zusätzlichen Bild- oder Visiondienst keine belastbare Architekturprüfung leisten kann. Ein solcher Dienst benötigt eine separate Kosten- und Datenschutzfreigabe.
+- **Nachweis:** Details und Prüfkriterien stehen in `docs/PHASE_9_ROOM_FIDELITY.md`.
+
 ## Offene Entscheidungen
 
 - Markenname und visuelle Identität
