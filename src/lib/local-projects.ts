@@ -1,5 +1,7 @@
+import type { ProductConcept } from "./product-concept";
+
 export const LOCAL_PROJECTS_KEY = "raumly.local-projects";
-export const LOCAL_PROJECTS_VERSION = 3;
+export const LOCAL_PROJECTS_VERSION = 4;
 
 export type FurniturePreference = "none" | "keep" | "replace" | "add";
 export type FurnitureSource = "simulated" | "ai" | "corrected" | "manual";
@@ -28,6 +30,7 @@ export type DesignDraft = {
 
 export type LivingRoomPlan = {
   style: string; postcode: string; budget: number; furnitureReview: FurnitureReview; drafts: DesignDraft[];
+  productConcept: ProductConcept | null;
 };
 
 export type LocalProject = {
@@ -37,7 +40,7 @@ export type LocalProject = {
 type StoredEnvelope = { version?: number; projects?: unknown[] };
 
 const emptyFurnitureReview = (): FurnitureReview => ({ status: "not_started", generalNote: "", items: [] });
-const emptyPlan = (): LivingRoomPlan => ({ style: "", postcode: "", budget: 1500, furnitureReview: emptyFurnitureReview(), drafts: [] });
+const emptyPlan = (): LivingRoomPlan => ({ style: "", postcode: "", budget: 1500, furnitureReview: emptyFurnitureReview(), drafts: [], productConcept: null });
 
 export function createLocalProject(name: string): LocalProject {
   const now = new Date().toISOString();
@@ -57,6 +60,11 @@ export function readLocalProjects(storage: Storage): LocalProject[] {
     }
     if (stored.version === 2) {
       const migrated = stored.projects.flatMap((value) => migrateVersionTwoProject(value) ?? []);
+      writeLocalProjects(storage, migrated);
+      return migrated;
+    }
+    if (stored.version === 3) {
+      const migrated = stored.projects.flatMap((value) => migrateVersionThreeProject(value) ?? []);
       writeLocalProjects(storage, migrated);
       return migrated;
     }
@@ -81,7 +89,7 @@ function migrateVersionOneProject(value: unknown): LocalProject | null {
     || typeof plan?.budget !== "number") return null;
   return {
     id: project.id, name: project.name, createdAt: project.createdAt, updatedAt: project.updatedAt,
-    livingRoom: { style: plan.style, postcode: plan.postcode, budget: plan.budget, furnitureReview: emptyFurnitureReview(), drafts: [] },
+    livingRoom: { style: plan.style, postcode: plan.postcode, budget: plan.budget, furnitureReview: emptyFurnitureReview(), drafts: [], productConcept: null },
   };
 }
 
@@ -97,8 +105,27 @@ function migrateVersionTwoProject(value: unknown): LocalProject | null {
     || typeof review.generalNote !== "string" || !Array.isArray(review.items) || !review.items.every(isFurnitureItem)) return null;
   return {
     id: project.id, name: project.name, createdAt: project.createdAt, updatedAt: project.updatedAt,
-    livingRoom: { style: plan.style, postcode: plan.postcode, budget: plan.budget, furnitureReview: review as FurnitureReview, drafts: [] },
+    livingRoom: { style: plan.style, postcode: plan.postcode, budget: plan.budget, furnitureReview: review as FurnitureReview, drafts: [], productConcept: null },
   };
+}
+
+function migrateVersionThreeProject(value: unknown): LocalProject | null {
+  if (!isVersionThreeProject(value)) return null;
+  return { ...value, livingRoom: { ...value.livingRoom, productConcept: null } };
+}
+
+function isVersionThreeProject(value: unknown): value is Omit<LocalProject, "livingRoom"> & { livingRoom: Omit<LivingRoomPlan, "productConcept"> } {
+  if (!value || typeof value !== "object") return false;
+  const project = value as Partial<LocalProject>;
+  const plan = project.livingRoom as Partial<LivingRoomPlan> | undefined;
+  const review = plan?.furnitureReview as Partial<FurnitureReview> | undefined;
+  return typeof project.id === "string" && typeof project.name === "string"
+    && typeof project.createdAt === "string" && typeof project.updatedAt === "string"
+    && typeof plan?.style === "string" && typeof plan?.postcode === "string" && typeof plan?.budget === "number"
+    && (review?.status === "not_started" || review?.status === "ready")
+    && (review.method === undefined || review.method === "simulation" || review.method === "local_ai")
+    && typeof review.generalNote === "string" && Array.isArray(review.items) && review.items.every(isFurnitureItem)
+    && Array.isArray(plan.drafts) && plan.drafts.every(isDesignDraft);
 }
 
 function isLocalProject(value: unknown): value is LocalProject {
@@ -112,7 +139,24 @@ function isLocalProject(value: unknown): value is LocalProject {
     && typeof plan?.budget === "number" && (review?.status === "not_started" || review?.status === "ready")
     && (review.method === undefined || review.method === "simulation" || review.method === "local_ai")
     && typeof review.generalNote === "string" && Array.isArray(review.items)
-    && review.items.every(isFurnitureItem) && Array.isArray(plan.drafts) && plan.drafts.every(isDesignDraft);
+    && review.items.every(isFurnitureItem) && Array.isArray(plan.drafts) && plan.drafts.every(isDesignDraft)
+    && (plan.productConcept === null || isProductConcept(plan.productConcept));
+}
+
+function isProductConcept(value: unknown): value is ProductConcept {
+  if (!value || typeof value !== "object") return false;
+  const concept = value as Partial<ProductConcept>;
+  return concept.version === 1 && typeof concept.style === "string"
+    && [concept.budgetCents, concept.reserveCents, concept.productSubtotalCents, concept.shippingTotalCents, concept.totalCents, concept.remainingCents].every((amount) => typeof amount === "number")
+    && (concept.completeness === "complete" || concept.completeness === "incomplete")
+    && Array.isArray(concept.missingCategories) && concept.missingCategories.every((category) => typeof category === "string")
+    && Array.isArray(concept.items) && concept.items.every((item) => item && typeof item === "object"
+      && typeof item.id === "string" && typeof item.title === "string" && typeof item.category === "string"
+      && typeof item.style === "string" && typeof item.color === "string" && typeof item.material === "string"
+      && typeof item.retailer === "string" && (item.priceCents === null || typeof item.priceCents === "number")
+      && (item.shippingCents === null || typeof item.shippingCents === "number")
+      && (item.rights === "synthetic-development-only" || item.rights === "licensed-display-and-ai"))
+    && (concept.imageStatus === "blocked-missing-rights" || concept.imageStatus === "eligible");
 }
 
 function isDesignDraft(value: unknown): value is DesignDraft {

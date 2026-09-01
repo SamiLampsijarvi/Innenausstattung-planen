@@ -78,7 +78,8 @@ test("speichert ein Wohnzimmerprojekt lokal und öffnet es erneut", async ({ pag
   await expect(result).toContainText("Japandi");
   await expect(result).toContainText("10115");
   await expect(result).toContainText("1.500 €");
-  await expect(result).toContainText("keine Fotos an einen KI-Anbieter übertragen");
+  await expect(result).toContainText("kein Raumfoto übertragen");
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem("raumly.local-projects")!).projects[0].livingRoom.productConcept.style)).toBe("Japandi");
 
   await page.reload();
   await page.waitForLoadState("networkidle");
@@ -138,7 +139,11 @@ test("führt durch den einfachen Grundablauf ohne Möbelanalyse oder externe KI"
   await expect(result).toContainText("Japandi");
   await expect(result).toContainText("3.000 €");
   await expect(result).toContainText("Noch nicht angegeben");
-  await expect(result).toContainText("keine KI-Kosten verursacht");
+  await expect(result).toContainText("AUTOMATISCHE PRODUKTAUSWAHL");
+  await expect(result).toContainText("Japandi Sofa");
+  await expect(result).toContainText("Synthetisches Testprodukt");
+  await expect(result).toContainText("KI-Bild gesperrt");
+  await expect(result).toContainText("keine KI-Kosten");
 });
 
 test("bewahrt vorhandene Möbel- und Entwurfsdaten unsichtbar und ohne Verlust", async ({ page }) => {
@@ -160,7 +165,7 @@ test("bewahrt vorhandene Möbel- und Entwurfsdaten unsichtbar und ohne Verlust",
   await expect(page.locator(".furniture-planner")).toHaveCount(0);
   await expect(page.locator(".draft-results")).toHaveCount(0);
   const stored = await page.evaluate(() => JSON.parse(localStorage.getItem("raumly.local-projects")!));
-  expect(stored.version).toBe(3);
+  expect(stored.version).toBe(4);
   expect(stored.projects[0].livingRoom.furnitureReview.generalNote).toBe("Helle Farben");
   expect(stored.projects[0].livingRoom.furnitureReview.items[0].comment).toBe("Bitte behalten");
 });

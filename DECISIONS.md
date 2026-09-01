@@ -307,6 +307,16 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 - **Weiterhin offen:** Eine pixelgenaue Garantie außerhalb eines markierten Änderungsbereichs ist nicht umgesetzt. Sie benötigt eine gesonderte Masken- und Kompositionslösung; eine automatische KI-Prüfung bleibt ebenfalls kosten- und datenschutzpflichtig und ausgeschaltet.
 - **Praktische Abnahme:** Das bekannte Ergebnis mit einer erfundenen Tür wurde als Raumtreuefehler verworfen und das private Ergebnis gelöscht. Versuch und 30-Cent-Reservierung bleiben in der Testbuchhaltung erhalten; es wurde kein weiterer KI-Aufruf ausgelöst.
 
+### D-037: Phase 10 – Produktgebundene Konzepte ohne fremde Produktdaten
+
+- **Status:** Am 1. September 2026 mit angepasst sicherem Umfang bestätigt und umgesetzt.
+- **Ziel:** Raumly wählt Produkte automatisch passend zu Stil und Gesamtbudget aus; eine gesonderte Nutzerbestätigung einzelner Produkte ist im Zielablauf nicht vorgesehen.
+- **Aktueller Datenumfang:** Weil kein autorisierter Händlerfeed und keine Erlaubnis für fremde Produktbilder vorliegen, enthält die Entwicklung ausschließlich klar bezeichnete synthetische, nicht kaufbare Testprodukte mit eigenen schematischen Darstellungen.
+- **Budgetregel:** Produktpreise und Versand werden gemeinsam begrenzt. Zusätzlich bleiben fünf Prozent Reserve, mindestens 20 Euro und höchstens 100 Euro, unangetastet. Bei zu kleinem Budget wird das Konzept als unvollständig gekennzeichnet statt das Limit zu überschreiten.
+- **Rechtesperre:** Produktbilder oder Produktdaten dürfen erst in eine externe Bild-KI eingehen, wenn Anzeige- und KI-Verarbeitungsrechte ausdrücklich belegt sind. Der synthetische Testkatalog erfüllt diese Voraussetzung absichtlich nicht.
+- **Kosten und Datenschutz:** Dieser Abschnitt ruft keine externe KI auf, überträgt keine Fotos und verursacht keine KI-Kosten. Vertex AI bleibt ausgeschaltet.
+- **Weiterer Weg:** Echte Angebote, Händlerlinks und fotorealistische produktgebundene Bilder beginnen erst nach einem autorisierten Feed oder Vertrag, dokumentierten Bildrechten und erneuter Kosten- und Datenschutzprüfung. Details stehen in `docs/PHASE_10_GROUNDED_PRODUCTS.md`.
+
 ## Offene Entscheidungen
 
 - Markenname und visuelle Identität
