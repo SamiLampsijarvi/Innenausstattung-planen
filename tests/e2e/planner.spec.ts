@@ -62,6 +62,9 @@ test("speichert ein Wohnzimmerprojekt lokal und öffnet es erneut", async ({ pag
   await expect(summaryButton).toBeDisabled();
 
   await page.getByRole("button", { name: /Japandi/ }).click();
+  await page.getByLabel("Dieses Foto zeigt einen leeren Raum ohne vorhandene Möbel.").check();
+  await page.getByLabel("Raumbreite in cm").fill("450");
+  await page.getByLabel("Raumtiefe in cm").fill("500");
   await page.getByLabel("Postleitzahl (optional)").fill("10115");
   await page.locator('input[type="file"]').setInputFiles({
     name: "wohnzimmer.png",
@@ -123,16 +126,20 @@ test("führt durch den einfachen Grundablauf ohne Möbelanalyse oder externe KI"
 
   await expect(page.getByText("Zimmer auswählen", { exact: true })).toBeVisible();
   await expect(page.getByText("Designstil wählen", { exact: true })).toBeVisible();
-  await expect(page.getByText("Foto hochladen", { exact: true })).toBeVisible();
+  await expect(page.getByText("Foto des leeren Raums hochladen", { exact: true })).toBeVisible();
   await expect(page.getByText("Budget auswählen", { exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "Lokale KI-Erkennung starten" })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Test-Erkennung starten" })).toHaveCount(0);
   await expect(page.locator(".draft-results")).toHaveCount(0);
 
   await page.getByRole("button", { name: /Japandi/ }).click();
+  await page.getByLabel("Raumbreite in cm").fill("450");
+  await page.getByLabel("Raumtiefe in cm").fill("500");
   await page.getByLabel(/Budget:/).fill("3000");
   await page.locator('input[type="file"]').setInputFiles({ name: "raum.png", mimeType: "image/png", buffer: onePixelPng });
   const summaryButton = page.getByRole("button", { name: "Planung zusammenfassen" });
+  await expect(summaryButton).toBeDisabled();
+  await page.getByLabel("Dieses Foto zeigt einen leeren Raum ohne vorhandene Möbel.").check();
   await expect(summaryButton).toBeEnabled();
   await summaryButton.click();
   const result = page.getByRole("complementary", { name: "Ihre Zusammenfassung" });
@@ -165,7 +172,7 @@ test("bewahrt vorhandene Möbel- und Entwurfsdaten unsichtbar und ohne Verlust",
   await expect(page.locator(".furniture-planner")).toHaveCount(0);
   await expect(page.locator(".draft-results")).toHaveCount(0);
   const stored = await page.evaluate(() => JSON.parse(localStorage.getItem("raumly.local-projects")!));
-  expect(stored.version).toBe(4);
+  expect(stored.version).toBe(5);
   expect(stored.projects[0].livingRoom.furnitureReview.generalNote).toBe("Helle Farben");
   expect(stored.projects[0].livingRoom.furnitureReview.items[0].comment).toBe("Bitte behalten");
 });

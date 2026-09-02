@@ -106,6 +106,17 @@ main { min-height: calc(100vh - 131px); padding: clamp(4rem, 9vw, 8rem) max(3vw,
 .room-options small { color: var(--terracotta); font-size: 10px; }
 .room-options .room-option-selected { color: var(--forest); background: var(--mint); border-color: var(--forest); }
 .room-options .room-option-selected small { color: var(--forest); font-weight: 700; }
+.empty-room-check { display: grid; gap: 5px; margin-top: 16px; padding: 13px; color: var(--forest); background: var(--mint); border-radius: 9px; }
+.empty-room-check label { display: flex; align-items: flex-start; gap: 8px; font-size: 12px; font-weight: 700; line-height: 1.45; }
+.empty-room-check input, .scale-fields input { accent-color: var(--forest); }
+.empty-room-check small, .scale-fields small { color: var(--muted); font-size: 10px; line-height: 1.45; }
+.scale-fields { display: flex; flex-wrap: wrap; gap: 12px 20px; margin: 20px 0 0; padding: 0; border: 0; }
+.scale-fields legend { width: 100%; margin-bottom: 2px; color: var(--forest); font-size: 12px; font-weight: 700; }
+.scale-fields > label:not(.reference-field) { display: flex; align-items: center; gap: 6px; color: var(--ink); font-size: 11px; }
+.measurement-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; width: 100%; }
+.measurement-grid label, .reference-field { display: grid; gap: 6px; color: var(--forest); font-size: 11px; font-weight: 700; }
+.measurement-grid input, .reference-field input { min-height: 40px; padding: 8px 10px; color: var(--ink); background: white; border: 1px solid var(--line); border-radius: 8px; }
+.reference-field { width: 100%; }
 .image-placeholders { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 22px; }
 .image-placeholders > div { aspect-ratio: 4 / 3; display: grid; place-content: center; gap: 5px; text-align: center; color: var(--muted); background: var(--cream); border: 2px dashed var(--line); border-radius: 10px; }
 .image-placeholders span { font-weight: 700; }
@@ -155,6 +166,7 @@ main { min-height: calc(100vh - 131px); padding: clamp(4rem, 9vw, 8rem) max(3vw,
 .product-concept { margin-top: 22px; padding-top: 20px; border-top: 1px solid var(--line); }
 .product-concept h3 { margin: 5px 0 0; color: var(--forest); font: 700 21px/1.25 Georgia, serif; }
 .product-concept > p { max-width: none; font-size: 11px; }
+.product-concept .fit-status { padding: 7px 9px; color: var(--forest); background: var(--mint); border-radius: 7px; font-weight: 700; }
 .concept-room { position: relative; min-height: 210px; margin-top: 16px; overflow: hidden; background: linear-gradient(#eee9df 0 68%, #c9ae8a 68%); border: 1px solid var(--line); border-radius: 10px; }
 .concept-shape { --product-color: #ccc; position: absolute; display: grid; place-items: center; color: var(--forest); background: var(--product-color); border: 1px solid rgba(24, 51, 46, .25); box-shadow: 0 5px 12px rgba(24, 51, 46, .12); font-size: 8px; font-weight: 700; }
 .concept-sofa { left: 19%; bottom: 18%; width: 46%; height: 31%; border-radius: 18px 18px 7px 7px; }
@@ -165,15 +177,25 @@ main { min-height: calc(100vh - 131px); padding: clamp(4rem, 9vw, 8rem) max(3vw,
 .concept-sideboard { right: 2%; bottom: 5%; width: 28%; height: 20%; border-radius: 3px; }
 .concept-plant { left: 3%; bottom: 41%; width: 13%; height: 23%; border-radius: 60% 40% 45% 55%; }
 .concept-products { display: grid; gap: 7px; margin-top: 14px; }
-.concept-products article { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; align-items: center; gap: 9px; padding: 8px; background: var(--cream); border-radius: 7px; }
+.concept-products article { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; align-items: center; gap: 9px; padding: 9px; background: var(--cream); border-radius: 7px; }
 .product-swatch { width: 28px; height: 28px; border: 1px solid var(--line); border-radius: 6px; }
 .concept-products strong, .concept-products small { display: block; }
 .concept-products strong { color: var(--forest); font-size: 10px; }
 .concept-products small { margin-top: 2px; color: var(--muted); font-size: 8px; }
 .concept-products b { color: var(--forest); font-size: 10px; }
+.purchase-card-copy { min-width: 0; }
+.purchase-status { display: block; margin-top: 4px; color: #8a4932; font-size: 8px; line-height: 1.35; }
+.purchase-card-action { display: grid; justify-items: end; gap: 5px; }
+.purchase-card-action button, .purchase-card-action a { padding: 5px 7px; color: var(--forest); background: white; border: 1px solid var(--forest); border-radius: 6px; font-size: 8px; font-weight: 700; text-decoration: none; }
+.purchase-card-action button:disabled { color: var(--muted); border-color: var(--line); }
 .concept-budget { margin: 14px 0 !important; }
 .concept-budget div { padding: 7px 0 !important; font-size: 10px; }
 .concept-warning { max-width: none !important; padding: 10px; color: #7a391c !important; background: #fff1e9; border-radius: 7px; font-size: 10px; }
+@media (max-width: 560px) {
+  .measurement-grid { grid-template-columns: 1fr; }
+  .concept-products article { grid-template-columns: 24px minmax(0, 1fr); }
+  .purchase-card-action { grid-column: 2; grid-template-columns: auto auto; align-items: center; justify-content: space-between; }
+}
 .draft-results { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--line); }
 .drafts-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
 .drafts-heading small, .draft-card > small, .draft-detail > small { color: var(--terracotta); font-size: 9px; font-weight: 700; letter-spacing: .06em; }

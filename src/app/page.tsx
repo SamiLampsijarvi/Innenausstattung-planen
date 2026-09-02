@@ -79,6 +79,11 @@ export default function Home() {
   const [images, setImages] = useState<RoomImage[]>([]);
   const [postcode, setPostcode] = useState("");
   const [budget, setBudget] = useState(1500);
+  const [emptyRoomConfirmed, setEmptyRoomConfirmed] = useState(false);
+  const [scaleMode, setScaleMode] = useState<"room-dimensions" | "reference">("room-dimensions");
+  const [roomWidthCm, setRoomWidthCm] = useState<number | null>(null);
+  const [roomDepthCm, setRoomDepthCm] = useState<number | null>(null);
+  const [referenceLengthCm, setReferenceLengthCm] = useState<number | null>(null);
   const [error, setError] = useState("");
   const [showSummary, setShowSummary] = useState(false);
   const [accountUser, setAccountUser] = useState<User | null>(null);
@@ -90,12 +95,17 @@ export default function Home() {
   const supabase = useMemo(() => createSupabaseBrowserClient(), []);
 
   const postcodeIsValid = /^\d{5}$/.test(postcode);
-  const briefingIsComplete = Boolean(style && images.length);
+  const measurementIsComplete = scaleMode === "room-dimensions"
+    ? Boolean(roomWidthCm && roomDepthCm && roomWidthCm >= 200 && roomWidthCm <= 2000 && roomDepthCm >= 200 && roomDepthCm <= 2000)
+    : Boolean(referenceLengthCm && referenceLengthCm >= 20 && referenceLengthCm <= 500);
+  const briefingIsComplete = Boolean(style && images.length && emptyRoomConfirmed && measurementIsComplete);
   const budgetLabel = useMemo(() => budget.toLocaleString("de-DE"), [budget]);
   const activeProject = projects.find((project) => project.id === activeProjectId) ?? null;
   const productConcept = useMemo(
-    () => createAutomaticProductConcept(style, budget, syntheticProductCatalog),
-    [style, budget],
+    () => createAutomaticProductConcept(style, budget, syntheticProductCatalog, scaleMode === "room-dimensions"
+      ? { mode: "room-dimensions", roomWidthCm: roomWidthCm ?? 0, roomDepthCm: roomDepthCm ?? 0 }
+      : { mode: "reference", referenceLengthCm: referenceLengthCm ?? 0 }),
+    [style, budget, scaleMode, roomWidthCm, roomDepthCm, referenceLengthCm],
   );
 
   useEffect(() => {
@@ -224,6 +234,11 @@ export default function Home() {
     setStyle(project.livingRoom.style);
     setPostcode(project.livingRoom.postcode);
     setBudget(project.livingRoom.budget);
+    setEmptyRoomConfirmed(project.livingRoom.emptyRoomConfirmed);
+    setScaleMode(project.livingRoom.scaleMode);
+    setRoomWidthCm(project.livingRoom.roomWidthCm);
+    setRoomDepthCm(project.livingRoom.roomDepthCm);
+    setReferenceLengthCm(project.livingRoom.referenceLengthCm);
     setShowSummary(false);
     setError("");
     setActiveProjectId(project.id);
@@ -387,7 +402,7 @@ export default function Home() {
 
   function createSummary() {
     if (!briefingIsComplete) {
-      setError("Bitte wähle einen Stil und lade mindestens ein Foto hoch.");
+      setError("Bitte bestätige den leeren Raum, ergänze ein Maß, wähle einen Stil und lade mindestens ein Foto hoch.");
       return;
     }
     setError("");
@@ -539,7 +554,7 @@ export default function Home() {
               </details>
             )}
           </section>
-          {activeProject && <div className="active-project-banner"><span>Aktives Zuhause</span><strong>{activeProject.name}</strong><small>Änderungen an Stil, Postleitzahl und Budget werden automatisch lokal gespeichert.</small></div>}
+          {activeProject && <div className="active-project-banner"><span>Aktives Zuhause</span><strong>{activeProject.name}</strong><small>Planungsangaben und Maße werden automatisch im Projekt gespeichert.</small></div>}
           <div className={`planning-workspace${activeProject ? "" : " no-project"}`} id="planer">
           {activeProject ? <>
           <div className="planning-controls-column">
@@ -552,9 +567,25 @@ export default function Home() {
                   <li key={room}><strong>{room}</strong><small>Bald verfügbar</small></li>
                 ))}
               </ul>
+              <div className="empty-room-check">
+                <label><input type="checkbox" checked={emptyRoomConfirmed} onChange={(event) => { setEmptyRoomConfirmed(event.target.checked); updateActivePlan({ emptyRoomConfirmed: event.target.checked, productConcept: null }); setShowSummary(false); }} /> Dieses Foto zeigt einen leeren Raum ohne vorhandene Möbel.</label>
+                <small>Phase 11 plant ausschließlich leere Räume. Eingerichtete Räume werden noch nicht unterstützt.</small>
+              </div>
             </li>
             <li className="planning-step-detailed">
-              <div className="step-heading"><span>2</span><strong>Designstil wählen</strong></div>
+              <div className="step-heading"><span>2</span><strong>Maßstab angeben</strong></div>
+              <fieldset className="scale-fields">
+                <legend>Wie soll Raumly die Produktgröße einschätzen?</legend>
+                <label><input type="radio" name="scale-mode" checked={scaleMode === "room-dimensions"} onChange={() => { setScaleMode("room-dimensions"); updateActivePlan({ scaleMode: "room-dimensions", productConcept: null }); setShowSummary(false); }} /> Raummaße</label>
+                <label><input type="radio" name="scale-mode" checked={scaleMode === "reference"} onChange={() => { setScaleMode("reference"); updateActivePlan({ scaleMode: "reference", productConcept: null }); setShowSummary(false); }} /> Referenzmaß im Foto</label>
+                {scaleMode === "room-dimensions" ? <div className="measurement-grid">
+                  <label htmlFor="room-width">Raumbreite in cm<input id="room-width" type="number" min="200" max="2000" value={roomWidthCm ?? ""} onChange={(event) => { const value = event.target.value ? Number(event.target.value) : null; setRoomWidthCm(value); updateActivePlan({ roomWidthCm: value, productConcept: null }); setShowSummary(false); }} /></label>
+                  <label htmlFor="room-depth">Raumtiefe in cm<input id="room-depth" type="number" min="200" max="2000" value={roomDepthCm ?? ""} onChange={(event) => { const value = event.target.value ? Number(event.target.value) : null; setRoomDepthCm(value); updateActivePlan({ roomDepthCm: value, productConcept: null }); setShowSummary(false); }} /></label>
+                </div> : <label className="reference-field" htmlFor="reference-length">Länge eines sichtbaren Referenzobjekts in cm<input id="reference-length" type="number" min="20" max="500" value={referenceLengthCm ?? ""} onChange={(event) => { const value = event.target.value ? Number(event.target.value) : null; setReferenceLengthCm(value); updateActivePlan({ referenceLengthCm: value, productConcept: null }); setShowSummary(false); }} /><small>Beispiel: Türbreite oder eine eindeutig markierte Messstrecke. Die Passform bleibt damit nur geschätzt.</small></label>}
+              </fieldset>
+            </li>
+            <li className="planning-step-detailed">
+              <div className="step-heading"><span>3</span><strong>Designstil wählen</strong></div>
               <div className="style-options" aria-label="Designstil wählen">
                 {designStyles.map(([name, description]) => (
                   <button
@@ -570,7 +601,7 @@ export default function Home() {
               </div>
             </li>
             <li className="planning-step-detailed">
-              <div className="step-heading"><span>3</span><strong>Foto hochladen</strong></div>
+              <div className="step-heading"><span>4</span><strong>Foto des leeren Raums hochladen</strong></div>
               {accountUser && <div className="photo-consent-panel">
                 <strong>Private Fotospeicherung</strong>
                 <p>Raumfotos können persönliche Details enthalten. Sie werden privat Ihrem Konto zugeordnet und ausschließlich für Ihre Raumplanung gespeichert.</p>
@@ -599,7 +630,7 @@ export default function Home() {
               </div>
             </li>
             <li className="planning-step-detailed">
-              <div className="step-heading"><span>4</span><strong>Budget auswählen</strong></div>
+              <div className="step-heading"><span>5</span><strong>Budget auswählen</strong></div>
               <div className="planning-fields">
                 <label htmlFor="budget">Budget: <strong>{budgetLabel} €</strong></label>
                 <input
@@ -634,7 +665,7 @@ export default function Home() {
           </ol>
           <div className="generate-panel">
             <button type="button" disabled={!briefingIsComplete} onClick={createSummary}>Planung zusammenfassen</button>
-            <small>{briefingIsComplete ? "Die vier Grundschritte sind vollständig." : "Wählen Sie einen Stil und mindestens ein Foto. Das Budget ist bereits vorbelegt."}</small>
+            <small>{briefingIsComplete ? "Die fünf Grundschritte sind vollständig." : "Bestätigen Sie den leeren Raum, ergänzen Sie ein Maß und wählen Sie Stil sowie Foto."}</small>
             {error && <p className="form-error" role="alert">{error}</p>}
           </div>
           </div>
@@ -645,6 +676,8 @@ export default function Home() {
                 <h2 id="design-results-title">Ihre Zusammenfassung</h2>
                 <dl>
                   <div><dt>Raum</dt><dd>Wohnzimmer</dd></div>
+                  <div><dt>Leerraum</dt><dd>Bestätigt</dd></div>
+                  <div><dt>Maßstab</dt><dd>{scaleMode === "room-dimensions" ? `${roomWidthCm} × ${roomDepthCm} cm` : `Referenz ${referenceLengthCm} cm`}</dd></div>
                   <div><dt>Designstil</dt><dd>{style}</dd></div>
                   <div><dt>Fotos</dt><dd>{images.length}</dd></div>
                   <div><dt>Postleitzahl</dt><dd>{postcodeIsValid ? postcode : "Noch nicht angegeben"}</dd></div>
