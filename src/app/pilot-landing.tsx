@@ -22,7 +22,7 @@ export default function PilotLanding() {
           <div>
             <small>RAUMLY · PRODUKT IN ENTWICKLUNG</small>
             <h1 id="pilot-title">Einrichtung, die zu Ihrem Raum, Stil und Budget passt.</h1>
-            <p>Raumly entwickelt einen digitalen Planungsservice für leere Wohnzimmer. Das Ziel: ein verständliches Raumkonzept mit maßlich passenden und später direkt kaufbaren Möbeln.</p>
+            <p>Raumly entwickelt einen digitalen Planungsservice für ganze Wohnungen und Häuser einschließlich Garten. Die erste Entwicklungsstufe beginnt kontrolliert mit leeren Wohnzimmern und soll verständliche Konzepte mit maßlich passenden, später direkt kaufbaren Produkten liefern.</p>
             <a className="pilot-primary-link" href="#ablauf">Konzept kennenlernen</a>
           </div>
           <div className="pilot-room" role="img" aria-label="Schematisches Einrichtungskonzept mit Sofa, Tisch, Teppich, Leuchte und Pflanze">

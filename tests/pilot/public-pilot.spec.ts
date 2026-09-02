@@ -4,6 +4,8 @@ test("zeigt ausschließlich die sachliche Pilotoberfläche", async ({ page }) =>
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "Einrichtung, die zu Ihrem Raum, Stil und Budget passt." })).toBeVisible();
   await expect(page.getByText("PRODUKT IN ENTWICKLUNG")).toBeVisible();
+  await expect(page.getByText(/ganze Wohnungen und Häuser einschließlich Garten/)).toBeVisible();
+  await expect(page.getByText(/erste Entwicklungsstufe beginnt kontrolliert mit leeren Wohnzimmern/)).toBeVisible();
   await expect(page.getByText("keinen Foto-Upload")).toBeVisible();
   await expect(page.locator('input[type="file"]')).toHaveCount(0);
   await expect(page.getByRole("button", { name: /Anmelden/ })).toHaveCount(0);
