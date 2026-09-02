@@ -40,6 +40,12 @@ test("schließt Möbel aus, die nicht in die angegebenen Raummaße passen", () =
   expect(concept.missingCategories).toContain("sofa");
 });
 
+test("verwendet im kleinen Raum eine passende kompakte Teppichvariante", () => {
+  const concept = createAutomaticProductConcept("Modern", 3000, syntheticProductCatalog, { mode: "room-dimensions", roomWidthCm: 300, roomDepthCm: 400 });
+  expect(concept.completeness).toBe("complete");
+  expect(concept.items.find((item) => item.category === "rug")?.title).toBe("Modern Teppich kompakt");
+});
+
 test("aktiviert Kauf und Bild erst bei vollständigem autorisiertem und aktuellem Datensatz", () => {
   const source = syntheticProductCatalog[0];
   const authorized = { ...source, dataSource: "authorized-feed" as const, availability: "in-stock" as const, rights: "licensed-display-and-ai" as const, productUrl: "https://haendler.example/produkt", imageUrl: "https://haendler.example/produkt.jpg", checkedAt: "2026-09-02T08:00:00.000Z" };

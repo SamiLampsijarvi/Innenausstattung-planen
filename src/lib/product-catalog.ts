@@ -45,6 +45,7 @@ const templates: ReadonlyArray<Omit<CatalogProduct, "id" | "sourceProductId" | "
   { title: "Sessel", category: "armchair", priceCents: 27900, shippingCents: 2900, widthCm: 78, heightCm: 84, depthCm: 80, retailer: "Raumly Testkatalog", currency: "EUR", availability: "test-only", rights: "synthetic-development-only", productUrl: null, imageUrl: null, dataSource: "synthetic", checkedAt: "2026-09-02" },
   { title: "Sideboard", category: "sideboard", priceCents: 32900, shippingCents: 3900, widthCm: 150, heightCm: 72, depthCm: 42, retailer: "Raumly Testkatalog", currency: "EUR", availability: "test-only", rights: "synthetic-development-only", productUrl: null, imageUrl: null, dataSource: "synthetic", checkedAt: "2026-09-02" },
   { title: "Zimmerpflanze", category: "plant", priceCents: 5900, shippingCents: 900, widthCm: 45, heightCm: 95, depthCm: 45, retailer: "Raumly Testkatalog", currency: "EUR", availability: "test-only", rights: "synthetic-development-only", productUrl: null, imageUrl: null, dataSource: "synthetic", checkedAt: "2026-09-02" },
+  { title: "Teppich kompakt", category: "rug", priceCents: 20900, shippingCents: 1500, widthCm: 160, heightCm: 1, depthCm: 120, retailer: "Raumly Testkatalog", currency: "EUR", availability: "test-only", rights: "synthetic-development-only", productUrl: null, imageUrl: null, dataSource: "synthetic", checkedAt: "2026-09-02" },
 ];
 
 export const syntheticProductCatalog: CatalogProduct[] = styles.flatMap(([style, color, material], styleIndex) =>
