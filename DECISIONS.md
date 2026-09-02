@@ -328,6 +328,16 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 - **Aktuelle Grenze:** Alle Produkte bleiben synthetische, nicht kaufbare Testdaten. Kauf-Schaltflächen und externe Bild-KI sind gesperrt; es werden keine Fotos übertragen und keine KI-Kosten erzeugt.
 - **Nachweis:** Ablauf, Schutzregeln und Abnahmekriterien stehen in `docs/PHASE_11_PURCHASABLE_EMPTY_ROOMS.md`.
 
+### D-039: Phase 12A – Lokale öffentliche Pilotoberfläche
+
+- **Status:** Am 2. September 2026 ausdrücklich als lokale, noch unveröffentlichte Umsetzung bestätigt.
+- **Ziel:** Eine sachliche öffentliche Informationsfläche bereitet die spätere Händler- und Awin-Prüfung vor, ohne Raumly bereits als nutzbares oder fertiges Produkt darzustellen.
+- **Technische Trennung:** Der serverseitige Pilotmodus ersetzt nur die öffentliche Startseite. Interne Bildtestseiten und deren API antworten im Pilotmodus mit 404; der lokale Entwicklungsmodus behält den bestehenden Planer unverändert.
+- **Datensparsamkeit:** Die Pilotseite enthält weder Foto-Upload noch Anmeldung, Analysewerkzeuge, Werbe-Cookies, Kontaktformular, externe Medien, Händlerdaten, Kauf-Links oder externe KI.
+- **Rechtstexte:** Impressum und Datenschutz bleiben deutlich bezeichnete, unvollständige Vorlagen. Persönliche Pflichtangaben, Hostingdaten und eine fachliche Prüfung sind vor jeder Veröffentlichung erforderlich.
+- **Veröffentlichung:** Hosting, Domain, Suchmaschinenfreigabe und öffentliche Bereitstellung bleiben getrennte Entscheidungen und benötigen vorherige Kosten- und Datenschutzprüfung.
+- **Nachweis:** Umfang und Abnahmekriterien stehen in `docs/PHASE_12A_LOCAL_PILOT.md`.
+
 ## Offene Entscheidungen
 
 - Markenname und visuelle Identität
