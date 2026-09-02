@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test:e2e": "playwright test",
+    "test:pilot": "playwright test --config=playwright.pilot.config.ts",
     "test:db": "node --test tests/image-test-database.test.mjs",
     "test:integration": "node --test --test-reporter=spec tests/supabase-integration.test.mjs",
     "test:evaluation": "node --test tests/image-evaluation.test.mjs",
