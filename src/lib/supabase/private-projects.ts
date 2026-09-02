@@ -1,10 +1,11 @@
 import type { SupabaseClient, User } from "@supabase/supabase-js";
+import { normalizeLivingRoomPlan } from "@/lib/local-projects";
 import type { LocalProject } from "@/lib/local-projects";
 
 type ProjectRow = {
   id: string;
   name: string;
-  living_room: LocalProject["livingRoom"];
+  living_room: unknown;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -22,7 +23,7 @@ export async function readPrivateProjects(supabase: SupabaseClient): Promise<Pri
   return ((data ?? []) as ProjectRow[]).map((row) => ({
     id: row.id,
     name: row.name,
-    livingRoom: row.living_room,
+    livingRoom: normalizeLivingRoomPlan(row.living_room),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     deletedAt: row.deleted_at,

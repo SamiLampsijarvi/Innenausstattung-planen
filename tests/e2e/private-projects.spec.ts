@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import type { SupabaseClient, User } from "@supabase/supabase-js";
-import { savePrivateProject } from "../../src/lib/supabase/private-projects";
+import { readPrivateProjects, savePrivateProject } from "../../src/lib/supabase/private-projects";
 import { createLocalProject } from "../../src/lib/local-projects";
 
 test("aktualisiert Privatprojekte ohne geschützte Kontofelder zu überschreiben", async () => {
@@ -47,4 +47,15 @@ test("legt ein noch nicht vorhandenes Privatprojekt vollständig an", async () =
     created_at: project.createdAt,
     updated_at: project.updatedAt,
   }]);
+});
+
+test("ergänzt Leerraumfelder bei älteren privaten Projekten ohne Datenverlust", async () => {
+  const rows = [{ id: "alt", name: "Altbestand", living_room: { style: "Japandi", postcode: "10115", budget: 2200 }, created_at: "2026-01-01", updated_at: "2026-01-02", deleted_at: null }];
+  const supabase = { from: () => ({ select: () => ({ order: async () => ({ data: rows, error: null }) }) }) } as unknown as SupabaseClient;
+  const projects = await readPrivateProjects(supabase);
+  expect(projects[0].livingRoom.style).toBe("Japandi");
+  expect(projects[0].livingRoom.budget).toBe(2200);
+  expect(projects[0].livingRoom.emptyRoomConfirmed).toBe(false);
+  expect(projects[0].livingRoom.scaleMode).toBe("room-dimensions");
+  expect(projects[0].livingRoom.productConcept).toBeNull();
 });

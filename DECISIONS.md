@@ -317,6 +317,17 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 - **Kosten und Datenschutz:** Dieser Abschnitt ruft keine externe KI auf, überträgt keine Fotos und verursacht keine KI-Kosten. Vertex AI bleibt ausgeschaltet.
 - **Weiterer Weg:** Echte Angebote, Händlerlinks und fotorealistische produktgebundene Bilder beginnen erst nach einem autorisierten Feed oder Vertrag, dokumentierten Bildrechten und erneuter Kosten- und Datenschutzprüfung. Details stehen in `docs/PHASE_10_GROUNDED_PRODUCTS.md`.
 
+### D-038: Phase 11 – Kaufbare Einrichtung ausschließlich für leere Räume
+
+- **Status:** Am 2. September 2026 ausdrücklich bestätigt und im synthetischen Testumfang umgesetzt.
+- **Anwendungsfall:** Phase 11 unterstützt ausschließlich vom Nutzer bestätigte leere Wohnzimmer. Die Erfassung und Erhaltung vorhandener Möbel ist nicht Teil dieses Ablaufs.
+- **Maßstab:** Vor der Produktauswahl sind vollständige Raummaße oder mindestens ein sichtbares Referenzmaß erforderlich. Ein Referenzmaß liefert nur eine geschätzte Passform.
+- **Produktidentität:** Bildkonzept, gespeicherter Produktsnapshot und Kaufkarte verwenden dieselbe stabile Produktkennung. Produkte werden bei späteren Änderungen nicht stillschweigend ersetzt.
+- **Kauffreigabe:** Ein aktiver Händlerlink benötigt einen autorisierten Feed, bestätigte Verfügbarkeit, vollständigen Preis und Versand, einen sicheren HTTPS-Link und höchstens 24 Stunden alte Daten.
+- **Bildfreigabe:** Zusätzlich sind ein freigegebenes Produktbild und ausdrückliche Anzeige- und KI-Verarbeitungsrechte erforderlich.
+- **Aktuelle Grenze:** Alle Produkte bleiben synthetische, nicht kaufbare Testdaten. Kauf-Schaltflächen und externe Bild-KI sind gesperrt; es werden keine Fotos übertragen und keine KI-Kosten erzeugt.
+- **Nachweis:** Ablauf, Schutzregeln und Abnahmekriterien stehen in `docs/PHASE_11_PURCHASABLE_EMPTY_ROOMS.md`.
+
 ## Offene Entscheidungen
 
 - Markenname und visuelle Identität

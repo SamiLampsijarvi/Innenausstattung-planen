@@ -4,6 +4,7 @@ export type ProductCategory = "sofa" | "coffee-table" | "rug" | "floor-lamp" | "
 
 export type CatalogProduct = {
   id: string;
+  sourceProductId: string;
   title: string;
   category: ProductCategory;
   priceCents: number | null;
@@ -14,10 +15,13 @@ export type CatalogProduct = {
   style: string;
   color: string;
   material: string;
-  retailer: "Raumly Testkatalog";
-  availability: "test-only" | "unavailable";
+  retailer: string;
+  currency: "EUR";
+  availability: "test-only" | "in-stock" | "out-of-stock";
   rights: ProductRights;
-  productUrl: null;
+  productUrl: string | null;
+  imageUrl: string | null;
+  dataSource: "synthetic" | "authorized-feed";
   checkedAt: string;
 };
 
@@ -33,20 +37,21 @@ const styles = [
   ["Neubau minimalistisch", "#cbc9c4", "Strukturstoff"],
 ] as const;
 
-const templates: ReadonlyArray<Omit<CatalogProduct, "id" | "style" | "color" | "material"> & { title: string }> = [
-  { title: "Sofa", category: "sofa", priceCents: 64900, shippingCents: 4900, widthCm: 205, heightCm: 82, depthCm: 92, retailer: "Raumly Testkatalog", availability: "test-only", rights: "synthetic-development-only", productUrl: null, checkedAt: "2026-09-01" },
-  { title: "Couchtisch", category: "coffee-table", priceCents: 15900, shippingCents: 1900, widthCm: 90, heightCm: 42, depthCm: 55, retailer: "Raumly Testkatalog", availability: "test-only", rights: "synthetic-development-only", productUrl: null, checkedAt: "2026-09-01" },
-  { title: "Teppich", category: "rug", priceCents: 19900, shippingCents: 1500, widthCm: 230, heightCm: 1, depthCm: 160, retailer: "Raumly Testkatalog", availability: "test-only", rights: "synthetic-development-only", productUrl: null, checkedAt: "2026-09-01" },
-  { title: "Stehleuchte", category: "floor-lamp", priceCents: 8900, shippingCents: 900, widthCm: 38, heightCm: 155, depthCm: 38, retailer: "Raumly Testkatalog", availability: "test-only", rights: "synthetic-development-only", productUrl: null, checkedAt: "2026-09-01" },
-  { title: "Sessel", category: "armchair", priceCents: 27900, shippingCents: 2900, widthCm: 78, heightCm: 84, depthCm: 80, retailer: "Raumly Testkatalog", availability: "test-only", rights: "synthetic-development-only", productUrl: null, checkedAt: "2026-09-01" },
-  { title: "Sideboard", category: "sideboard", priceCents: 32900, shippingCents: 3900, widthCm: 150, heightCm: 72, depthCm: 42, retailer: "Raumly Testkatalog", availability: "test-only", rights: "synthetic-development-only", productUrl: null, checkedAt: "2026-09-01" },
-  { title: "Zimmerpflanze", category: "plant", priceCents: 5900, shippingCents: 900, widthCm: 45, heightCm: 95, depthCm: 45, retailer: "Raumly Testkatalog", availability: "test-only", rights: "synthetic-development-only", productUrl: null, checkedAt: "2026-09-01" },
+const templates: ReadonlyArray<Omit<CatalogProduct, "id" | "sourceProductId" | "style" | "color" | "material"> & { title: string }> = [
+  { title: "Sofa", category: "sofa", priceCents: 64900, shippingCents: 4900, widthCm: 205, heightCm: 82, depthCm: 92, retailer: "Raumly Testkatalog", currency: "EUR", availability: "test-only", rights: "synthetic-development-only", productUrl: null, imageUrl: null, dataSource: "synthetic", checkedAt: "2026-09-02" },
+  { title: "Couchtisch", category: "coffee-table", priceCents: 15900, shippingCents: 1900, widthCm: 90, heightCm: 42, depthCm: 55, retailer: "Raumly Testkatalog", currency: "EUR", availability: "test-only", rights: "synthetic-development-only", productUrl: null, imageUrl: null, dataSource: "synthetic", checkedAt: "2026-09-02" },
+  { title: "Teppich", category: "rug", priceCents: 19900, shippingCents: 1500, widthCm: 230, heightCm: 1, depthCm: 160, retailer: "Raumly Testkatalog", currency: "EUR", availability: "test-only", rights: "synthetic-development-only", productUrl: null, imageUrl: null, dataSource: "synthetic", checkedAt: "2026-09-02" },
+  { title: "Stehleuchte", category: "floor-lamp", priceCents: 8900, shippingCents: 900, widthCm: 38, heightCm: 155, depthCm: 38, retailer: "Raumly Testkatalog", currency: "EUR", availability: "test-only", rights: "synthetic-development-only", productUrl: null, imageUrl: null, dataSource: "synthetic", checkedAt: "2026-09-02" },
+  { title: "Sessel", category: "armchair", priceCents: 27900, shippingCents: 2900, widthCm: 78, heightCm: 84, depthCm: 80, retailer: "Raumly Testkatalog", currency: "EUR", availability: "test-only", rights: "synthetic-development-only", productUrl: null, imageUrl: null, dataSource: "synthetic", checkedAt: "2026-09-02" },
+  { title: "Sideboard", category: "sideboard", priceCents: 32900, shippingCents: 3900, widthCm: 150, heightCm: 72, depthCm: 42, retailer: "Raumly Testkatalog", currency: "EUR", availability: "test-only", rights: "synthetic-development-only", productUrl: null, imageUrl: null, dataSource: "synthetic", checkedAt: "2026-09-02" },
+  { title: "Zimmerpflanze", category: "plant", priceCents: 5900, shippingCents: 900, widthCm: 45, heightCm: 95, depthCm: 45, retailer: "Raumly Testkatalog", currency: "EUR", availability: "test-only", rights: "synthetic-development-only", productUrl: null, imageUrl: null, dataSource: "synthetic", checkedAt: "2026-09-02" },
 ];
 
 export const syntheticProductCatalog: CatalogProduct[] = styles.flatMap(([style, color, material], styleIndex) =>
   templates.map((template, productIndex) => ({
     ...template,
     id: `synthetic-${styleIndex + 1}-${productIndex + 1}`,
+    sourceProductId: `RAUMLY-TEST-${styleIndex + 1}-${productIndex + 1}`,
     title: `${style} ${template.title}`,
     style,
     color,
