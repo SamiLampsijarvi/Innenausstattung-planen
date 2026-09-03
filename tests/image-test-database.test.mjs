@@ -51,6 +51,8 @@ before(async () => {
   await db.exec(operatorArm);
   const roomFidelity = await readFile(new URL('../supabase/migrations/202609010002_room_fidelity_gate.sql', import.meta.url), 'utf8');
   await db.exec(roomFidelity);
+  const expiredArm = await readFile(new URL('../supabase/migrations/202609030001_expired_image_test_arm.sql', import.meta.url), 'utf8');
+  await db.exec(expiredArm);
   await db.exec(`insert into auth.users values('${user}'),('${other}');
     insert into public.projects values('${user}','${user}',null),('${other}','${other}',null);
     insert into public.image_test_members values('${user}'),('${other}');
@@ -97,6 +99,15 @@ test('only server role can read state or mutate accounting', () => scenario(asyn
   assert.equal((await scalar("select public.image_test_arm('offline test only',30,60)")).reservationCents, 30);
   await db.exec('reset role');
   assert.equal(await scalar('select enabled from public.image_test_campaign'), true);
+}));
+test('an expired empty approval is safely replaced by a new operator arm', () => scenario(async () => {
+  await db.exec("update public.image_test_campaign set enabled=true, approved_until=now()-interval '1 second', price_review='expired fixture', reservation_cents=30, billing_checked_at=clock_timestamp()");
+  await db.exec('set role service_role');
+  const armed = await scalar("select public.image_test_arm('replacement fixture',30,60)");
+  await db.exec('reset role');
+  assert.equal(armed.reservationCents, 30);
+  assert.equal(await scalar('select enabled from public.image_test_campaign'), true);
+  assert.ok(new Date(await scalar('select approved_until from public.image_test_campaign')) > new Date());
 }));
 test('foreign photo and changed contents cannot be dispatched', () => scenario(async () => {
   await assert.rejects(approve(1, other), /unavailable/);
