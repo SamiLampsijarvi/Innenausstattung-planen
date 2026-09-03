@@ -9,7 +9,7 @@ type State = {
   campaign: { enabled: boolean; reserved_cents: number; photo_count: number; actual_cents: number | null; active_attempt: string | null };
   availablePhotos: { id: string; original_name: string }[];
   photos: { id: string; photo_id: string | null; attempts: number; style: string; budget_euro: number; room_fidelity_profile: RoomProfile | null }[];
-  attempts: { id: string; test_photo_id: string; status: string; room_fidelity_status: "pending" | "accepted" | "rejected"; reserved_cents: number; duration_ms: number | null }[];
+  attempts: { id: string; test_photo_id: string; status: string; room_fidelity_status: "pending" | "accepted" | "rejected"; automatic_fidelity_status?: "not_checked" | "passed" | "rejected"; automatic_fidelity_report?: { reasons?: string[] }; reserved_cents: number; duration_ms: number | null }[];
 };
 type RoomProfile = { doors: number; windows: number; openings: number; protectedArchitecture: true };
 type ProfileDraft = { doors: string; windows: string; openings: string; confirmed: boolean };
@@ -139,8 +139,9 @@ export default function ImageTestPanel() {
       {state.attempts.map((attempt, index) => <article key={attempt.id}>
         <h2>Versuch {state.attempts.length - index}</h2>
         <p>Status: {({ reserved: "reserviert / Ausgang offen", succeeded: "erfolgreich", unknown: "ungeklärt", discarded: "verworfen", deleted: "Ergebnis gelöscht" })[attempt.status] ?? attempt.status} · Reservierung {(attempt.reserved_cents / 100).toFixed(2)} €</p>
+        {attempt.automatic_fidelity_status === "rejected" && <p><strong>Automatisch verworfen:</strong> {attempt.automatic_fidelity_report?.reasons?.join(" ") || "Die Raumstruktur konnte nicht sicher bestätigt werden."}</p>}
         {attempt.status === "succeeded" && <>
-          <p>Raumtreue: {attempt.room_fidelity_status === "accepted" ? "bestätigt" : "Prüfung ausstehend"}</p>
+          <p>Automatische Strukturprüfung bestanden · Menschliche Raumtreue: {attempt.room_fidelity_status === "accepted" ? "bestätigt" : "Prüfung ausstehend"}</p>
           <button disabled={busy} onClick={() => showComparison(attempt.id, attempt.test_photo_id)}>Original und Ergebnis vergleichen</button>
           {attempt.room_fidelity_status === "pending" && <>
             <button disabled={busy || comparison?.attemptId !== attempt.id || !reviewConfirmed} onClick={() => act({ action: "reviewRoomFidelity", requestId: attempt.id, accepted: true })}>Raumtreue bestätigen</button>

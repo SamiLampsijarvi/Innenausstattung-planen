@@ -114,9 +114,11 @@ export async function POST(request: Request) {
         ledger: {
           reserve: (hash) => rpc(admin, "image_test_reserve", { ...args, target_test_photo: body.testPhotoId, request_id: body.requestId, photo_hash: hash }),
           canDispatch: () => rpc(admin, "image_test_check_dispatch", { ...args, request_id: body.requestId }),
-          finish: (result) => rpc(admin, "image_test_finish", { ...args, request_id: body.requestId,
-            result_image: result ? Buffer.from(result.image).toString("base64") : null, result_mime: result?.imageMimeType ?? null,
-            elapsed_ms: result?.durationMs ?? null, provider_id: result?.providerRequestId ?? null, usage_data: result?.usage ?? null }),
+          finish: (result, validation) => rpc(admin, "image_test_finish", { ...args, request_id: body.requestId,
+            result_image: result && validation?.status === "passed" ? Buffer.from(result.image).toString("base64") : null,
+            result_mime: result && validation?.status === "passed" ? result.imageMimeType : null,
+            elapsed_ms: result?.durationMs ?? null, provider_id: result?.providerRequestId ?? null,
+            usage_data: result ? { ...result.usage, raumlyValidation: validation } : null }),
         },
       });
     } else throw new Error("Ungültige Testaktion.");

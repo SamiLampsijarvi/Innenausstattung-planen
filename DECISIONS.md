@@ -349,6 +349,16 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 - **Ergebnisdarstellung:** Auf Desktop ersetzt der Vorher-Nachher-Vergleich nach erfolgreicher Raumtreueprüfung die rechte Zusammenfassungsfläche. Auf Mobil erscheint derselbe Bereich direkt unter dem Ablauf. Ohne bestandene Prüfung erscheint kein Inspirationsbild.
 - **Abgrenzung:** Diese Entscheidung definiert das zukünftige Produktziel und den Mockup. Sie schaltet weder externe KI noch weitere Raumtypen frei und ändert den aktuellen, getrennten Testpfad nicht.
 
+### D-041: Automatische Strukturprüfung vollständiger KI-Bilder
+
+- **Status:** Kostenfreier Offline-Abschnitt am 3. September 2026 ausdrücklich freigegeben; ein weiterer Vertex-Aufruf bleibt ausgeschlossen.
+- **Gesamtbild:** Die KI soll das vollständige leere Wohnzimmer im Japandi-Stil gestalten. Eine vom Nutzer markierte Möbelzone ist nicht vorgesehen.
+- **Prüfsperre:** Ein serverseitiger, lokaler Vergleich prüft vor der Speicherung Seitenverhältnis, starke Raumkanten, Linienrichtungen und regionale Struktur. Unsicherheit oder Abweichung verwirft den Kandidaten automatisch.
+- **Annahme:** Nur automatisch bestandene Ergebnisse erreichen die bestehende menschliche Original-/Ergebnisprüfung. Automatisch verworfene Kandidaten werden nicht gespeichert oder angezeigt; Buchhaltung und Reservierung bleiben erhalten.
+- **Grenze:** Der technische Vergleich ist ein konservativer Vorfilter, keine Garantie gegen jeden semantischen Architekturfehler. Die menschliche Prüfung bleibt im kontrollierten Test verpflichtend.
+- **Kosten:** Die Prüfung verursacht keinen zweiten Anbieteraufruf. Vor dem nächsten Vertex-Versuch sind die aktuell 0,60 Euro Reservierung mit Google Billing abzugleichen und Kosten sowie konkrete Ausführung erneut freizugeben.
+- **Nachweis:** `docs/PHASE_13_AUTOMATIC_ROOM_STRUCTURE.md`.
+
 ## Offene Entscheidungen
 
 - Markenname und visuelle Identität

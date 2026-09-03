@@ -3,12 +3,13 @@ import type { ImageGenerationProvider, ImageGenerationResult } from "./contracts
 import { createImageGenerationGateway } from "./gateway";
 import { MAXIMUM_VERTEX_SOURCE_BYTES } from "./test-limits";
 import type { RoomFidelityProfile } from "./room-fidelity";
+import { validateStructuralFidelity, type StructuralFidelityReport } from "./structural-fidelity.server";
 
 export type Reservation = { reservedCents: number; style: string; budgetEuro: number; grantedAt: string; policyVersion: string; roomFidelityProfile: RoomFidelityProfile };
 export type TestLedger = {
   reserve(hash: string): Promise<Reservation>;
   canDispatch(): Promise<boolean>;
-  finish(result: ImageGenerationResult | null): Promise<string>;
+  finish(result: ImageGenerationResult | null, validation?: StructuralFidelityReport): Promise<string>;
 };
 
 export function hashTestPhoto(bytes: Uint8Array) {
@@ -40,7 +41,17 @@ export async function runImageTest(options: {
       maximumChargeCents: reservation.reservedCents,
     });
     if (!result.image.length || result.image.length > 10 * 1024 * 1024) throw new Error("Ungültige Ergebnisgröße.");
-    return await options.ledger.finish(result);
+    let validation: StructuralFidelityReport;
+    try {
+      validation = await validateStructuralFidelity(options.bytes, result.image);
+    } catch {
+      validation = {
+        status: "rejected", version: "structure-v1", reasons: ["Die automatische Strukturprüfung konnte das Ergebnis nicht sicher auswerten."],
+        sourceWidth: 0, sourceHeight: 0, candidateWidth: 0, candidateHeight: 0,
+        aspectRatioDifference: 1, edgeRetention: 0, orientationSimilarity: 0, regionalStructureSimilarity: 0,
+      };
+    }
+    return await options.ledger.finish(result, validation);
   } catch {
     // Retain accounting even when Google or the database is unreachable.
     try { await options.ledger.finish(null); } catch { /* A reserved row remains unresolved. */ }

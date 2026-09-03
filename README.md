@@ -62,6 +62,7 @@ Bei Pull Requests nach `main` und Änderungen an `main` führt GitHub Actions di
 - Die vorhandene lokale Möbelerkennung und frühere Testentwürfe sind aus dem normalen Nutzerablauf genommen, bleiben im Code und in bestehenden Projektdaten aber erhalten
 - Der Ergebnisbereich bereitet die spätere Bild-KI vor, erzeugt derzeit jedoch noch kein individuelles Raumbild
 - Eine anbieterunabhängige, standardmäßig ausgeschaltete Bild-KI-Schnittstelle schützt die spätere Integration durch Einwilligungs-, Anbieter-, Zeit- und Kostenprüfungen
+- Vollständig erzeugte Testbilder werden vor der Speicherung lokal auf Bildausschnitt, feste Raumkanten, Linienrichtungen und regionale Struktur geprüft. Automatisch verworfene Bilder werden nicht angezeigt; Details stehen in `docs/PHASE_13_AUTOMATIC_ROOM_STRUCTURE.md`.
 - Manuelle KI-Versuche lieferten überzeugende Inspirationsbilder, bewahrten vorhandene Möbel, Raumdetails und Budgets aber nicht zuverlässig exakt; zukünftige KI-Bilder sind daher keine maßgenaue Planung oder Kostengarantie
 - Noch keine Live-Produktpreise oder Händlerverfügbarkeit
 - Noch keine Bezahlung
