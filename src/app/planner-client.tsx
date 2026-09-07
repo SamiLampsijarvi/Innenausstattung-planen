@@ -11,6 +11,7 @@ import AutomaticProductConcept from "./automatic-product-concept";
 import { syntheticProductCatalog } from "@/lib/product-catalog";
 import { createAutomaticProductConcept } from "@/lib/product-concept";
 import AuthPanel from "./auth-panel";
+import GuestImageTestPanel from "./guest-image-test-panel";
 import type { User } from "@supabase/supabase-js";
 import type { AccountDeletionRequest } from "@/lib/supabase/account-deletion";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
@@ -683,6 +684,7 @@ export default function Home() {
                   <div><dt>Postleitzahl</dt><dd>{postcodeIsValid ? postcode : "Noch nicht angegeben"}</dd></div>
                   <div><dt>Budget</dt><dd>{budgetLabel} €</dd></div>
                 </dl>
+                <GuestImageTestPanel key={images[0]?.previewUrl} file={images[0]?.file} style={style} budgetEuro={budget} />
                 <AutomaticProductConcept concept={productConcept} />
                 <button type="button" onClick={() => setShowSummary(false)}>Angaben bearbeiten</button>
               </div>

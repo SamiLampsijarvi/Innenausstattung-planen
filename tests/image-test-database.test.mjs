@@ -56,6 +56,8 @@ before(async () => {
   await db.exec(expiredArm);
   const automaticFidelity = await readFile(new URL('../supabase/migrations/202609030002_automatic_room_structure_gate.sql', import.meta.url), 'utf8');
   await db.exec(automaticFidelity);
+  const guestPreparation = await readFile(new URL('../supabase/migrations/202609070001_guest_image_test_preparation.sql', import.meta.url), 'utf8');
+  await db.exec(guestPreparation);
   await db.exec(`insert into auth.users values('${user}'),('${other}');
     insert into public.projects values('${user}','${user}',null),('${other}','${other}',null);
     insert into public.image_test_members values('${user}'),('${other}');
@@ -71,6 +73,23 @@ test('database defaults remain disabled with no price authorization', () => scen
   const id = await approve(1);
   await assert.rejects(reserve(id, 1), /disabled/);
   assert.equal(await scalar('select reserved_cents from public.image_test_campaign'), 0);
+}));
+
+test('anonymous preparation is private, short-lived and cannot arm Vertex', () => scenario(async () => {
+  const guestSession = 'cccccccc-cccc-4ccc-8ccc-000000000001';
+  const guestSecret = 'd'.repeat(64);
+  const guestHash = 'e'.repeat(64);
+  const profile = JSON.stringify({ doors: 1, windows: 2, openings: 0, protectedArchitecture: true });
+  assert.equal(await scalar("select has_table_privilege('anon','public.guest_image_test_sessions','select')"), false);
+  assert.equal(await scalar("select has_function_privilege('authenticated','public.guest_image_test_prepare(uuid,text,text,integer,jsonb,text,text,text)','execute')"), false);
+  await db.exec('set role service_role');
+  await scalar('select public.guest_image_test_prepare($1,$2,$3,$4,$5,$6,$7,$8)', [guestSession, guestSecret, 'Japandi', 1500, profile, guestHash, 'AQ==', 'image/png']);
+  const state = await scalar('select public.guest_image_test_state($1,$2)', [guestSession, guestSecret]);
+  assert.equal(state.prepared, true);
+  await assert.rejects(scalar('select public.guest_image_test_reserve($1,$2,$3)', [guestSession, guestSecret, request(91)]), /disabled/);
+  await scalar('select public.guest_image_test_revoke($1,$2)', [guestSession, guestSecret]);
+  await db.exec('reset role');
+  assert.equal(await scalar('select source_base64 is null from public.guest_image_test_sessions where id=$1', [guestSession]), true);
 }));
 test('room fidelity profile is validated and required before reservation', () => scenario(async () => {
   const id = await approve(1); await arm();
