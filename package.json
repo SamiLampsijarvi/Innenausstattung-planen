@@ -12,6 +12,8 @@
     "test:db": "node --test tests/image-test-database.test.mjs",
     "test:integration": "node --test --test-reporter=spec tests/supabase-integration.test.mjs",
     "test:evaluation": "node --test tests/image-evaluation.test.mjs",
+    "test:room-fidelity-calibration": "playwright test --config=playwright.room-fidelity-calibration.config.ts",
+    "prepare:room-fidelity-calibration": "node scripts/prepare-public-room-fidelity-corpus.mjs",
     "evaluate:images": "node scripts/image-evaluation.mjs",
     "arm:image-test": "node scripts/arm-controlled-image-test.mjs"
   },

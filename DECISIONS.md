@@ -360,6 +360,23 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 - **Betriebsstand:** Die additiven Migrationen `202609030001_expired_image_test_arm.sql` und `202609030002_automatic_room_structure_gate.sql` sind im Supabase-Projekt eingetragen. Die Abnahme bestätigt die beiden Prüffelder, ausschließlich serverseitige Abschlussberechtigung und den weiterhin ausgeschalteten Test ohne aktiven Versuch.
 - **Nachweis:** `docs/PHASE_13_AUTOMATIC_ROOM_STRUCTURE.md`.
 
+### D-042: Lokale Kalibrierung mit öffentlichen leeren Wohnzimmern
+
+- **Status:** Am 7. September 2026 als kostenfreier Vorbereitungsschritt umgesetzt und lokal abgenommen; Vertex bleibt ausgeschaltet.
+- **Entscheidung:** Ein kleiner, dokumentierter Bestand öffentlicher, leerer Wohnzimmer wird ausschließlich lokal und außerhalb von Git für die Kalibrierung der automatischen Strukturprüfung verwendet. Quellen, Urheberangabe, Lizenz und Abrufdatum werden lokal je Datei festgehalten; Bilddateien und das genaue lokale Protokoll gelangen weder in Git, Supabase noch zu Vertex.
+- **Prüfung:** Pro Bild muss eine reine Licht-/Farbänderung sowie eine kleine Testmöblierung bestehen; ein nachträglicher Zuschnitt, eine perspektivische Verschiebung und eine zusätzliche türähnliche Wandfläche müssen automatisch verworfen werden. Die erste Messung fand vier durchgelassene Zuschnitte, die zweite eine durchgelassene zusätzliche Tür. Die Prüfung wurde deshalb auf `structure-v3` mit positionsgenauem Kantenerhalt und einer konservativen Prüfung großer neuer Wandflächen ergänzt. Der vollständige Lauf besteht anschließend für alle sechs Bilder. Fehlklassifikationen sind vor einem weiteren Vertex-Versuch lokal zu korrigieren und erneut vollständig zu prüfen.
+- **Grenze:** Der öffentliche Bestand ist kein Ersatz für spätere, freiwillig bereitgestellte echte Raumfotos und keine Bild- oder Produktfreigabe. Der normale Ablauf, die Testbuchhaltung sowie die menschliche Endprüfung bleiben unverändert.
+- **Nachweis:** `docs/PHASE_14_PUBLIC_ROOM_FIDELITY_CALIBRATION.md`.
+
+### D-043: Anonyme Vorbereitung eines einzelnen Bildtests im Planer
+
+- **Status:** Am 7. September 2026 lokal vorbereitet und geprüft; die Datenbankmigration ist im verknüpften Supabase-Entwicklungsprojekt angewendet. Vertex bleibt ausgeschaltet.
+- **Ablauf:** Nach dem Planungsbriefing erscheint rechts ein separater Bereich für den kontrollierten KI-Bildtest. Er verlangt nur eine eigene Einwilligung. Ohne Einwilligung wird kein Gastfoto übertragen.
+- **Automatische Architekturgrundlage:** Der Gast gibt keine Türen, Fenster, Durchgänge, Wände oder Bodeninformationen ein und sieht auch keine Erkennungsergebnisse. Ein künftiger serverseitiger Vertex-Scan erzeugt das Raumtreue-Profil ausschließlich intern direkt vor einem ausdrücklich freigegebenen Bildversuch. Ohne sicheres Scan-Ergebnis wird kein Bildversuch reserviert.
+- **Datenschutz:** Eine zufällige, nur als `HttpOnly`-Cookie verfügbare Testsitzung schützt die kurzlebigen Daten. Original und Ergebnis liegen getrennt von Projekten, sind nicht über öffentliche Tabellen oder URLs lesbar und werden nach höchstens 24 Stunden automatisch gelöscht. Ein Widerruf löscht sie sofort.
+- **Raumtreue und Kosten:** Ein späterer Aufruf muss weiterhin die bestehende globale Einmal-Sperre, Kostenreservierung, Rechnungsabgleich, automatische Strukturprüfung und menschliche Annahme passieren. Nur ein automatisch und menschlich angenommener Kandidat darf rechts erscheinen.
+- **Aktivierung:** Vor einem realen Versuch müssen die serverseitige Gast-Testfreigabe bewusst gesetzt, die Testkampagne mit dem aktuellen Rechnungsabgleich erneut bewaffnet und der konkrete Vertex-Aufruf ausdrücklich bestätigt werden. Keine dieser Aktionen erfolgt durch diese Entscheidung.
+
 ## Offene Entscheidungen
 
 - Markenname und visuelle Identität

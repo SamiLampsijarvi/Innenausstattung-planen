@@ -20,7 +20,7 @@ const reserve = async (id, n, h = hash(1), owner = user) => {
   return scalar('select public.image_test_reserve($1,$2,$3,$4)', [owner, id, request(n), h]);
 };
 const arm = () => db.exec("update public.image_test_campaign set enabled=true, approved_until=now()+interval '1 hour', price_review='offline fixture only', reservation_cents=30, billing_checked_at=clock_timestamp()");
-const passedValidation = { raumlyValidation: { status: 'passed', version: 'structure-v1', reasons: [], edgeRetention: 1 } };
+const passedValidation = { raumlyValidation: { status: 'passed', version: 'structure-v3', reasons: [], edgeRetention: 1 } };
 const finish = (n, image = 'AQ==', usage = passedValidation) => scalar('select public.image_test_finish($1,$2,$3,$4,$5,$6,$7)', [user, request(n), image, 'image/png', 20, 'fake-response', JSON.stringify(usage)]);
 async function scenario(body) {
   await db.close(); db = new PGlite({ loadDataDir: baseline });
@@ -56,6 +56,10 @@ before(async () => {
   await db.exec(expiredArm);
   const automaticFidelity = await readFile(new URL('../supabase/migrations/202609030002_automatic_room_structure_gate.sql', import.meta.url), 'utf8');
   await db.exec(automaticFidelity);
+  const guestPreparation = await readFile(new URL('../supabase/migrations/202609070001_guest_image_test_preparation.sql', import.meta.url), 'utf8');
+  await db.exec(guestPreparation);
+  const automaticGuestArchitecture = await readFile(new URL('../supabase/migrations/202609070002_automatic_guest_architecture_profile.sql', import.meta.url), 'utf8');
+  await db.exec(automaticGuestArchitecture);
   await db.exec(`insert into auth.users values('${user}'),('${other}');
     insert into public.projects values('${user}','${user}',null),('${other}','${other}',null);
     insert into public.image_test_members values('${user}'),('${other}');
@@ -71,6 +75,37 @@ test('database defaults remain disabled with no price authorization', () => scen
   const id = await approve(1);
   await assert.rejects(reserve(id, 1), /disabled/);
   assert.equal(await scalar('select reserved_cents from public.image_test_campaign'), 0);
+}));
+
+test('anonymous preparation is private, short-lived and cannot arm Vertex', () => scenario(async () => {
+  const guestSession = 'cccccccc-cccc-4ccc-8ccc-000000000001';
+  const guestSecret = 'd'.repeat(64);
+  const guestHash = 'e'.repeat(64);
+  const profile = JSON.stringify({ doors: 1, windows: 2, openings: 0, protectedArchitecture: true });
+  assert.equal(await scalar("select has_table_privilege('anon','public.guest_image_test_sessions','select')"), false);
+  assert.equal(await scalar("select has_function_privilege('authenticated','public.guest_image_test_prepare(uuid,text,text,integer,jsonb,text,text,text)','execute')"), false);
+  await db.exec('set role service_role');
+  await scalar('select public.guest_image_test_prepare($1,$2,$3,$4,$5,$6,$7,$8)', [guestSession, guestSecret, 'Japandi', 1500, profile, guestHash, 'AQ==', 'image/png']);
+  const state = await scalar('select public.guest_image_test_state($1,$2)', [guestSession, guestSecret]);
+  assert.equal(state.prepared, true);
+  await assert.rejects(scalar('select public.guest_image_test_reserve($1,$2,$3)', [guestSession, guestSecret, request(91)]), /disabled/);
+  await scalar('select public.guest_image_test_revoke($1,$2)', [guestSession, guestSecret]);
+  await db.exec('reset role');
+  assert.equal(await scalar('select source_base64 is null from public.guest_image_test_sessions where id=$1', [guestSession]), true);
+}));
+
+test('a guest preparation accepts no visible architecture counts but blocks reservation until the server scan', () => scenario(async () => {
+  const guestSession = 'cccccccc-cccc-4ccc-8ccc-000000000002';
+  const guestSecret = 'f'.repeat(64);
+  await db.exec('set role service_role');
+  await scalar('select public.guest_image_test_prepare($1,$2,$3,$4,$5,$6,$7,$8)', [guestSession, guestSecret, 'Japandi', 1500, null, 'a'.repeat(64), 'AQ==', 'image/png']);
+  await db.exec('reset role');
+  await db.exec("update public.image_test_campaign set enabled=true, approved_until=now()+interval '1 hour', price_review='offline fixture only', reservation_cents=30, billing_checked_at=clock_timestamp()");
+  await db.exec('set role service_role');
+  await assert.rejects(scalar('select public.guest_image_test_reserve($1,$2,$3)', [guestSession, guestSecret, request(92)]), /architecture scan required/);
+  await scalar('select public.guest_image_test_set_room_fidelity($1,$2,$3)', [guestSession, guestSecret, JSON.stringify({ doors: 1, windows: 2, openings: 0, protectedArchitecture: true })]);
+  await scalar('select public.guest_image_test_reserve($1,$2,$3)', [guestSession, guestSecret, request(92)]);
+  await db.exec('reset role');
 }));
 test('room fidelity profile is validated and required before reservation', () => scenario(async () => {
   const id = await approve(1); await arm();
@@ -94,7 +129,7 @@ test('successful result remains pending until accepted and rejection removes it'
 }));
 test('automatic structure rejection stores no image and preserves accounting', () => scenario(async () => {
   const id = await approve(1); await arm(); await reserve(id, 1);
-  const rejected = { raumlyValidation: { status: 'rejected', version: 'structure-v1', reasons: ['perspective changed'], edgeRetention: 0.2 } };
+  const rejected = { raumlyValidation: { status: 'rejected', version: 'structure-v3', reasons: ['perspective changed'], edgeRetention: 0.2 } };
   assert.equal(await finish(1, null, rejected), 'discarded');
   const attempt = (await db.query('select status, room_fidelity_status, automatic_fidelity_status, automatic_fidelity_report from public.image_test_attempts where id=$1', [request(1)])).rows[0];
   assert.equal(attempt.status, 'discarded');

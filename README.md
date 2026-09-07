@@ -25,6 +25,7 @@ Die aktuelle Anwendung basiert auf Next.js und TypeScript. Nach der Installation
 - `pnpm test:db`: lokale PostgreSQL-Prüfung der dauerhaften Phase-7-Testbuchhaltung ohne Cloud-Zugriff
 - `pnpm test:integration`: vollständige Supabase-Prüfung ausschließlich im isolierten GitHub-Testjob, mit künstlichen Daten und ausgeschalteter Google-KI
 - `pnpm test:evaluation`: Regeln der lokalen Phase-8-Bildauswertung
+- `pnpm test:room-fidelity-calibration`: lokaler Kalibrierungslauf für den nicht versionierten öffentlichen Raumtestbestand; keine Netzwerk- oder KI-Aufrufe
 - `pnpm evaluate:images docs/templates/image-evaluation.example.json`: leere Auswertung ohne Fotos, Netzwerk oder KI-Kosten
 
 Bei Pull Requests nach `main` und Änderungen an `main` führt GitHub Actions diese Prüfungen automatisch aus. Ein Playwright-Bericht wird nur bei einem Fehler für sieben Tage als GitHub-Artefakt gespeichert.
@@ -63,6 +64,7 @@ Bei Pull Requests nach `main` und Änderungen an `main` führt GitHub Actions di
 - Der Ergebnisbereich bereitet die spätere Bild-KI vor, erzeugt derzeit jedoch noch kein individuelles Raumbild
 - Eine anbieterunabhängige, standardmäßig ausgeschaltete Bild-KI-Schnittstelle schützt die spätere Integration durch Einwilligungs-, Anbieter-, Zeit- und Kostenprüfungen
 - Vollständig erzeugte Testbilder werden vor der Speicherung lokal auf Bildausschnitt, feste Raumkanten, Linienrichtungen und regionale Struktur geprüft. Automatisch verworfene Bilder werden nicht angezeigt; Details stehen in `docs/PHASE_13_AUTOMATIC_ROOM_STRUCTURE.md`.
+- Der getrennte, öffentliche Kalibrierungsbestand prüft diese Strukturregeln vor einem weiteren Vertex-Versuch ohne Fotoübertragung oder Kosten; Details stehen in `docs/PHASE_14_PUBLIC_ROOM_FIDELITY_CALIBRATION.md`.
 - Manuelle KI-Versuche lieferten überzeugende Inspirationsbilder, bewahrten vorhandene Möbel, Raumdetails und Budgets aber nicht zuverlässig exakt; zukünftige KI-Bilder sind daher keine maßgenaue Planung oder Kostengarantie
 - Noch keine Live-Produktpreise oder Händlerverfügbarkeit
 - Noch keine Bezahlung

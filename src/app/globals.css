@@ -163,6 +163,14 @@ main { min-height: calc(100vh - 131px); padding: clamp(4rem, 9vw, 8rem) max(3vw,
 .prototype-note strong { color: var(--forest); }
 .prototype-note p { font-size: 12px; }
 .briefing-summary > button { width: 100%; min-height: 44px; margin-top: 16px; color: var(--forest); background: transparent; border: 1px solid var(--forest); border-radius: 9px; font-weight: 700; cursor: pointer; }
+.guest-image-test { margin: 26px 0 18px; padding-top: 22px; border-top: 1px solid var(--line); }
+.guest-image-test h3 { margin: 8px 0; color: var(--forest); font: 700 23px/1.2 Georgia, serif; }
+.guest-image-test p { max-width: none; font-size: 14px; }
+.guest-image-consent { display: flex; gap: 10px; align-items: flex-start; margin: 16px 0; color: var(--forest); font-size: 13px; line-height: 1.45; }
+.guest-image-consent input { margin-top: 3px; }
+.guest-image-test button { width: 100%; min-height: 44px; border: 0; border-radius: 9px; color: white; background: var(--forest); font-weight: 700; cursor: pointer; }
+.guest-image-test button:disabled { cursor: not-allowed; opacity: .55; }
+.guest-image-status { padding: 10px; background: #edf4f0; border-radius: 8px; }
 .product-concept { margin-top: 22px; padding-top: 20px; border-top: 1px solid var(--line); }
 .product-concept h3 { margin: 5px 0 0; color: var(--forest); font: 700 21px/1.25 Georgia, serif; }
 .product-concept > p { max-width: none; font-size: 11px; }
