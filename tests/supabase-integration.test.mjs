@@ -26,6 +26,9 @@ const db = new pg.Pool({ connectionString: config.DB_URL, max: 5 });
 const origin = 'http://127.0.0.1:3102';
 const endpoint = `${origin}/api/internal/image-test`;
 const image = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=', 'base64');
+// A completed provider response must include the local structural-fidelity verdict.
+// Omitting it is intentionally fail-closed by the current database gate.
+const passedStructuralValidation = { raumlyValidation: { status: 'passed', version: 'structure-v1', reasons: [] } };
 let server, owner, stranger, projectId, photoId, testPhotoId;
 const q = async (sql, values = []) => (await db.query(sql, values)).rows;
 const rpc = async (name, args) => {
@@ -100,7 +103,7 @@ async function reserve(id = randomUUID()) {
   return id;
 }
 async function finish(id) {
-  return rpc('image_test_finish', { target_user: owner.id, request_id: id, result_image: image.toString('base64'), result_mime: 'image/png', elapsed_ms: 10, provider_id: 'offline-test', usage_data: {} });
+  return rpc('image_test_finish', { target_user: owner.id, request_id: id, result_image: image.toString('base64'), result_mime: 'image/png', elapsed_ms: 10, provider_id: 'offline-test', usage_data: passedStructuralValidation });
 }
 async function assertLocked(connection) {
   const pid = connection.processID;
@@ -178,7 +181,7 @@ test('withdrawal racing a late result prevents storage after commit', async () =
   try {
     await a.query('begin');
     await a.query("insert into public.consent_events(user_id,consent_kind,action,policy_version) values($1,'ai_processing','withdrawn','vertex-test-v1')", [owner.id]);
-    const pending = b.query('select public.image_test_finish($1,$2,$3,$4)', [owner.id, id, image.toString('base64'), 'image/png']);
+    const pending = b.query('select public.image_test_finish($1,$2,$3,$4,$5,$6,$7)', [owner.id, id, image.toString('base64'), 'image/png', 10, 'offline-test', passedStructuralValidation]);
     await assertLocked(b); await a.query('commit');
     assert.equal((await pending).rows[0].image_test_finish, 'discarded');
     assert.equal((await q('select count(*)::int as count from public.image_test_results'))[0].count, 0);
@@ -191,7 +194,7 @@ test('withdrawal racing an earlier result physically removes it', async () => {
   const a = await db.connect(), b = await db.connect();
   try {
     await a.query('begin');
-    await a.query('select public.image_test_finish($1,$2,$3,$4)', [owner.id, id, image.toString('base64'), 'image/png']);
+    await a.query('select public.image_test_finish($1,$2,$3,$4,$5,$6,$7)', [owner.id, id, image.toString('base64'), 'image/png', 10, 'offline-test', passedStructuralValidation]);
     const pending = b.query("insert into public.consent_events(user_id,consent_kind,action,policy_version) values($1,'ai_processing','withdrawn','vertex-test-v1')", [owner.id]);
     await assertLocked(b); await a.query('commit'); await pending;
     assert.equal((await q('select count(*)::int as count from public.image_test_results'))[0].count, 0);
