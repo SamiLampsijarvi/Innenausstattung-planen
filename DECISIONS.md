@@ -356,7 +356,8 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 - **Prüfsperre:** Ein serverseitiger, lokaler Vergleich prüft vor der Speicherung Seitenverhältnis, starke Raumkanten, Linienrichtungen und regionale Struktur. Unsicherheit oder Abweichung verwirft den Kandidaten automatisch.
 - **Annahme:** Nur automatisch bestandene Ergebnisse erreichen die bestehende menschliche Original-/Ergebnisprüfung. Automatisch verworfene Kandidaten werden nicht gespeichert oder angezeigt; Buchhaltung und Reservierung bleiben erhalten.
 - **Grenze:** Der technische Vergleich ist ein konservativer Vorfilter, keine Garantie gegen jeden semantischen Architekturfehler. Die menschliche Prüfung bleibt im kontrollierten Test verpflichtend.
-- **Kosten:** Die Prüfung verursacht keinen zweiten Anbieteraufruf. Vor dem nächsten Vertex-Versuch sind die aktuell 0,60 Euro Reservierung mit Google Billing abzugleichen und Kosten sowie konkrete Ausführung erneut freizugeben.
+- **Kosten:** Die Prüfung verursacht keinen zweiten Anbieteraufruf. Der Abgleich am 3. September 2026 weist für den bisherigen Vertex-Verbrauch 0,06 Euro aus; ein Testguthaben gleicht diesen Betrag vollständig aus, sodass 0,00 Euro zahlbar sind. Die interne Reservierung bleibt vorsorglich bei 0,60 Euro. Kosten und konkrete Ausführung müssen vor jedem weiteren Vertex-Versuch erneut freigegeben werden.
+- **Betriebsstand:** Die additiven Migrationen `202609030001_expired_image_test_arm.sql` und `202609030002_automatic_room_structure_gate.sql` sind im Supabase-Projekt eingetragen. Die Abnahme bestätigt die beiden Prüffelder, ausschließlich serverseitige Abschlussberechtigung und den weiterhin ausgeschalteten Test ohne aktiven Versuch.
 - **Nachweis:** `docs/PHASE_13_AUTOMATIC_ROOM_STRUCTURE.md`.
 
 ## Offene Entscheidungen

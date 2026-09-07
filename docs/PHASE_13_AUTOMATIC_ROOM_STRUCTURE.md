@@ -18,7 +18,8 @@ Die Prüfung verändert oder maskiert das Bild nicht. Sie ist ein Vorfilter und 
 ## Kosten- und Betriebsgrenze
 
 - Offline-Implementierung und synthetische Tests verursachen keine KI-Kosten.
-- Vor einem weiteren Vertex-Versuch müssen die derzeit 0,60 Euro Reservierung mit Google Billing abgeglichen und Preis, Datenschutz sowie genau ein neuer Versuch erneut freigegeben werden.
+- Der Billing-Abgleich vom 3. September 2026 weist 0,06 Euro bisherigen Vertex-Verbrauch und wegen des Testguthabens 0,00 Euro zahlbaren Betrag aus. Die vorsorgliche interne Reservierung bleibt bei 0,60 Euro.
+- Vor einem weiteren Vertex-Versuch müssen Preis, Datenschutz, das konkrete Foto und genau ein neuer Versuch erneut freigegeben werden.
 - Der normale Planungsablauf bleibt unverändert; der Mechanismus ist nur an `/internal/image-test` angeschlossen.
 - Keine automatische Wiederholung und kein zusätzlicher externer Prüfaufruf.
 
@@ -31,3 +32,6 @@ Die Prüfung verändert oder maskiert das Bild nicht. Sie ist ein Vorfilter und 
 - Menschliche Annahme bleibt zusätzlich erforderlich.
 - Build, Lint, Datenbanktests sowie Desktop- und Mobiltests bestehen.
 
+## Betriebsabnahme am 3. September 2026
+
+Die Migrationen `202609030001_expired_image_test_arm.sql` und `202609030002_automatic_room_structure_gate.sql` sind im Supabase-Projekt vorhanden. Die Abfrage bestätigt beide neuen Prüffelder, die Abschlussberechtigung nur für den Server sowie einen ausgeschalteten Test ohne aktiven Versuch. Es wurde dabei kein Foto an Vertex übertragen und keine Bildgenerierung gestartet.
