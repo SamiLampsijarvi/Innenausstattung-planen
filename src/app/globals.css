@@ -168,14 +168,9 @@ main { min-height: calc(100vh - 131px); padding: clamp(4rem, 9vw, 8rem) max(3vw,
 .guest-image-test p { max-width: none; font-size: 14px; }
 .guest-image-consent { display: flex; gap: 10px; align-items: flex-start; margin: 16px 0; color: var(--forest); font-size: 13px; line-height: 1.45; }
 .guest-image-consent input { margin-top: 3px; }
-.guest-image-test fieldset { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 0 0 16px; padding: 12px; border: 1px solid var(--line); border-radius: 9px; }
-.guest-image-test legend { color: var(--muted); font-size: 12px; }
-.guest-image-test fieldset label { display: grid; gap: 4px; color: var(--forest); font-size: 12px; font-weight: 700; }
-.guest-image-test input[type="number"] { width: 100%; min-height: 34px; padding: 4px 7px; border: 1px solid var(--line); border-radius: 6px; }
 .guest-image-test button { width: 100%; min-height: 44px; border: 0; border-radius: 9px; color: white; background: var(--forest); font-weight: 700; cursor: pointer; }
 .guest-image-test button:disabled { cursor: not-allowed; opacity: .55; }
 .guest-image-status { padding: 10px; background: #edf4f0; border-radius: 8px; }
-@media (max-width: 520px) { .guest-image-test fieldset { grid-template-columns: 1fr; } }
 .product-concept { margin-top: 22px; padding-top: 20px; border-top: 1px solid var(--line); }
 .product-concept h3 { margin: 5px 0 0; color: var(--forest); font: 700 21px/1.25 Georgia, serif; }
 .product-concept > p { max-width: none; font-size: 11px; }

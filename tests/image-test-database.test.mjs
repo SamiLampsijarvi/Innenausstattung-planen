@@ -58,6 +58,8 @@ before(async () => {
   await db.exec(automaticFidelity);
   const guestPreparation = await readFile(new URL('../supabase/migrations/202609070001_guest_image_test_preparation.sql', import.meta.url), 'utf8');
   await db.exec(guestPreparation);
+  const automaticGuestArchitecture = await readFile(new URL('../supabase/migrations/202609070002_automatic_guest_architecture_profile.sql', import.meta.url), 'utf8');
+  await db.exec(automaticGuestArchitecture);
   await db.exec(`insert into auth.users values('${user}'),('${other}');
     insert into public.projects values('${user}','${user}',null),('${other}','${other}',null);
     insert into public.image_test_members values('${user}'),('${other}');
@@ -90,6 +92,20 @@ test('anonymous preparation is private, short-lived and cannot arm Vertex', () =
   await scalar('select public.guest_image_test_revoke($1,$2)', [guestSession, guestSecret]);
   await db.exec('reset role');
   assert.equal(await scalar('select source_base64 is null from public.guest_image_test_sessions where id=$1', [guestSession]), true);
+}));
+
+test('a guest preparation accepts no visible architecture counts but blocks reservation until the server scan', () => scenario(async () => {
+  const guestSession = 'cccccccc-cccc-4ccc-8ccc-000000000002';
+  const guestSecret = 'f'.repeat(64);
+  await db.exec('set role service_role');
+  await scalar('select public.guest_image_test_prepare($1,$2,$3,$4,$5,$6,$7,$8)', [guestSession, guestSecret, 'Japandi', 1500, null, 'a'.repeat(64), 'AQ==', 'image/png']);
+  await db.exec('reset role');
+  await db.exec("update public.image_test_campaign set enabled=true, approved_until=now()+interval '1 hour', price_review='offline fixture only', reservation_cents=30, billing_checked_at=clock_timestamp()");
+  await db.exec('set role service_role');
+  await assert.rejects(scalar('select public.guest_image_test_reserve($1,$2,$3)', [guestSession, guestSecret, request(92)]), /architecture scan required/);
+  await scalar('select public.guest_image_test_set_room_fidelity($1,$2,$3)', [guestSession, guestSecret, JSON.stringify({ doors: 1, windows: 2, openings: 0, protectedArchitecture: true })]);
+  await scalar('select public.guest_image_test_reserve($1,$2,$3)', [guestSession, guestSecret, request(92)]);
+  await db.exec('reset role');
 }));
 test('room fidelity profile is validated and required before reservation', () => scenario(async () => {
   const id = await approve(1); await arm();

@@ -2,7 +2,6 @@ import { createHash, randomUUID } from "node:crypto";
 import { cookies } from "next/headers";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { hashTestPhoto } from "@/lib/ai/image-generation/test-runner";
-import { isRoomFidelityProfile } from "@/lib/ai/image-generation/room-fidelity";
 import { MAXIMUM_VERTEX_SOURCE_BYTES } from "@/lib/ai/image-generation/test-limits";
 import { isTrustedImageTestOrigin } from "@/lib/ai/image-generation/test-origin";
 
@@ -68,19 +67,15 @@ export async function POST(request: Request) {
     const photo = form.get("photo");
     const style = form.get("style");
     const budget = Number(form.get("budgetEuro"));
-    const profileText = form.get("profile");
-    if (!(photo instanceof File) || typeof style !== "string" || typeof profileText !== "string") throw new Error("Ungültige Testvorbereitung.");
+    if (!(photo instanceof File) || typeof style !== "string") throw new Error("Ungültige Testvorbereitung.");
     if (!photo.size || photo.size > MAXIMUM_VERTEX_SOURCE_BYTES) throw new Error("Das Testfoto muss zwischen 1 Byte und 7 MB groß sein.");
-    let profile: unknown;
-    try { profile = JSON.parse(profileText); } catch { throw new Error("Ungültiger Architekturschutz."); }
-    if (!isRoomFidelityProfile(profile)) throw new Error("Ungültiger Architekturschutz.");
     const bytes = new Uint8Array(await photo.arrayBuffer());
     const mime = imageMime(bytes);
     if (!mime) throw new Error("Nicht unterstütztes Fotoformat.");
     const session = await currentSession(true);
     await call(client, "guest_image_test_prepare", {
       target_session: session.id, target_secret_hash: session.secret, target_style: style, target_budget: budget,
-      target_profile: profile, target_source_hash: hashTestPhoto(bytes), target_source_base64: Buffer.from(bytes).toString("base64"), target_source_mime: mime,
+      target_profile: null, target_source_hash: hashTestPhoto(bytes), target_source_base64: Buffer.from(bytes).toString("base64"), target_source_mime: mime,
     });
     const response = Response.json({ ok: true, expiresInHours: 24 }, { headers });
     if (session.setCookie) response.headers.append("Set-Cookie", `${sessionCookie}=${session.id}.${session.secret}; Path=/; Max-Age=86400; HttpOnly; SameSite=Strict${process.env.NODE_ENV === "production" ? "; Secure" : ""}`);

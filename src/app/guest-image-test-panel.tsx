@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import type { RoomFidelityProfile } from "@/lib/ai/image-generation/room-fidelity";
 
 type Props = { file?: File; style: string; budgetEuro: number };
 type TestState = "idle" | "prepared" | "candidate" | "accepted" | "unavailable";
@@ -10,14 +9,10 @@ type TestState = "idle" | "prepared" | "candidate" | "accepted" | "unavailable";
 // flow never uploads a guest photo merely by showing this component.
 export default function GuestImageTestPanel({ file, style, budgetEuro }: Props) {
   const [consent, setConsent] = useState(false);
-  const [doors, setDoors] = useState(0);
-  const [windows, setWindows] = useState(0);
-  const [openings, setOpenings] = useState(0);
   const [state, setState] = useState<TestState>("idle");
   const [message, setMessage] = useState("");
   const enabled = process.env.NEXT_PUBLIC_RAUMLY_GUEST_IMAGE_TEST_ENABLED === "true";
 
-  const profile: RoomFidelityProfile = { doors, windows, openings, protectedArchitecture: true };
   async function prepare() {
     if (!file || !consent) return;
     setMessage("");
@@ -33,7 +28,6 @@ export default function GuestImageTestPanel({ file, style, budgetEuro }: Props) 
     body.set("photo", file);
     body.set("style", style);
     body.set("budgetEuro", String(budgetEuro));
-    body.set("profile", JSON.stringify(profile));
     const response = await fetch("/api/guest-image-test", { method: "POST", body, credentials: "same-origin" });
     const result = await response.json().catch(() => ({}));
     if (!response.ok) {
@@ -53,12 +47,6 @@ export default function GuestImageTestPanel({ file, style, budgetEuro }: Props) 
         <input type="checkbox" checked={consent} onChange={(event) => setConsent(event.target.checked)} />
         Ich willige ein, dass dieses Foto ausschließlich für einen kontrollierten Vertex-Test verarbeitet und spätestens nach 24 Stunden gelöscht wird.
       </label>
-      <fieldset disabled={!file || state === "prepared" || state === "candidate" || state === "accepted"}>
-        <legend>Sichtbare Architektur schützen</legend>
-        <label>Türen <input type="number" min="0" max="12" value={doors} onChange={(event) => setDoors(Number(event.target.value))} /></label>
-        <label>Fenster <input type="number" min="0" max="12" value={windows} onChange={(event) => setWindows(Number(event.target.value))} /></label>
-        <label>Durchgänge <input type="number" min="0" max="12" value={openings} onChange={(event) => setOpenings(Number(event.target.value))} /></label>
-      </fieldset>
       <button type="button" onClick={prepare} disabled={!file || !consent || state === "prepared" || state === "candidate" || state === "accepted"}>
         {enabled ? "Test sicher vorbereiten" : "Bildtest ist ausgeschaltet"}
       </button>
