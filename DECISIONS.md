@@ -338,6 +338,28 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 - **Veröffentlichung:** Hosting, Domain, Suchmaschinenfreigabe und öffentliche Bereitstellung bleiben getrennte Entscheidungen und benötigen vorherige Kosten- und Datenschutzprüfung.
 - **Nachweis:** Umfang und Abnahmekriterien stehen in `docs/PHASE_12A_LOCAL_PILOT.md`.
 
+### D-040: Zielablauf der künftigen Raumly-Startseite
+
+- **Status:** Produktentscheidungen am 3. September 2026 bestätigt; noch kein Funktionscode umgesetzt.
+- **Einstieg:** Die Startseite führt direkt in einen vierstufigen Planungsablauf: Bereich wählen, ungefähre Breite und Länge eingeben, Stil wählen und genau ein Foto hochladen.
+- **Erster nutzbarer Umfang:** Ausschließlich bestätigte leere Wohnzimmer. Weitere vorhandene Raumtypen bleiben im künftigen Mockup sichtbar, werden aber erst nach eigener Umsetzung als aktiv angeboten.
+- **Stil und Budget:** Japandi ist der erste echte Stil. Die Oberfläche zeigt zunächst Modern, Skandinavisch, Japandi und Industrial; weitere Stile erscheinen nach bewusster Erweiterung. Das Einrichtungsbudget ist ein Pflichtwert.
+- **Foto und Raumtreue:** Vor der externen Verarbeitung müssen Gäste die getrennte KI-Einwilligung erteilen. Türen, Fenster, Wände, Boden und Perspektive dürfen nicht allein per Prompt geschützt werden; der spätere Produktpfad benötigt eine Masken- und Kompositionslösung mit automatischer Ablehnung bei Abweichungen.
+- **Gastmodus:** Eine Anmeldung ist weder vor dem Foto noch vor dem Ergebnis erforderlich. Gast-Originalfoto und -Ergebnis werden nicht als Projekt gespeichert und spätestens 24 Stunden nach Verarbeitung automatisch gelöscht.
+- **Ergebnisdarstellung:** Auf Desktop ersetzt der Vorher-Nachher-Vergleich nach erfolgreicher Raumtreueprüfung die rechte Zusammenfassungsfläche. Auf Mobil erscheint derselbe Bereich direkt unter dem Ablauf. Ohne bestandene Prüfung erscheint kein Inspirationsbild.
+- **Abgrenzung:** Diese Entscheidung definiert das zukünftige Produktziel und den Mockup. Sie schaltet weder externe KI noch weitere Raumtypen frei und ändert den aktuellen, getrennten Testpfad nicht.
+
+### D-041: Automatische Strukturprüfung vollständiger KI-Bilder
+
+- **Status:** Kostenfreier Offline-Abschnitt am 3. September 2026 ausdrücklich freigegeben; ein weiterer Vertex-Aufruf bleibt ausgeschlossen.
+- **Gesamtbild:** Die KI soll das vollständige leere Wohnzimmer im Japandi-Stil gestalten. Eine vom Nutzer markierte Möbelzone ist nicht vorgesehen.
+- **Prüfsperre:** Ein serverseitiger, lokaler Vergleich prüft vor der Speicherung Seitenverhältnis, starke Raumkanten, Linienrichtungen und regionale Struktur. Unsicherheit oder Abweichung verwirft den Kandidaten automatisch.
+- **Annahme:** Nur automatisch bestandene Ergebnisse erreichen die bestehende menschliche Original-/Ergebnisprüfung. Automatisch verworfene Kandidaten werden nicht gespeichert oder angezeigt; Buchhaltung und Reservierung bleiben erhalten.
+- **Grenze:** Der technische Vergleich ist ein konservativer Vorfilter, keine Garantie gegen jeden semantischen Architekturfehler. Die menschliche Prüfung bleibt im kontrollierten Test verpflichtend.
+- **Kosten:** Die Prüfung verursacht keinen zweiten Anbieteraufruf. Der Abgleich am 3. September 2026 weist für den bisherigen Vertex-Verbrauch 0,06 Euro aus; ein Testguthaben gleicht diesen Betrag vollständig aus, sodass 0,00 Euro zahlbar sind. Die interne Reservierung bleibt vorsorglich bei 0,60 Euro. Kosten und konkrete Ausführung müssen vor jedem weiteren Vertex-Versuch erneut freigegeben werden.
+- **Betriebsstand:** Die additiven Migrationen `202609030001_expired_image_test_arm.sql` und `202609030002_automatic_room_structure_gate.sql` sind im Supabase-Projekt eingetragen. Die Abnahme bestätigt die beiden Prüffelder, ausschließlich serverseitige Abschlussberechtigung und den weiterhin ausgeschalteten Test ohne aktiven Versuch.
+- **Nachweis:** `docs/PHASE_13_AUTOMATIC_ROOM_STRUCTURE.md`.
+
 ## Offene Entscheidungen
 
 - Markenname und visuelle Identität

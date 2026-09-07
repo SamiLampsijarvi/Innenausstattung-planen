@@ -20,7 +20,8 @@ const reserve = async (id, n, h = hash(1), owner = user) => {
   return scalar('select public.image_test_reserve($1,$2,$3,$4)', [owner, id, request(n), h]);
 };
 const arm = () => db.exec("update public.image_test_campaign set enabled=true, approved_until=now()+interval '1 hour', price_review='offline fixture only', reservation_cents=30, billing_checked_at=clock_timestamp()");
-const finish = (n, image = 'AQ==') => scalar('select public.image_test_finish($1,$2,$3,$4,$5,$6,$7)', [user, request(n), image, 'image/png', 20, 'fake-response', {}]);
+const passedValidation = { raumlyValidation: { status: 'passed', version: 'structure-v1', reasons: [], edgeRetention: 1 } };
+const finish = (n, image = 'AQ==', usage = passedValidation) => scalar('select public.image_test_finish($1,$2,$3,$4,$5,$6,$7)', [user, request(n), image, 'image/png', 20, 'fake-response', JSON.stringify(usage)]);
 async function scenario(body) {
   await db.close(); db = new PGlite({ loadDataDir: baseline });
   await body();
@@ -51,6 +52,10 @@ before(async () => {
   await db.exec(operatorArm);
   const roomFidelity = await readFile(new URL('../supabase/migrations/202609010002_room_fidelity_gate.sql', import.meta.url), 'utf8');
   await db.exec(roomFidelity);
+  const expiredArm = await readFile(new URL('../supabase/migrations/202609030001_expired_image_test_arm.sql', import.meta.url), 'utf8');
+  await db.exec(expiredArm);
+  const automaticFidelity = await readFile(new URL('../supabase/migrations/202609030002_automatic_room_structure_gate.sql', import.meta.url), 'utf8');
+  await db.exec(automaticFidelity);
   await db.exec(`insert into auth.users values('${user}'),('${other}');
     insert into public.projects values('${user}','${user}',null),('${other}','${other}',null);
     insert into public.image_test_members values('${user}'),('${other}');
@@ -87,6 +92,19 @@ test('successful result remains pending until accepted and rejection removes it'
   assert.equal(await scalar('select count(*) from public.image_test_results where attempt_id=$1', [request(2)]), 0);
   assert.equal(await scalar('select reserved_cents from public.image_test_campaign'), 60);
 }));
+test('automatic structure rejection stores no image and preserves accounting', () => scenario(async () => {
+  const id = await approve(1); await arm(); await reserve(id, 1);
+  const rejected = { raumlyValidation: { status: 'rejected', version: 'structure-v1', reasons: ['perspective changed'], edgeRetention: 0.2 } };
+  assert.equal(await finish(1, null, rejected), 'discarded');
+  const attempt = (await db.query('select status, room_fidelity_status, automatic_fidelity_status, automatic_fidelity_report from public.image_test_attempts where id=$1', [request(1)])).rows[0];
+  assert.equal(attempt.status, 'discarded');
+  assert.equal(attempt.room_fidelity_status, 'rejected');
+  assert.equal(attempt.automatic_fidelity_status, 'rejected');
+  assert.deepEqual(attempt.automatic_fidelity_report.reasons, ['perspective changed']);
+  assert.equal(await scalar('select count(*) from public.image_test_results'), 0);
+  assert.equal(await scalar('select reserved_cents from public.image_test_campaign'), 30);
+  assert.equal(await scalar('select active_attempt is null from public.image_test_campaign'), true);
+}));
 test('only server role can read state or mutate accounting', () => scenario(async () => {
   assert.equal(await scalar("select has_function_privilege('authenticated','public.image_test_reserve(uuid,uuid,uuid,text)','execute')"), false);
   assert.equal(await scalar("select has_function_privilege('anon','public.image_test_state(uuid)','execute')"), false);
@@ -97,6 +115,15 @@ test('only server role can read state or mutate accounting', () => scenario(asyn
   assert.equal((await scalar("select public.image_test_arm('offline test only',30,60)")).reservationCents, 30);
   await db.exec('reset role');
   assert.equal(await scalar('select enabled from public.image_test_campaign'), true);
+}));
+test('an expired empty approval is safely replaced by a new operator arm', () => scenario(async () => {
+  await db.exec("update public.image_test_campaign set enabled=true, approved_until=now()-interval '1 second', price_review='expired fixture', reservation_cents=30, billing_checked_at=clock_timestamp()");
+  await db.exec('set role service_role');
+  const armed = await scalar("select public.image_test_arm('replacement fixture',30,60)");
+  await db.exec('reset role');
+  assert.equal(armed.reservationCents, 30);
+  assert.equal(await scalar('select enabled from public.image_test_campaign'), true);
+  assert.ok(new Date(await scalar('select approved_until from public.image_test_campaign')) > new Date());
 }));
 test('foreign photo and changed contents cannot be dispatched', () => scenario(async () => {
   await assert.rejects(approve(1, other), /unavailable/);
