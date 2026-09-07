@@ -5,7 +5,7 @@ const EDGE_THRESHOLD = 38;
 
 export type StructuralFidelityReport = {
   status: "passed" | "rejected";
-  version: "structure-v2";
+  version: "structure-v3";
   reasons: string[];
   sourceWidth: number;
   sourceHeight: number;
@@ -14,6 +14,7 @@ export type StructuralFidelityReport = {
   aspectRatioDifference: number;
   edgeRetention: number;
   alignedEdgeRetention: number;
+  wallAppearanceChangeRate: number;
   orientationSimilarity: number;
   regionalStructureSimilarity: number;
 };
@@ -38,6 +39,7 @@ export async function validateStructuralFidelity(
   );
   const edgeRetention = retainedEdges(sourceEdges.magnitude, candidateEdges.magnitude);
   const alignedEdgeRetention = retainedEdges(sourceEdges.magnitude, candidateEdges.magnitude, 0);
+  const wallAppearanceChangeRate = wallAppearanceChanges(sourcePixels, candidatePixels);
   const orientationSimilarity = cosineSimilarity(
     orientationHistogram(sourceEdges),
     orientationHistogram(candidateEdges),
@@ -50,12 +52,16 @@ export async function validateStructuralFidelity(
   // almost all strong source edges. This deliberately favors false rejects.
   if (edgeRetention < 0.9) reasons.push("Zu viele feste Kanten des Ausgangsraums fehlen oder wurden verschoben.");
   if (alignedEdgeRetention < 0.82) reasons.push("Feste Raumkanten liegen nicht mehr an ihrer ursprünglichen Bildposition; der Bildausschnitt wurde wahrscheinlich verändert.");
+  // New, large changes in the wall region are treated as architecture. This
+  // deliberately rejects uncertain wall decoration rather than risk a door,
+  // window, or wall being invented by a full-room image generator.
+  if (wallAppearanceChangeRate > 0.015) reasons.push("Im Wandbereich wurden zu viele neue Bildflächen erkannt; eine zusätzliche Tür, ein Fenster oder eine Wand ist möglich.");
   if (orientationSimilarity < 0.72) reasons.push("Die Richtungen der Raumlinien und die Perspektive weichen zu stark ab.");
   if (regionalStructureSimilarity < 0.5) reasons.push("Die räumliche Verteilung der festen Strukturen hat sich zu stark verändert.");
 
   return {
     status: reasons.length ? "rejected" : "passed",
-    version: "structure-v2",
+    version: "structure-v3",
     reasons,
     sourceWidth: sourceMeta.width,
     sourceHeight: sourceMeta.height,
@@ -64,6 +70,7 @@ export async function validateStructuralFidelity(
     aspectRatioDifference,
     edgeRetention,
     alignedEdgeRetention,
+    wallAppearanceChangeRate,
     orientationSimilarity,
     regionalStructureSimilarity,
   };
@@ -119,6 +126,17 @@ function retainedEdges(source: Float32Array, candidate: Float32Array, tolerance 
     }
   }
   return total ? retained / total : 0;
+}
+
+function wallAppearanceChanges(source: Uint8Array, candidate: Uint8Array) {
+  let changed = 0;
+  const wallEnd = Math.floor(ANALYSIS_SIZE * 0.7);
+  for (let y = 2; y < wallEnd; y += 1) {
+    for (let x = 2; x < ANALYSIS_SIZE - 2; x += 1) {
+      if (Math.abs(source[y * ANALYSIS_SIZE + x] - candidate[y * ANALYSIS_SIZE + x]) >= 45) changed += 1;
+    }
+  }
+  return changed / ((wallEnd - 4) * (ANALYSIS_SIZE - 4));
 }
 
 export function orientationHistogram(edges: Edges) {

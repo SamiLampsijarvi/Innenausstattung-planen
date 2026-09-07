@@ -20,7 +20,7 @@ const reserve = async (id, n, h = hash(1), owner = user) => {
   return scalar('select public.image_test_reserve($1,$2,$3,$4)', [owner, id, request(n), h]);
 };
 const arm = () => db.exec("update public.image_test_campaign set enabled=true, approved_until=now()+interval '1 hour', price_review='offline fixture only', reservation_cents=30, billing_checked_at=clock_timestamp()");
-const passedValidation = { raumlyValidation: { status: 'passed', version: 'structure-v2', reasons: [], edgeRetention: 1 } };
+const passedValidation = { raumlyValidation: { status: 'passed', version: 'structure-v3', reasons: [], edgeRetention: 1 } };
 const finish = (n, image = 'AQ==', usage = passedValidation) => scalar('select public.image_test_finish($1,$2,$3,$4,$5,$6,$7)', [user, request(n), image, 'image/png', 20, 'fake-response', JSON.stringify(usage)]);
 async function scenario(body) {
   await db.close(); db = new PGlite({ loadDataDir: baseline });
@@ -94,7 +94,7 @@ test('successful result remains pending until accepted and rejection removes it'
 }));
 test('automatic structure rejection stores no image and preserves accounting', () => scenario(async () => {
   const id = await approve(1); await arm(); await reserve(id, 1);
-  const rejected = { raumlyValidation: { status: 'rejected', version: 'structure-v2', reasons: ['perspective changed'], edgeRetention: 0.2 } };
+  const rejected = { raumlyValidation: { status: 'rejected', version: 'structure-v3', reasons: ['perspective changed'], edgeRetention: 0.2 } };
   assert.equal(await finish(1, null, rejected), 'discarded');
   const attempt = (await db.query('select status, room_fidelity_status, automatic_fidelity_status, automatic_fidelity_report from public.image_test_attempts where id=$1', [request(1)])).rows[0];
   assert.equal(attempt.status, 'discarded');

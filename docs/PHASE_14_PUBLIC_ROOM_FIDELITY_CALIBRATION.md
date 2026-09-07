@@ -30,17 +30,19 @@ Bei jedem Abruf werden die Quellseite, Urheberangabe, Abrufdatum und die [Pexels
 1. Eine moderate Licht-/Farbänderung bei unveränderter Geometrie muss bestehen.
 2. Ein nachträglicher Zuschnitt mit Rückskalierung muss verworfen werden.
 3. Eine perspektivische Verschiebung muss verworfen werden.
+4. Eine kleine Testmöblierung im Bodenbereich muss bestehen.
+5. Eine zusätzliche türähnliche Fläche im Wandbereich muss verworfen werden.
 
 Die Prüfung misst Seitenverhältnis, Erhalt starker Kanten, Richtungen und räumliche Verteilung von Raumlinien. Das ist ein konservativer Vorfilter, keine Garantie für jede semantische Architekturänderung. Ein späterer echter Kandidat benötigt weiterhin die automatische Prüfung und die verpflichtende menschliche Prüfung.
 
 ## Abnahme vor einem Vertex-Versuch
 
-- Alle sechs Lichtvarianten bestehen.
-- Alle sechs Zuschnitt- und Perspektivvarianten werden verworfen.
+- Alle sechs Licht- und Möbelvarianten bestehen.
+- Alle sechs Zuschnitt-, Perspektiv- und Türvarianten werden verworfen.
 - Kein Bild befindet sich in Git, Supabase oder Vertex; der normale Produktablauf bleibt unverändert.
 - Bei einer Fehlklassifikation werden Schwellen oder Vergleichslogik erst lokal nachgebessert und der vollständige Lauf wiederholt.
 - Erst danach wird ein möglicher einzelner Vertex-Versuch mit Foto-, Datenschutz- und Kostenfreigabe erneut zur Entscheidung vorgelegt.
 
 ## Lokale Abnahme am 7. September 2026
 
-Der erste Lauf zeigte, dass vier Zuschnittvarianten die ursprüngliche, nur tolerant suchende Kantenprüfung fälschlich bestanden. Deshalb wurde `structure-v2` um den positionsgenauen Kantenerhalt ergänzt. Der wiederholte vollständige Lauf bestand: alle sechs Lichtvarianten wurden akzeptiert, alle sechs Zuschnitt- und alle sechs Perspektivvarianten abgelehnt. Dabei gab es keine Vertex- oder Supabase-Anfrage und keine Änderung der Testbuchhaltung.
+Der erste Lauf zeigte, dass vier Zuschnittvarianten die ursprüngliche, nur tolerant suchende Kantenprüfung fälschlich bestanden. Deshalb wurde `structure-v2` um den positionsgenauen Kantenerhalt ergänzt. Der zweite Lauf zeigte anschließend, dass eine künstlich ergänzte Tür noch durchgelassen wurde. `structure-v3` verwirft deshalb zusätzlich größere neue Bildflächen im Wandbereich. Der wiederholte vollständige Lauf bestand: alle sechs Licht- und Möbelvarianten wurden akzeptiert; alle sechs Zuschnitt-, Perspektiv- und Türvarianten abgelehnt. Dabei gab es keine Vertex- oder Supabase-Anfrage und keine Änderung der Testbuchhaltung.
