@@ -5,7 +5,7 @@ const EDGE_THRESHOLD = 38;
 
 export type StructuralFidelityReport = {
   status: "passed" | "rejected";
-  version: "structure-v1";
+  version: "structure-v2";
   reasons: string[];
   sourceWidth: number;
   sourceHeight: number;
@@ -13,6 +13,7 @@ export type StructuralFidelityReport = {
   candidateHeight: number;
   aspectRatioDifference: number;
   edgeRetention: number;
+  alignedEdgeRetention: number;
   orientationSimilarity: number;
   regionalStructureSimilarity: number;
 };
@@ -36,6 +37,7 @@ export async function validateStructuralFidelity(
     candidateMeta.width / candidateMeta.height,
   );
   const edgeRetention = retainedEdges(sourceEdges.magnitude, candidateEdges.magnitude);
+  const alignedEdgeRetention = retainedEdges(sourceEdges.magnitude, candidateEdges.magnitude, 0);
   const orientationSimilarity = cosineSimilarity(
     orientationHistogram(sourceEdges),
     orientationHistogram(candidateEdges),
@@ -47,12 +49,13 @@ export async function validateStructuralFidelity(
   // A full-room generation may add furniture edges, but it must still retain
   // almost all strong source edges. This deliberately favors false rejects.
   if (edgeRetention < 0.9) reasons.push("Zu viele feste Kanten des Ausgangsraums fehlen oder wurden verschoben.");
+  if (alignedEdgeRetention < 0.82) reasons.push("Feste Raumkanten liegen nicht mehr an ihrer ursprünglichen Bildposition; der Bildausschnitt wurde wahrscheinlich verändert.");
   if (orientationSimilarity < 0.72) reasons.push("Die Richtungen der Raumlinien und die Perspektive weichen zu stark ab.");
   if (regionalStructureSimilarity < 0.5) reasons.push("Die räumliche Verteilung der festen Strukturen hat sich zu stark verändert.");
 
   return {
     status: reasons.length ? "rejected" : "passed",
-    version: "structure-v1",
+    version: "structure-v2",
     reasons,
     sourceWidth: sourceMeta.width,
     sourceHeight: sourceMeta.height,
@@ -60,6 +63,7 @@ export async function validateStructuralFidelity(
     candidateHeight: candidateMeta.height,
     aspectRatioDifference,
     edgeRetention,
+    alignedEdgeRetention,
     orientationSimilarity,
     regionalStructureSimilarity,
   };
@@ -97,7 +101,7 @@ function sobel(pixels: Uint8Array): Edges {
   return { magnitude, horizontal, vertical };
 }
 
-function retainedEdges(source: Float32Array, candidate: Float32Array) {
+function retainedEdges(source: Float32Array, candidate: Float32Array, tolerance = 2) {
   let total = 0;
   let retained = 0;
   for (let y = 2; y < ANALYSIS_SIZE - 2; y += 1) {
@@ -106,8 +110,8 @@ function retainedEdges(source: Float32Array, candidate: Float32Array) {
       if (source[index] < EDGE_THRESHOLD) continue;
       total += 1;
       let found = false;
-      for (let dy = -2; dy <= 2 && !found; dy += 1) {
-        for (let dx = -2; dx <= 2; dx += 1) {
+      for (let dy = -tolerance; dy <= tolerance && !found; dy += 1) {
+        for (let dx = -tolerance; dx <= tolerance; dx += 1) {
           if (candidate[(y + dy) * ANALYSIS_SIZE + x + dx] >= EDGE_THRESHOLD) { found = true; break; }
         }
       }

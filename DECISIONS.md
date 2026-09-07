@@ -360,6 +360,14 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 - **Betriebsstand:** Die additiven Migrationen `202609030001_expired_image_test_arm.sql` und `202609030002_automatic_room_structure_gate.sql` sind im Supabase-Projekt eingetragen. Die Abnahme bestätigt die beiden Prüffelder, ausschließlich serverseitige Abschlussberechtigung und den weiterhin ausgeschalteten Test ohne aktiven Versuch.
 - **Nachweis:** `docs/PHASE_13_AUTOMATIC_ROOM_STRUCTURE.md`.
 
+### D-042: Lokale Kalibrierung mit öffentlichen leeren Wohnzimmern
+
+- **Status:** Am 7. September 2026 als kostenfreier Vorbereitungsschritt umgesetzt und lokal abgenommen; Vertex bleibt ausgeschaltet.
+- **Entscheidung:** Ein kleiner, dokumentierter Bestand öffentlicher, leerer Wohnzimmer wird ausschließlich lokal und außerhalb von Git für die Kalibrierung der automatischen Strukturprüfung verwendet. Quellen, Urheberangabe, Lizenz und Abrufdatum werden lokal je Datei festgehalten; Bilddateien und das genaue lokale Protokoll gelangen weder in Git, Supabase noch zu Vertex.
+- **Prüfung:** Pro Bild muss eine reine Licht-/Farbänderung bestehen; ein nachträglicher Zuschnitt und eine perspektivische Verschiebung müssen automatisch verworfen werden. Die erste Messung fand vier durchgelassene Zuschnitte. Die Prüfung wurde daraufhin auf `structure-v2` mit zusätzlichem positionsgenauen Kantenerhalt ergänzt; der vollständige Lauf besteht anschließend für alle sechs Bilder. Fehlklassifikationen sind vor einem weiteren Vertex-Versuch lokal zu korrigieren und erneut vollständig zu prüfen.
+- **Grenze:** Der öffentliche Bestand ist kein Ersatz für spätere, freiwillig bereitgestellte echte Raumfotos und keine Bild- oder Produktfreigabe. Der normale Ablauf, die Testbuchhaltung sowie die menschliche Endprüfung bleiben unverändert.
+- **Nachweis:** `docs/PHASE_14_PUBLIC_ROOM_FIDELITY_CALIBRATION.md`.
+
 ## Offene Entscheidungen
 
 - Markenname und visuelle Identität

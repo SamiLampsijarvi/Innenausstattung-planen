@@ -28,7 +28,7 @@ const endpoint = `${origin}/api/internal/image-test`;
 const image = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=', 'base64');
 // A completed provider response must include the local structural-fidelity verdict.
 // Omitting it is intentionally fail-closed by the current database gate.
-const passedStructuralValidation = { raumlyValidation: { status: 'passed', version: 'structure-v1', reasons: [] } };
+const passedStructuralValidation = { raumlyValidation: { status: 'passed', version: 'structure-v2', reasons: [] } };
 let server, owner, stranger, projectId, photoId, testPhotoId;
 const q = async (sql, values = []) => (await db.query(sql, values)).rows;
 const rpc = async (name, args) => {
