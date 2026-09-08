@@ -171,6 +171,10 @@ main { min-height: calc(100vh - 131px); padding: clamp(4rem, 9vw, 8rem) max(3vw,
 .guest-image-test button { width: 100%; min-height: 44px; border: 0; border-radius: 9px; color: white; background: var(--forest); font-weight: 700; cursor: pointer; }
 .guest-image-test button:disabled { cursor: not-allowed; opacity: .55; }
 .guest-image-status { padding: 10px; background: #edf4f0; border-radius: 8px; }
+.guest-image-result { display: block; width: 100%; height: auto; border: 1px solid var(--line); border-radius: 10px; }
+.guest-image-review { margin-top: 14px; }
+.guest-image-review img { display: block; width: 100%; height: auto; border-radius: 9px; border: 1px solid var(--line); }
+.guest-image-review button + button { margin-top: 8px; background: transparent; color: var(--forest); border: 1px solid var(--forest); }
 .product-concept { margin-top: 22px; padding-top: 20px; border-top: 1px solid var(--line); }
 .product-concept h3 { margin: 5px 0 0; color: var(--forest); font: 700 21px/1.25 Georgia, serif; }
 .product-concept > p { max-width: none; font-size: 11px; }

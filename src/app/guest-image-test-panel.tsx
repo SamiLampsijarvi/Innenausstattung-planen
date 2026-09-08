@@ -2,58 +2,62 @@
 
 import { useState } from "react";
 
-type Props = { file?: File; style: string; budgetEuro: number };
-type TestState = "idle" | "prepared" | "candidate" | "accepted" | "unavailable";
+type Props = {
+  image?: { name: string; previewUrl: string; file?: File };
+  style: string;
+  budgetEuro: number;
+  ready: boolean;
+  onGenerated: (url: string) => void;
+};
 
-// This is deliberately a separate, opt-in test surface. The normal planning
-// flow never uploads a guest photo merely by showing this component.
-export default function GuestImageTestPanel({ file, style, budgetEuro }: Props) {
+// The server independently enforces consent, a 30-cent reservation and one attempt.
+export default function GuestImageTestPanel({ image, style, budgetEuro, ready, onGenerated }: Props) {
   const [consent, setConsent] = useState(false);
-  const [state, setState] = useState<TestState>("idle");
+  const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const enabled = process.env.NEXT_PUBLIC_RAUMLY_GUEST_IMAGE_TEST_ENABLED === "true";
 
-  async function prepare() {
-    if (!file || !consent) return;
+  async function generate() {
+    if (!image || !consent || !ready || busy) return;
+    setBusy(true);
     setMessage("");
-    if (!enabled) {
-      setState("unavailable");
-      setMessage("Der kontrollierte Bildtest ist noch ausgeschaltet. Ihr Foto bleibt nur in diesem Browser.");
-      return;
+    try {
+      const body = new FormData();
+      body.set("action", "generate");
+      body.set("consent", "true");
+      body.set("style", style);
+      body.set("budgetEuro", String(budgetEuro));
+      let photo = image.file;
+      if (!photo) {
+        const source = await fetch(image.previewUrl, { credentials: "same-origin" });
+        const blob = await source.blob();
+        if (!source.ok || !blob.size) throw new Error("Das private Projektfoto konnte nicht für den Bildversuch gelesen werden.");
+        photo = new File([blob], image.name, { type: blob.type || "image/jpeg" });
+      }
+      body.set("photo", photo);
+      const response = await fetch("/api/guest-image-test", { method: "POST", body, credentials: "same-origin" });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || typeof result.requestId !== "string") throw new Error(typeof result.error === "string" ? result.error : "Bildversuch fehlgeschlagen.");
+      onGenerated(`/api/guest-image-test?candidate=${encodeURIComponent(result.requestId)}`);
+      setMessage("Der Bildversuch wurde automatisch auf Raumtreue geprüft.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Bildversuch fehlgeschlagen.");
+    } finally {
+      setBusy(false);
     }
-    // The endpoint stays server-side disabled until the operator explicitly
-    // arms a single campaign. No Vertex request is made by this action.
-    const body = new FormData();
-    body.set("action", "prepare");
-    body.set("photo", file);
-    body.set("style", style);
-    body.set("budgetEuro", String(budgetEuro));
-    const response = await fetch("/api/guest-image-test", { method: "POST", body, credentials: "same-origin" });
-    const result = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      setMessage(typeof result.error === "string" ? result.error : "Testvorbereitung fehlgeschlagen.");
-      return;
-    }
-    setState("prepared");
-    setMessage("Testfoto und Einwilligung sind für höchstens 24 Stunden getrennt gespeichert. Vertex bleibt ausgeschaltet.");
   }
 
   return (
-    <section className="guest-image-test" aria-labelledby="guest-image-test-title">
-      <small className="summary-kicker">KONTROLLIERTER KI-BILDTEST</small>
-      <h3 id="guest-image-test-title">Raumtreuer Entwurf</h3>
-      <p>Das Ergebnis erscheint erst nach der automatischen Architekturprüfung und Ihrer eigenen Sichtprüfung hier rechts.</p>
+    <section className="guest-image-test" aria-label="Kontrollierter KI-Bildtest">
+      <button type="button" onClick={generate} disabled={!enabled || !ready || !image || !consent || busy}>
+        {busy ? "Bild wird generiert …" : "Bild generieren"}
+      </button>
       <label className="guest-image-consent">
         <input type="checkbox" checked={consent} onChange={(event) => setConsent(event.target.checked)} />
-        Ich willige ein, dass dieses Foto ausschließlich für einen kontrollierten Vertex-Test verarbeitet und spätestens nach 24 Stunden gelöscht wird.
+        Ich willige ein, dass dieses Foto für genau einen Vertex-Bildversuch verarbeitet, nach höchstens 24 Stunden gelöscht und mit maximal 0,30 € berechnet wird.
       </label>
-      <button type="button" onClick={prepare} disabled={!file || !consent || state === "prepared" || state === "candidate" || state === "accepted"}>
-        {enabled ? "Test sicher vorbereiten" : "Bildtest ist ausgeschaltet"}
-      </button>
-      {state === "prepared" && <p className="guest-image-status">Bereit. Der einzelne Vertex-Aufruf wird erst nach Ihrer separaten Freigabe durch Raumly ausgelöst.</p>}
+      {!ready && <small>Vervollständigen Sie zuerst die fünf Planungsschritte.</small>}
       {message && <p className="guest-image-status" role="status">{message}</p>}
-      {!file && <small>Ohne Foto wird kein Test vorbereitet.</small>}
-      {file && !consent && <small>Ohne Einwilligung wird kein Foto für diesen Test übertragen.</small>}
     </section>
   );
 }

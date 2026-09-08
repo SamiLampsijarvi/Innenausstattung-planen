@@ -58,8 +58,8 @@ test("speichert ein Wohnzimmerprojekt lokal und öffnet es erneut", async ({ pag
   await expect(page.getByText("Aktives Zuhause")).toBeVisible();
   await expect(page.getByText("Meine Wohnung", { exact: true }).last()).toBeVisible();
 
-  const summaryButton = page.getByRole("button", { name: "Planung zusammenfassen" });
-  await expect(summaryButton).toBeDisabled();
+  const generateButton = page.getByRole("button", { name: "Bild generieren" });
+  await expect(generateButton).toBeDisabled();
 
   await page.getByRole("button", { name: /Japandi/ }).click();
   await page.getByLabel("Dieses Foto zeigt einen leeren Raum ohne vorhandene Möbel.").check();
@@ -73,16 +73,10 @@ test("speichert ein Wohnzimmerprojekt lokal und öffnet es erneut", async ({ pag
   });
 
   await expect(page.getByAltText("Vorschau: wohnzimmer.png")).toBeVisible();
-  await expect(summaryButton).toBeEnabled();
-  await summaryButton.click();
-
-  const result = page.getByRole("complementary", { name: "Ihre Zusammenfassung" });
-  await expect(result).toContainText("Wohnzimmer");
-  await expect(result).toContainText("Japandi");
-  await expect(result).toContainText("10115");
-  await expect(result).toContainText("1.500 €");
-  await expect(result).toContainText("kein Raumfoto übertragen");
-  expect(await page.evaluate(() => JSON.parse(localStorage.getItem("raumly.local-projects")!).projects[0].livingRoom.productConcept.style)).toBe("Japandi");
+  await expect(generateButton).toBeDisabled();
+  await page.getByLabel(/Ich willige ein/).check();
+  await expect(generateButton).toBeEnabled();
+  await expect(page.getByRole("complementary", { name: "Ihr KI-Entwurf" })).toContainText("erscheint der geprüfte Entwurf hier");
 
   await page.reload();
   await page.waitForLoadState("networkidle");
@@ -137,20 +131,13 @@ test("führt durch den einfachen Grundablauf ohne Möbelanalyse oder externe KI"
   await page.getByLabel("Raumtiefe in cm").fill("500");
   await page.getByLabel(/Budget:/).fill("3000");
   await page.locator('input[type="file"]').setInputFiles({ name: "raum.png", mimeType: "image/png", buffer: onePixelPng });
-  const summaryButton = page.getByRole("button", { name: "Planung zusammenfassen" });
-  await expect(summaryButton).toBeDisabled();
+  const generateButton = page.getByRole("button", { name: "Bild generieren" });
+  await expect(generateButton).toBeDisabled();
   await page.getByLabel("Dieses Foto zeigt einen leeren Raum ohne vorhandene Möbel.").check();
-  await expect(summaryButton).toBeEnabled();
-  await summaryButton.click();
-  const result = page.getByRole("complementary", { name: "Ihre Zusammenfassung" });
-  await expect(result).toContainText("Japandi");
-  await expect(result).toContainText("3.000 €");
-  await expect(result).toContainText("Noch nicht angegeben");
-  await expect(result).toContainText("AUTOMATISCHE PRODUKTAUSWAHL");
-  await expect(result).toContainText("Japandi Sofa");
-  await expect(result).toContainText("Synthetisches Testprodukt");
-  await expect(result).toContainText("KI-Bild gesperrt");
-  await expect(result).toContainText("keine KI-Kosten");
+  await expect(generateButton).toBeDisabled();
+  await page.getByLabel(/Ich willige ein/).check();
+  await expect(generateButton).toBeEnabled();
+  await expect(page.getByRole("complementary", { name: "Ihr KI-Entwurf" })).toContainText("erscheint der geprüfte Entwurf hier");
 });
 
 test("bewahrt vorhandene Möbel- und Entwurfsdaten unsichtbar und ohne Verlust", async ({ page }) => {
