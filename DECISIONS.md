@@ -377,6 +377,16 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 - **Raumtreue und Kosten:** Ein späterer Aufruf muss weiterhin die bestehende globale Einmal-Sperre, Kostenreservierung, Rechnungsabgleich, automatische Strukturprüfung und menschliche Annahme passieren. Nur ein automatisch und menschlich angenommener Kandidat darf rechts erscheinen.
 - **Aktivierung:** Vor einem realen Versuch müssen die serverseitige Gast-Testfreigabe bewusst gesetzt, die Testkampagne mit dem aktuellen Rechnungsabgleich erneut bewaffnet und der konkrete Vertex-Aufruf ausdrücklich bestätigt werden. Keine dieser Aktionen erfolgt durch diese Entscheidung.
 
+### D-044: Ein-Klick-Bildversuch nach Einwilligung
+
+- **Status:** Am 8. September 2026 ausdrücklich für den lokalen Testablauf bestätigt und umgesetzt.
+- **Ablauf:** Nach vollständigen Planungsschritten erscheint ein einzelner Button „Bild generieren“. Die direkt darunter liegende Einwilligung benennt Google Vertex, die Löschung nach höchstens 24 Stunden und die feste Obergrenze von 0,30 Euro. Mit gesetzter Einwilligung löst dieser eine Klick die begrenzte Ausführung aus; es gibt keine zusätzliche Chat- oder Betreiberfreigabe.
+- **Ergebnis:** Nach bestandenem automatischem Raumtreuevergleich ersetzt das KI-Bild die rechte Zusammenfassungsfläche. Raumart, Maße, Stil und weitere Briefingwerte werden dort nicht erneut angezeigt.
+- **Harte Grenzen:** Der Server übernimmt Foto und Einwilligung gemeinsam, reserviert vor dem ersten externen Anbieteraufruf exakt 30 Cent und erlaubt keine automatische Wiederholung. Architekturprofil und Strukturvergleich bleiben vollständig serverseitig; erkannte Architekturdetails werden weder abgefragt noch angezeigt.
+- **Lokaler Testpool:** Die frühere geschlossene Kampagne bleibt mit ihrer Buchhaltung unverändert archiviert. Der lokale Ablauf verwendet einen getrennten Pool mit einer Obergrenze von 3 Euro; die bisherigen 60 Cent Reservierung werden darin vorsorglich mitgezählt. Damit sind höchstens acht weitere Versuche à 30 Cent möglich, solange kein Versuch ungeklärt ist.
+- **Datenschutz:** Original und Ergebnis bleiben getrennt von Projektdaten und werden spätestens nach 24 Stunden gelöscht. Die Einwilligung gilt für genau diesen einzelnen Versuch, nicht als allgemeine Freigabe für spätere Bilder.
+- **Ergebnisintegrität:** Raumly speichert die vom Anbieter erhaltenen Bildbytes und deren Abschlussstatus in einer gemeinsamen Datenbanktransaktion, bevor die Bildadresse an den Browser zurückgegeben wird. Die rechte Ergebnisfläche lädt nur diese gespeicherte Fassung nach. Bei einem Speicher- oder Abschlussfehler wird kein Ersatzbild und kein automatischer neuer Anbieteraufruf erzeugt.
+
 ## Offene Entscheidungen
 
 - Markenname und visuelle Identität

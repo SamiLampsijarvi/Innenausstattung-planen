@@ -7,9 +7,6 @@ import {
   writeLocalProjects,
 } from "@/lib/local-projects";
 import type { LocalProject } from "@/lib/local-projects";
-import AutomaticProductConcept from "./automatic-product-concept";
-import { syntheticProductCatalog } from "@/lib/product-catalog";
-import { createAutomaticProductConcept } from "@/lib/product-concept";
 import AuthPanel from "./auth-panel";
 import GuestImageTestPanel from "./guest-image-test-panel";
 import type { User } from "@supabase/supabase-js";
@@ -86,7 +83,7 @@ export default function Home() {
   const [roomDepthCm, setRoomDepthCm] = useState<number | null>(null);
   const [referenceLengthCm, setReferenceLengthCm] = useState<number | null>(null);
   const [error, setError] = useState("");
-  const [showSummary, setShowSummary] = useState(false);
+  const [generatedImageUrl, setGeneratedImageUrl] = useState("");
   const [accountUser, setAccountUser] = useState<User | null>(null);
   const [accountDeletionRequest, setAccountDeletionRequest] = useState<AccountDeletionRequest | null>(null);
   const [trashedProjects, setTrashedProjects] = useState<PrivateProject[]>([]);
@@ -102,12 +99,6 @@ export default function Home() {
   const briefingIsComplete = Boolean(style && images.length && emptyRoomConfirmed && measurementIsComplete);
   const budgetLabel = useMemo(() => budget.toLocaleString("de-DE"), [budget]);
   const activeProject = projects.find((project) => project.id === activeProjectId) ?? null;
-  const productConcept = useMemo(
-    () => createAutomaticProductConcept(style, budget, syntheticProductCatalog, scaleMode === "room-dimensions"
-      ? { mode: "room-dimensions", roomWidthCm: roomWidthCm ?? 0, roomDepthCm: roomDepthCm ?? 0 }
-      : { mode: "reference", referenceLengthCm: referenceLengthCm ?? 0 }),
-    [style, budget, scaleMode, roomWidthCm, roomDepthCm, referenceLengthCm],
-  );
 
   useEffect(() => {
     const loadProjects = window.setTimeout(() => {
@@ -240,7 +231,7 @@ export default function Home() {
     setRoomWidthCm(project.livingRoom.roomWidthCm);
     setRoomDepthCm(project.livingRoom.roomDepthCm);
     setReferenceLengthCm(project.livingRoom.referenceLengthCm);
-    setShowSummary(false);
+    setGeneratedImageUrl("");
     setError("");
     setActiveProjectId(project.id);
     if (accountUser) {
@@ -302,7 +293,7 @@ export default function Home() {
       setActiveProjectId(null);
       images.forEach(({ previewUrl }) => { if (previewUrl.startsWith("blob:")) URL.revokeObjectURL(previewUrl); });
       setImages([]);
-      setShowSummary(false);
+      setGeneratedImageUrl("");
     }
   }
 
@@ -383,7 +374,7 @@ export default function Home() {
       images.forEach(({ previewUrl }) => { if (previewUrl.startsWith("blob:")) URL.revokeObjectURL(previewUrl); });
       setImages(previews);
     }
-    setShowSummary(false);
+    setGeneratedImageUrl("");
   }
 
   async function removeImage(index: number) {
@@ -398,17 +389,7 @@ export default function Home() {
     }
     if (image?.previewUrl.startsWith("blob:")) URL.revokeObjectURL(image.previewUrl);
     setImages((current) => current.filter((_, imageIndex) => imageIndex !== index));
-    setShowSummary(false);
-  }
-
-  function createSummary() {
-    if (!briefingIsComplete) {
-      setError("Bitte bestätige den leeren Raum, ergänze ein Maß, wähle einen Stil und lade mindestens ein Foto hoch.");
-      return;
-    }
-    setError("");
-    updateActivePlan({ productConcept });
-    setShowSummary(true);
+    setGeneratedImageUrl("");
   }
 
   return (
@@ -569,7 +550,7 @@ export default function Home() {
                 ))}
               </ul>
               <div className="empty-room-check">
-                <label><input type="checkbox" checked={emptyRoomConfirmed} onChange={(event) => { setEmptyRoomConfirmed(event.target.checked); updateActivePlan({ emptyRoomConfirmed: event.target.checked, productConcept: null }); setShowSummary(false); }} /> Dieses Foto zeigt einen leeren Raum ohne vorhandene Möbel.</label>
+                <label><input type="checkbox" checked={emptyRoomConfirmed} onChange={(event) => { setEmptyRoomConfirmed(event.target.checked); updateActivePlan({ emptyRoomConfirmed: event.target.checked, productConcept: null }); setGeneratedImageUrl(""); }} /> Dieses Foto zeigt einen leeren Raum ohne vorhandene Möbel.</label>
                 <small>Phase 11 plant ausschließlich leere Räume. Eingerichtete Räume werden noch nicht unterstützt.</small>
               </div>
             </li>
@@ -577,12 +558,12 @@ export default function Home() {
               <div className="step-heading"><span>2</span><strong>Maßstab angeben</strong></div>
               <fieldset className="scale-fields">
                 <legend>Wie soll Raumly die Produktgröße einschätzen?</legend>
-                <label><input type="radio" name="scale-mode" checked={scaleMode === "room-dimensions"} onChange={() => { setScaleMode("room-dimensions"); updateActivePlan({ scaleMode: "room-dimensions", productConcept: null }); setShowSummary(false); }} /> Raummaße</label>
-                <label><input type="radio" name="scale-mode" checked={scaleMode === "reference"} onChange={() => { setScaleMode("reference"); updateActivePlan({ scaleMode: "reference", productConcept: null }); setShowSummary(false); }} /> Referenzmaß im Foto</label>
+                <label><input type="radio" name="scale-mode" checked={scaleMode === "room-dimensions"} onChange={() => { setScaleMode("room-dimensions"); updateActivePlan({ scaleMode: "room-dimensions", productConcept: null }); setGeneratedImageUrl(""); }} /> Raummaße</label>
+                <label><input type="radio" name="scale-mode" checked={scaleMode === "reference"} onChange={() => { setScaleMode("reference"); updateActivePlan({ scaleMode: "reference", productConcept: null }); setGeneratedImageUrl(""); }} /> Referenzmaß im Foto</label>
                 {scaleMode === "room-dimensions" ? <div className="measurement-grid">
-                  <label htmlFor="room-width">Raumbreite in cm<input id="room-width" type="number" min="200" max="2000" value={roomWidthCm ?? ""} onChange={(event) => { const value = event.target.value ? Number(event.target.value) : null; setRoomWidthCm(value); updateActivePlan({ roomWidthCm: value, productConcept: null }); setShowSummary(false); }} /></label>
-                  <label htmlFor="room-depth">Raumtiefe in cm<input id="room-depth" type="number" min="200" max="2000" value={roomDepthCm ?? ""} onChange={(event) => { const value = event.target.value ? Number(event.target.value) : null; setRoomDepthCm(value); updateActivePlan({ roomDepthCm: value, productConcept: null }); setShowSummary(false); }} /></label>
-                </div> : <label className="reference-field" htmlFor="reference-length">Länge eines sichtbaren Referenzobjekts in cm<input id="reference-length" type="number" min="20" max="500" value={referenceLengthCm ?? ""} onChange={(event) => { const value = event.target.value ? Number(event.target.value) : null; setReferenceLengthCm(value); updateActivePlan({ referenceLengthCm: value, productConcept: null }); setShowSummary(false); }} /><small>Beispiel: Türbreite oder eine eindeutig markierte Messstrecke. Die Passform bleibt damit nur geschätzt.</small></label>}
+                  <label htmlFor="room-width">Raumbreite in cm<input id="room-width" type="number" min="200" max="2000" value={roomWidthCm ?? ""} onChange={(event) => { const value = event.target.value ? Number(event.target.value) : null; setRoomWidthCm(value); updateActivePlan({ roomWidthCm: value, productConcept: null }); setGeneratedImageUrl(""); }} /></label>
+                  <label htmlFor="room-depth">Raumtiefe in cm<input id="room-depth" type="number" min="200" max="2000" value={roomDepthCm ?? ""} onChange={(event) => { const value = event.target.value ? Number(event.target.value) : null; setRoomDepthCm(value); updateActivePlan({ roomDepthCm: value, productConcept: null }); setGeneratedImageUrl(""); }} /></label>
+                </div> : <label className="reference-field" htmlFor="reference-length">Länge eines sichtbaren Referenzobjekts in cm<input id="reference-length" type="number" min="20" max="500" value={referenceLengthCm ?? ""} onChange={(event) => { const value = event.target.value ? Number(event.target.value) : null; setReferenceLengthCm(value); updateActivePlan({ referenceLengthCm: value, productConcept: null }); setGeneratedImageUrl(""); }} /><small>Beispiel: Türbreite oder eine eindeutig markierte Messstrecke. Die Passform bleibt damit nur geschätzt.</small></label>}
               </fieldset>
             </li>
             <li className="planning-step-detailed">
@@ -594,7 +575,7 @@ export default function Home() {
                     key={name}
                     type="button"
                     aria-pressed={style === name}
-                    onClick={() => { setStyle(name); updateActivePlan({ style: name, productConcept: null }); setShowSummary(false); }}
+                    onClick={() => { setStyle(name); updateActivePlan({ style: name, productConcept: null }); setGeneratedImageUrl(""); }}
                   >
                     <strong>{name}</strong><small>{description}</small>
                   </button>
@@ -641,7 +622,7 @@ export default function Home() {
                   max="10000"
                   step="100"
                   value={budget}
-                  onChange={(event) => { const nextBudget = Number(event.target.value); setBudget(nextBudget); updateActivePlan({ budget: nextBudget, productConcept: null }); setShowSummary(false); }}
+                  onChange={(event) => { const nextBudget = Number(event.target.value); setBudget(nextBudget); updateActivePlan({ budget: nextBudget, productConcept: null }); setGeneratedImageUrl(""); }}
                 />
                 <div className="range-labels"><span>100 €</span><span>10.000 €</span></div>
                 <label htmlFor="postcode">Postleitzahl <small>(optional)</small></label>
@@ -651,7 +632,7 @@ export default function Home() {
                   onChange={(event) => {
                     setPostcode(event.target.value.replace(/\D/g, "").slice(0, 5));
                     updateActivePlan({ postcode: event.target.value.replace(/\D/g, "").slice(0, 5) });
-                    setShowSummary(false);
+                    setGeneratedImageUrl("");
                   }}
                   inputMode="numeric"
                   autoComplete="postal-code"
@@ -665,33 +646,27 @@ export default function Home() {
             </li>
           </ol>
           <div className="generate-panel">
-            <button type="button" disabled={!briefingIsComplete} onClick={createSummary}>Planung zusammenfassen</button>
-            <small>{briefingIsComplete ? "Die fünf Grundschritte sind vollständig." : "Bestätigen Sie den leeren Raum, ergänzen Sie ein Maß und wählen Sie Stil sowie Foto."}</small>
+            <GuestImageTestPanel
+              key={images[0]?.previewUrl}
+              image={images[0]}
+              style={style}
+              budgetEuro={budget}
+              ready={briefingIsComplete}
+              onGenerated={setGeneratedImageUrl}
+            />
             {error && <p className="form-error" role="alert">{error}</p>}
           </div>
           </div>
           <aside className="design-results" aria-labelledby="design-results-title">
-            {showSummary ? (
+            {generatedImageUrl ? (
               <div className="briefing-summary" aria-live="polite">
-                <small className="summary-kicker">PLANUNGSBRIEFING BEREIT</small>
-                <h2 id="design-results-title">Ihre Zusammenfassung</h2>
-                <dl>
-                  <div><dt>Raum</dt><dd>Wohnzimmer</dd></div>
-                  <div><dt>Leerraum</dt><dd>Bestätigt</dd></div>
-                  <div><dt>Maßstab</dt><dd>{scaleMode === "room-dimensions" ? `${roomWidthCm} × ${roomDepthCm} cm` : `Referenz ${referenceLengthCm} cm`}</dd></div>
-                  <div><dt>Designstil</dt><dd>{style}</dd></div>
-                  <div><dt>Fotos</dt><dd>{images.length}</dd></div>
-                  <div><dt>Postleitzahl</dt><dd>{postcodeIsValid ? postcode : "Noch nicht angegeben"}</dd></div>
-                  <div><dt>Budget</dt><dd>{budgetLabel} €</dd></div>
-                </dl>
-                <GuestImageTestPanel key={images[0]?.previewUrl} file={images[0]?.file} style={style} budgetEuro={budget} />
-                <AutomaticProductConcept concept={productConcept} />
-                <button type="button" onClick={() => setShowSummary(false)}>Angaben bearbeiten</button>
+                <h2 id="design-results-title">Ihr KI-Entwurf</h2>
+                <img className="guest-image-result" src={generatedImageUrl} alt="KI-Entwurf für das Wohnzimmer" />
               </div>
             ) : (
               <div>
-                <h2 id="design-results-title">Ihre Planung</h2>
-                <p>Vervollständigen Sie die vier Grundschritte. Danach sehen Sie hier die geprüfte Grundlage für Ihren späteren Inspirationsentwurf.</p>
+                <h2 id="design-results-title">Ihr KI-Entwurf</h2>
+                <p>Nach Ihrer Einwilligung und dem Klick auf „Bild generieren“ erscheint der geprüfte Entwurf hier.</p>
               </div>
             )}
           </aside>
