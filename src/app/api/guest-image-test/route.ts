@@ -30,9 +30,15 @@ async function call(client: SupabaseClient, name: string, args: Record<string, u
   const { data, error } = await client.rpc(name, args);
   if (error) {
     console.error("guest-image-test RPC failed", { name, code: error.code, message: error.message });
-    throw new Error("Die Testaktion ist gesperrt oder konnte nicht bestätigt werden.");
+    const failure = new Error("Die Testaktion ist gesperrt oder konnte nicht bestätigt werden.");
+    Object.assign(failure, { code: error.code });
+    throw failure;
   }
   return data;
+}
+
+function newSession() {
+  return { id: randomUUID(), secret: createHash("sha256").update(randomUUID()).digest("hex"), setCookie: true };
 }
 
 async function currentSession(create: boolean) {
@@ -43,7 +49,11 @@ async function currentSession(create: boolean) {
     if (/^[0-9a-f-]{36}$/i.test(id) && /^[0-9a-f]{64}$/i.test(secret)) return { id, secret, setCookie: false };
   }
   if (!create) throw new Error("Keine gültige Testsession.");
-  return { id: randomUUID(), secret: createHash("sha256").update(randomUUID()).digest("hex"), setCookie: true };
+  return newSession();
+}
+
+function isUnavailableSession(error: unknown) {
+  return typeof error === "object" && error !== null && "code" in error && error.code === "P0001";
 }
 
 function imageMime(bytes: Uint8Array): "image/jpeg" | "image/png" | "image/webp" | null {
@@ -85,11 +95,20 @@ export async function POST(request: Request) {
     const bytes = new Uint8Array(await photo.arrayBuffer());
     const mime = imageMime(bytes);
     if (!mime) throw new Error("Nicht unterstütztes Fotoformat.");
-    const session = await currentSession(true);
-    await call(client, "guest_image_test_prepare", {
-      target_session: session.id, target_secret_hash: session.secret, target_style: style, target_budget: budget,
-      target_profile: null, target_source_hash: hashTestPhoto(bytes), target_source_base64: Buffer.from(bytes).toString("base64"), target_source_mime: mime,
-    });
+    let session = await currentSession(true);
+    const preparation = {
+      target_style: style, target_budget: budget, target_profile: null, target_source_hash: hashTestPhoto(bytes),
+      target_source_base64: Buffer.from(bytes).toString("base64"), target_source_mime: mime,
+    };
+    try {
+      await call(client, "guest_image_test_prepare", { target_session: session.id, target_secret_hash: session.secret, ...preparation });
+    } catch (error) {
+      // A stale browser cookie has no usable database session. It is safe to
+      // replace only before reserving a paid attempt; existing attempts are never retried.
+      if (!isUnavailableSession(error)) throw error;
+      session = newSession();
+      await call(client, "guest_image_test_prepare", { target_session: session.id, target_secret_hash: session.secret, ...preparation });
+    }
     const response = await generate(session, client);
     if (session.setCookie) response.headers.append("Set-Cookie", `${sessionCookie}=${session.id}.${session.secret}; Path=/; Max-Age=86400; HttpOnly; SameSite=Lax${process.env.NODE_ENV === "production" ? "; Secure" : ""}`);
     return response;
