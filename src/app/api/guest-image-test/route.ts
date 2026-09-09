@@ -30,9 +30,15 @@ async function call(client: SupabaseClient, name: string, args: Record<string, u
   const { data, error } = await client.rpc(name, args);
   if (error) {
     console.error("guest-image-test RPC failed", { name, code: error.code, message: error.message });
-    throw new Error("Die Testaktion ist gesperrt oder konnte nicht bestätigt werden.");
+    const failure = new Error("Die Testaktion ist gesperrt oder konnte nicht bestätigt werden.");
+    Object.assign(failure, { code: error.code });
+    throw failure;
   }
   return data;
+}
+
+function newSession() {
+  return { id: randomUUID(), secret: createHash("sha256").update(randomUUID()).digest("hex"), setCookie: true };
 }
 
 async function currentSession(create: boolean) {
@@ -43,7 +49,11 @@ async function currentSession(create: boolean) {
     if (/^[0-9a-f-]{36}$/i.test(id) && /^[0-9a-f]{64}$/i.test(secret)) return { id, secret, setCookie: false };
   }
   if (!create) throw new Error("Keine gültige Testsession.");
-  return { id: randomUUID(), secret: createHash("sha256").update(randomUUID()).digest("hex"), setCookie: true };
+  return newSession();
+}
+
+function isUnavailableSession(error: unknown) {
+  return typeof error === "object" && error !== null && "code" in error && error.code === "P0001";
 }
 
 function imageMime(bytes: Uint8Array): "image/jpeg" | "image/png" | "image/webp" | null {
@@ -56,6 +66,12 @@ function imageMime(bytes: Uint8Array): "image/jpeg" | "image/png" | "image/webp"
 export async function GET(request: Request) {
   try {
     const client = serverEnabled();
+    if (new URL(request.url).searchParams.get("session") === "new") {
+      const session = newSession();
+      const response = Response.json({ ok: true }, { headers });
+      response.headers.append("Set-Cookie", `${sessionCookie}=${session.id}.${session.secret}; Path=/; Max-Age=86400; HttpOnly; SameSite=Lax${process.env.NODE_ENV === "production" ? "; Secure" : ""}`);
+      return response;
+    }
     const session = await currentSession(false);
     const candidate = new URL(request.url).searchParams.get("candidate");
     if (candidate && /^[0-9a-f-]{36}$/i.test(candidate)) {
@@ -85,11 +101,20 @@ export async function POST(request: Request) {
     const bytes = new Uint8Array(await photo.arrayBuffer());
     const mime = imageMime(bytes);
     if (!mime) throw new Error("Nicht unterstütztes Fotoformat.");
-    const session = await currentSession(true);
-    await call(client, "guest_image_test_prepare", {
-      target_session: session.id, target_secret_hash: session.secret, target_style: style, target_budget: budget,
-      target_profile: null, target_source_hash: hashTestPhoto(bytes), target_source_base64: Buffer.from(bytes).toString("base64"), target_source_mime: mime,
-    });
+    let session = await currentSession(true);
+    const preparation = {
+      target_style: style, target_budget: budget, target_profile: null, target_source_hash: hashTestPhoto(bytes),
+      target_source_base64: Buffer.from(bytes).toString("base64"), target_source_mime: mime,
+    };
+    try {
+      await call(client, "guest_image_test_prepare", { target_session: session.id, target_secret_hash: session.secret, ...preparation });
+    } catch (error) {
+      // A stale browser cookie has no usable database session. It is safe to
+      // replace only before reserving a paid attempt; existing attempts are never retried.
+      if (!isUnavailableSession(error)) throw error;
+      session = newSession();
+      await call(client, "guest_image_test_prepare", { target_session: session.id, target_secret_hash: session.secret, ...preparation });
+    }
     const response = await generate(session, client);
     if (session.setCookie) response.headers.append("Set-Cookie", `${sessionCookie}=${session.id}.${session.secret}; Path=/; Max-Age=86400; HttpOnly; SameSite=Lax${process.env.NODE_ENV === "production" ? "; Secure" : ""}`);
     return response;
@@ -111,22 +136,45 @@ async function dispatch(request: Request, client: SupabaseClient) {
 async function generate(session: { id: string; secret: string }, client: SupabaseClient) {
   if (process.env.RAUMLY_IMAGE_AI_ENABLED !== "true") throw new Error("Externe Bild-KI ist ausgeschaltet.");
   if (!process.env.GOOGLE_CLOUD_PROJECT) throw new Error("Google-Projekt fehlt.");
-  const source = await call(client, "guest_image_test_read_source", { target_session: session.id, target_secret_hash: session.secret });
-  if (!source?.data || !["image/jpeg", "image/png", "image/webp"].includes(source.mime)) throw new Error("Testfoto nicht verfügbar.");
-  const bytes = new Uint8Array(Buffer.from(source.data, "base64"));
-  const mime = source.mime as "image/jpeg" | "image/png" | "image/webp";
   const requestId = randomUUID();
-  const reservation = await call(client, "guest_image_test_reserve", { target_session: session.id, target_secret_hash: session.secret, request_id: requestId });
+  let stage = "Testfoto lesen";
   try {
+    const source = await call(client, "guest_image_test_read_source", { target_session: session.id, target_secret_hash: session.secret });
+    if (!source?.data || !["image/jpeg", "image/png", "image/webp"].includes(source.mime)) throw new Error("Testfoto nicht verfügbar.");
+    const bytes = new Uint8Array(Buffer.from(source.data, "base64"));
+    const mime = source.mime as "image/jpeg" | "image/png" | "image/webp";
+    stage = "Kostenreservierung";
+    const reservation = await call(client, "guest_image_test_reserve", { target_session: session.id, target_secret_hash: session.secret, request_id: requestId });
+    stage = "Architektur-Scan";
+    await call(client, "guest_image_test_set_progress", { target_session: session.id, target_secret_hash: session.secret, request_id: requestId, next_stage: "architecture" });
     const profile = await scanRoomArchitecture({ projectId: process.env.GOOGLE_CLOUD_PROJECT, location: process.env.GOOGLE_CLOUD_LOCATION, bytes, mime });
+    stage = "Architekturprofil speichern";
     await call(client, "guest_image_test_set_room_fidelity", { target_session: session.id, target_secret_hash: session.secret, profile });
+    stage = "Versandfreigabe";
     if (!await call(client, "guest_image_test_check_dispatch", { target_session: session.id, target_secret_hash: session.secret, request_id: requestId })) throw new Error("Freigabe wurde zurückgezogen.");
+    stage = "Vertex-Bildgenerierung";
+    await call(client, "guest_image_test_set_progress", { target_session: session.id, target_secret_hash: session.secret, request_id: requestId, next_stage: "generating" });
     const provider = createVertexImageProvider({ projectId: process.env.GOOGLE_CLOUD_PROJECT, location: process.env.GOOGLE_CLOUD_LOCATION, maximumRequestCents: reservation.reservedCents });
     const result = await provider.generate({ input: { sourceImage: bytes, sourceImageMimeType: mime, roomType: "living-room", style: reservation.style, budgetEuro: reservation.budgetEuro, roomFidelity: profile }, consent: { granted: true, grantedAt: reservation.grantedAt, policyVersion: reservation.policyVersion }, maximumChargeCents: reservation.reservedCents }, new AbortController().signal);
+    stage = "Vertex-Ergebnis sichern";
+    await call(client, "guest_image_test_set_progress", { target_session: session.id, target_secret_hash: session.secret, request_id: requestId, next_stage: "saving" });
+    await call(client, "guest_image_test_record_provider_image", { target_session: session.id, target_secret_hash: session.secret, request_id: requestId,
+      provider_image: Buffer.from(result.image).toString("base64"), provider_mime: result.imageMimeType, elapsed_ms: result.durationMs,
+      provider_id: result.providerRequestId, usage_data: result.usage ?? {} });
+    stage = "Raumtreue-Prüfung";
+    await call(client, "guest_image_test_set_progress", { target_session: session.id, target_secret_hash: session.secret, request_id: requestId, next_stage: "validating" });
     const validation = await validateStructuralFidelity(bytes, result.image);
-    await call(client, "guest_image_test_finish", { target_session: session.id, target_secret_hash: session.secret, request_id: requestId, result_image: validation.status === "passed" ? Buffer.from(result.image).toString("base64") : null, result_mime: validation.status === "passed" ? result.imageMimeType : null, elapsed_ms: result.durationMs, provider_id: result.providerRequestId, usage_data: { ...result.usage, raumlyValidation: validation } });
+    stage = "Ergebnis speichern";
+    const finishArgs = { target_session: session.id, target_secret_hash: session.secret, request_id: requestId, result_image: validation.status === "passed" ? Buffer.from(result.image).toString("base64") : null, result_mime: validation.status === "passed" ? result.imageMimeType : null, elapsed_ms: result.durationMs, provider_id: result.providerRequestId, usage_data: { ...result.usage, raumlyValidation: validation } };
+    try { await call(client, "guest_image_test_finish", finishArgs); }
+    catch { await call(client, "guest_image_test_finish", finishArgs); }
     return Response.json({ ok: true, requestId }, { headers });
-  } catch {
+  } catch (error) {
+    console.error("guest-image-test generation failed", {
+      stage,
+      name: error instanceof Error ? error.name : "UnknownError",
+      message: error instanceof Error ? error.message : "unknown error",
+    });
     try { await call(client, "guest_image_test_finish", { target_session: session.id, target_secret_hash: session.secret, request_id: requestId }); } catch { /* retain unresolved reservation */ }
     throw new Error("Versuch ungeklärt. Reservierung bleibt bestehen; keine automatische Wiederholung.");
   }
