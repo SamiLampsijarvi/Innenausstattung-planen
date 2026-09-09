@@ -22,6 +22,8 @@ export default function GuestImageTestPanel({ image, style, budgetEuro, ready, o
     setBusy(true);
     setMessage("");
     try {
+      const session = await fetch("/api/guest-image-test?session=new", { credentials: "same-origin", cache: "no-store" });
+      if (!session.ok) throw new Error("Der Bildversuch konnte nicht sicher vorbereitet werden.");
       const body = new FormData();
       body.set("action", "generate");
       body.set("consent", "true");

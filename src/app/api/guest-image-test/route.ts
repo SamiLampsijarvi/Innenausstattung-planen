@@ -66,6 +66,12 @@ function imageMime(bytes: Uint8Array): "image/jpeg" | "image/png" | "image/webp"
 export async function GET(request: Request) {
   try {
     const client = serverEnabled();
+    if (new URL(request.url).searchParams.get("session") === "new") {
+      const session = newSession();
+      const response = Response.json({ ok: true }, { headers });
+      response.headers.append("Set-Cookie", `${sessionCookie}=${session.id}.${session.secret}; Path=/; Max-Age=86400; HttpOnly; SameSite=Lax${process.env.NODE_ENV === "production" ? "; Secure" : ""}`);
+      return response;
+    }
     const session = await currentSession(false);
     const candidate = new URL(request.url).searchParams.get("candidate");
     if (candidate && /^[0-9a-f-]{36}$/i.test(candidate)) {
@@ -148,10 +154,16 @@ async function generate(session: { id: string; secret: string }, client: Supabas
     stage = "Vertex-Bildgenerierung";
     const provider = createVertexImageProvider({ projectId: process.env.GOOGLE_CLOUD_PROJECT, location: process.env.GOOGLE_CLOUD_LOCATION, maximumRequestCents: reservation.reservedCents });
     const result = await provider.generate({ input: { sourceImage: bytes, sourceImageMimeType: mime, roomType: "living-room", style: reservation.style, budgetEuro: reservation.budgetEuro, roomFidelity: profile }, consent: { granted: true, grantedAt: reservation.grantedAt, policyVersion: reservation.policyVersion }, maximumChargeCents: reservation.reservedCents }, new AbortController().signal);
+    stage = "Vertex-Ergebnis sichern";
+    await call(client, "guest_image_test_record_provider_image", { target_session: session.id, target_secret_hash: session.secret, request_id: requestId,
+      provider_image: Buffer.from(result.image).toString("base64"), provider_mime: result.imageMimeType, elapsed_ms: result.durationMs,
+      provider_id: result.providerRequestId, usage_data: result.usage ?? {} });
     stage = "Raumtreue-Prüfung";
     const validation = await validateStructuralFidelity(bytes, result.image);
     stage = "Ergebnis speichern";
-    await call(client, "guest_image_test_finish", { target_session: session.id, target_secret_hash: session.secret, request_id: requestId, result_image: validation.status === "passed" ? Buffer.from(result.image).toString("base64") : null, result_mime: validation.status === "passed" ? result.imageMimeType : null, elapsed_ms: result.durationMs, provider_id: result.providerRequestId, usage_data: { ...result.usage, raumlyValidation: validation } });
+    const finishArgs = { target_session: session.id, target_secret_hash: session.secret, request_id: requestId, result_image: validation.status === "passed" ? Buffer.from(result.image).toString("base64") : null, result_mime: validation.status === "passed" ? result.imageMimeType : null, elapsed_ms: result.durationMs, provider_id: result.providerRequestId, usage_data: { ...result.usage, raumlyValidation: validation } };
+    try { await call(client, "guest_image_test_finish", finishArgs); }
+    catch { await call(client, "guest_image_test_finish", finishArgs); }
     return Response.json({ ok: true, requestId }, { headers });
   } catch (error) {
     console.error("guest-image-test generation failed", {
