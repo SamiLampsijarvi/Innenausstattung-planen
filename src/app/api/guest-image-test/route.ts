@@ -146,19 +146,23 @@ async function generate(session: { id: string; secret: string }, client: Supabas
     stage = "Kostenreservierung";
     const reservation = await call(client, "guest_image_test_reserve", { target_session: session.id, target_secret_hash: session.secret, request_id: requestId });
     stage = "Architektur-Scan";
+    await call(client, "guest_image_test_set_progress", { target_session: session.id, target_secret_hash: session.secret, request_id: requestId, next_stage: "architecture" });
     const profile = await scanRoomArchitecture({ projectId: process.env.GOOGLE_CLOUD_PROJECT, location: process.env.GOOGLE_CLOUD_LOCATION, bytes, mime });
     stage = "Architekturprofil speichern";
     await call(client, "guest_image_test_set_room_fidelity", { target_session: session.id, target_secret_hash: session.secret, profile });
     stage = "Versandfreigabe";
     if (!await call(client, "guest_image_test_check_dispatch", { target_session: session.id, target_secret_hash: session.secret, request_id: requestId })) throw new Error("Freigabe wurde zurückgezogen.");
     stage = "Vertex-Bildgenerierung";
+    await call(client, "guest_image_test_set_progress", { target_session: session.id, target_secret_hash: session.secret, request_id: requestId, next_stage: "generating" });
     const provider = createVertexImageProvider({ projectId: process.env.GOOGLE_CLOUD_PROJECT, location: process.env.GOOGLE_CLOUD_LOCATION, maximumRequestCents: reservation.reservedCents });
     const result = await provider.generate({ input: { sourceImage: bytes, sourceImageMimeType: mime, roomType: "living-room", style: reservation.style, budgetEuro: reservation.budgetEuro, roomFidelity: profile }, consent: { granted: true, grantedAt: reservation.grantedAt, policyVersion: reservation.policyVersion }, maximumChargeCents: reservation.reservedCents }, new AbortController().signal);
     stage = "Vertex-Ergebnis sichern";
+    await call(client, "guest_image_test_set_progress", { target_session: session.id, target_secret_hash: session.secret, request_id: requestId, next_stage: "saving" });
     await call(client, "guest_image_test_record_provider_image", { target_session: session.id, target_secret_hash: session.secret, request_id: requestId,
       provider_image: Buffer.from(result.image).toString("base64"), provider_mime: result.imageMimeType, elapsed_ms: result.durationMs,
       provider_id: result.providerRequestId, usage_data: result.usage ?? {} });
     stage = "Raumtreue-Prüfung";
+    await call(client, "guest_image_test_set_progress", { target_session: session.id, target_secret_hash: session.secret, request_id: requestId, next_stage: "validating" });
     const validation = await validateStructuralFidelity(bytes, result.image);
     stage = "Ergebnis speichern";
     const finishArgs = { target_session: session.id, target_secret_hash: session.secret, request_id: requestId, result_image: validation.status === "passed" ? Buffer.from(result.image).toString("base64") : null, result_mime: validation.status === "passed" ? result.imageMimeType : null, elapsed_ms: result.durationMs, provider_id: result.providerRequestId, usage_data: { ...result.usage, raumlyValidation: validation } };

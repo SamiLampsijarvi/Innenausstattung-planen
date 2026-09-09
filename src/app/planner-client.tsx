@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   createLocalProject,
   readLocalProjects,
@@ -84,6 +84,8 @@ export default function Home() {
   const [referenceLengthCm, setReferenceLengthCm] = useState<number | null>(null);
   const [error, setError] = useState("");
   const [generatedImageUrl, setGeneratedImageUrl] = useState("");
+  const [imageProgress, setImageProgress] = useState<string | null>(null);
+  const resultRef = useRef<HTMLElement | null>(null);
   const [accountUser, setAccountUser] = useState<User | null>(null);
   const [accountDeletionRequest, setAccountDeletionRequest] = useState<AccountDeletionRequest | null>(null);
   const [trashedProjects, setTrashedProjects] = useState<PrivateProject[]>([]);
@@ -99,6 +101,11 @@ export default function Home() {
   const briefingIsComplete = Boolean(style && images.length && emptyRoomConfirmed && measurementIsComplete);
   const budgetLabel = useMemo(() => budget.toLocaleString("de-DE"), [budget]);
   const activeProject = projects.find((project) => project.id === activeProjectId) ?? null;
+  const progressText: Record<string, string> = { preparing: "Bild wird sicher vorbereitet", architecture: "Raum wird geschützt geprüft", generating: "Ihr Bild entsteht", saving: "Bild wird sicher gespeichert", validating: "Die letzten Feinheiten werden geprüft", failed: "Der Versuch wurde sicher angehalten" };
+
+  useEffect(() => {
+    if (imageProgress) resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [imageProgress]);
 
   useEffect(() => {
     const loadProjects = window.setTimeout(() => {
@@ -653,15 +660,23 @@ export default function Home() {
               budgetEuro={budget}
               ready={briefingIsComplete}
               onGenerated={setGeneratedImageUrl}
+              onProgress={setImageProgress}
             />
             {error && <p className="form-error" role="alert">{error}</p>}
           </div>
           </div>
-          <aside className="design-results" aria-labelledby="design-results-title">
+          <aside className="design-results" aria-labelledby="design-results-title" ref={resultRef}>
             {generatedImageUrl ? (
               <div className="briefing-summary" aria-live="polite">
                 <h2 id="design-results-title">Ihr KI-Entwurf</h2>
                 <img className="guest-image-result" src={generatedImageUrl} alt="KI-Entwurf für das Wohnzimmer" />
+              </div>
+            ) : imageProgress ? (
+              <div className="image-progress" aria-live="polite">
+                <h2 id="design-results-title">Ihr KI-Entwurf</h2>
+                <strong>{progressText[imageProgress] ?? "Bild wird vorbereitet"}</strong>
+                <div><span style={{ width: `${({ preparing: 18, architecture: 38, generating: 64, saving: 82, validating: 94, failed: 100 }[imageProgress] ?? 12)}%` }} /></div>
+                <p>{imageProgress === "failed" ? "Es wurde kein neuer Versuch gestartet. Raumly bewahrt den Status für die sichere Prüfung auf." : "Raumly zeigt den Entwurf erst, nachdem er sicher gespeichert und geprüft wurde."}</p>
               </div>
             ) : (
               <div>

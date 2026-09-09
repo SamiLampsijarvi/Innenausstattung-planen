@@ -172,6 +172,11 @@ main { min-height: calc(100vh - 131px); padding: clamp(4rem, 9vw, 8rem) max(3vw,
 .guest-image-test button:disabled { cursor: not-allowed; opacity: .55; }
 .guest-image-status { padding: 10px; background: #edf4f0; border-radius: 8px; }
 .guest-image-result { display: block; width: 100%; height: auto; border: 1px solid var(--line); border-radius: 10px; }
+.image-progress { display: grid; gap: 15px; }
+.image-progress strong { color: var(--forest); font-size: 16px; }
+.image-progress > div { height: 9px; overflow: hidden; background: var(--mint); border-radius: 99px; }
+.image-progress > div span { display: block; height: 100%; background: var(--forest); border-radius: inherit; transition: width .35s ease; }
+.image-progress p { max-width: none; }
 .guest-image-review { margin-top: 14px; }
 .guest-image-review img { display: block; width: 100%; height: auto; border-radius: 9px; border: 1px solid var(--line); }
 .guest-image-review button + button { margin-top: 8px; background: transparent; color: var(--forest); border: 1px solid var(--forest); }

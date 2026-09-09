@@ -8,10 +8,11 @@ type Props = {
   budgetEuro: number;
   ready: boolean;
   onGenerated: (url: string) => void;
+  onProgress: (value: string | null) => void;
 };
 
 // The server independently enforces consent, a 30-cent reservation and one attempt.
-export default function GuestImageTestPanel({ image, style, budgetEuro, ready, onGenerated }: Props) {
+export default function GuestImageTestPanel({ image, style, budgetEuro, ready, onGenerated, onProgress }: Props) {
   const [consent, setConsent] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -19,8 +20,10 @@ export default function GuestImageTestPanel({ image, style, budgetEuro, ready, o
 
   async function generate() {
     if (!image || !consent || !ready || busy) return;
+    let poll: number | undefined;
     setBusy(true);
     setMessage("");
+    onProgress("preparing");
     try {
       const session = await fetch("/api/guest-image-test?session=new", { credentials: "same-origin", cache: "no-store" });
       if (!session.ok) throw new Error("Der Bildversuch konnte nicht sicher vorbereitet werden.");
@@ -37,14 +40,24 @@ export default function GuestImageTestPanel({ image, style, budgetEuro, ready, o
         photo = new File([blob], image.name, { type: blob.type || "image/jpeg" });
       }
       body.set("photo", photo);
+      poll = window.setInterval(async () => {
+        const state = await fetch("/api/guest-image-test", { credentials: "same-origin", cache: "no-store" }).then((value) => value.ok ? value.json() : null).catch(() => null);
+        const stage = state?.attempts?.[0]?.progress_stage;
+        if (typeof stage === "string") onProgress(stage);
+      }, 1000);
       const response = await fetch("/api/guest-image-test", { method: "POST", body, credentials: "same-origin" });
+      window.clearInterval(poll);
+      poll = undefined;
       const result = await response.json().catch(() => ({}));
       if (!response.ok || typeof result.requestId !== "string") throw new Error(typeof result.error === "string" ? result.error : "Bildversuch fehlgeschlagen.");
       onGenerated(`/api/guest-image-test?candidate=${encodeURIComponent(result.requestId)}`);
+      onProgress(null);
       setMessage("Der Bildversuch wurde automatisch auf Raumtreue geprüft.");
     } catch (error) {
+      onProgress("failed");
       setMessage(error instanceof Error ? error.message : "Bildversuch fehlgeschlagen.");
     } finally {
+      if (poll) window.clearInterval(poll);
       setBusy(false);
     }
   }
