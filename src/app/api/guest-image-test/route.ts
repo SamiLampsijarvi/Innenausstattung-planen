@@ -130,22 +130,35 @@ async function dispatch(request: Request, client: SupabaseClient) {
 async function generate(session: { id: string; secret: string }, client: SupabaseClient) {
   if (process.env.RAUMLY_IMAGE_AI_ENABLED !== "true") throw new Error("Externe Bild-KI ist ausgeschaltet.");
   if (!process.env.GOOGLE_CLOUD_PROJECT) throw new Error("Google-Projekt fehlt.");
-  const source = await call(client, "guest_image_test_read_source", { target_session: session.id, target_secret_hash: session.secret });
-  if (!source?.data || !["image/jpeg", "image/png", "image/webp"].includes(source.mime)) throw new Error("Testfoto nicht verfügbar.");
-  const bytes = new Uint8Array(Buffer.from(source.data, "base64"));
-  const mime = source.mime as "image/jpeg" | "image/png" | "image/webp";
   const requestId = randomUUID();
-  const reservation = await call(client, "guest_image_test_reserve", { target_session: session.id, target_secret_hash: session.secret, request_id: requestId });
+  let stage = "Testfoto lesen";
   try {
+    const source = await call(client, "guest_image_test_read_source", { target_session: session.id, target_secret_hash: session.secret });
+    if (!source?.data || !["image/jpeg", "image/png", "image/webp"].includes(source.mime)) throw new Error("Testfoto nicht verfügbar.");
+    const bytes = new Uint8Array(Buffer.from(source.data, "base64"));
+    const mime = source.mime as "image/jpeg" | "image/png" | "image/webp";
+    stage = "Kostenreservierung";
+    const reservation = await call(client, "guest_image_test_reserve", { target_session: session.id, target_secret_hash: session.secret, request_id: requestId });
+    stage = "Architektur-Scan";
     const profile = await scanRoomArchitecture({ projectId: process.env.GOOGLE_CLOUD_PROJECT, location: process.env.GOOGLE_CLOUD_LOCATION, bytes, mime });
+    stage = "Architekturprofil speichern";
     await call(client, "guest_image_test_set_room_fidelity", { target_session: session.id, target_secret_hash: session.secret, profile });
+    stage = "Versandfreigabe";
     if (!await call(client, "guest_image_test_check_dispatch", { target_session: session.id, target_secret_hash: session.secret, request_id: requestId })) throw new Error("Freigabe wurde zurückgezogen.");
+    stage = "Vertex-Bildgenerierung";
     const provider = createVertexImageProvider({ projectId: process.env.GOOGLE_CLOUD_PROJECT, location: process.env.GOOGLE_CLOUD_LOCATION, maximumRequestCents: reservation.reservedCents });
     const result = await provider.generate({ input: { sourceImage: bytes, sourceImageMimeType: mime, roomType: "living-room", style: reservation.style, budgetEuro: reservation.budgetEuro, roomFidelity: profile }, consent: { granted: true, grantedAt: reservation.grantedAt, policyVersion: reservation.policyVersion }, maximumChargeCents: reservation.reservedCents }, new AbortController().signal);
+    stage = "Raumtreue-Prüfung";
     const validation = await validateStructuralFidelity(bytes, result.image);
+    stage = "Ergebnis speichern";
     await call(client, "guest_image_test_finish", { target_session: session.id, target_secret_hash: session.secret, request_id: requestId, result_image: validation.status === "passed" ? Buffer.from(result.image).toString("base64") : null, result_mime: validation.status === "passed" ? result.imageMimeType : null, elapsed_ms: result.durationMs, provider_id: result.providerRequestId, usage_data: { ...result.usage, raumlyValidation: validation } });
     return Response.json({ ok: true, requestId }, { headers });
-  } catch {
+  } catch (error) {
+    console.error("guest-image-test generation failed", {
+      stage,
+      name: error instanceof Error ? error.name : "UnknownError",
+      message: error instanceof Error ? error.message : "unknown error",
+    });
     try { await call(client, "guest_image_test_finish", { target_session: session.id, target_secret_hash: session.secret, request_id: requestId }); } catch { /* retain unresolved reservation */ }
     throw new Error("Versuch ungeklärt. Reservierung bleibt bestehen; keine automatische Wiederholung.");
   }
