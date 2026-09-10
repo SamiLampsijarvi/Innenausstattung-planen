@@ -24,6 +24,7 @@ Die aktuelle Anwendung basiert auf Next.js und TypeScript. Nach der Installation
 - `pnpm test:e2e`: vollständiger Planungsablauf in Desktop- und Mobilgröße
 - `pnpm test:db`: lokale PostgreSQL-Prüfung der dauerhaften Phase-7-Testbuchhaltung ohne Cloud-Zugriff
 - `pnpm check:image-test-ledger`: rein serverseitige Statusprüfung für Restbudget und offene Testreservierungen; liest weder Fotos noch Sitzungsdaten
+- `pnpm reconcile:image-test-lock`: entfernt ausschließlich eine nach Google-Billing-Abgleich bestätigte, verwaiste Sperrmarke; echte Aufträge bleiben immer gesperrt
 - `pnpm test:integration`: vollständige Supabase-Prüfung ausschließlich im isolierten GitHub-Testjob, mit künstlichen Daten und ausgeschalteter Google-KI
 - `pnpm test:evaluation`: Regeln der lokalen Phase-8-Bildauswertung
 - `pnpm test:room-fidelity-calibration`: lokaler Kalibrierungslauf für den nicht versionierten öffentlichen Raumtestbestand; keine Netzwerk- oder KI-Aufrufe

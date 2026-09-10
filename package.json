@@ -16,7 +16,8 @@
     "prepare:room-fidelity-calibration": "node scripts/prepare-public-room-fidelity-corpus.mjs",
     "evaluate:images": "node scripts/image-evaluation.mjs",
     "arm:image-test": "node scripts/arm-controlled-image-test.mjs",
-    "check:image-test-ledger": "node scripts/check-localhost-image-test-ledger.mjs"
+    "check:image-test-ledger": "node scripts/check-localhost-image-test-ledger.mjs",
+    "reconcile:image-test-lock": "node scripts/reconcile-dangling-localhost-image-test-lock.mjs"
   },
   "dependencies": {
     "@google/genai": "2.19.0",

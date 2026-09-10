@@ -80,6 +80,8 @@ before(async () => {
   await db.exec(ledgerStatus);
   const ledgerStatusDetail = await readFile(new URL('../supabase/migrations/202609100002_localhost_image_test_ledger_status_detail.sql', import.meta.url), 'utf8');
   await db.exec(ledgerStatusDetail);
+  const reconcileDanglingLock = await readFile(new URL('../supabase/migrations/202609100003_reconcile_dangling_localhost_image_test_lock.sql', import.meta.url), 'utf8');
+  await db.exec(reconcileDanglingLock);
   await db.exec(`insert into auth.users values('${user}'),('${other}');
     insert into public.projects values('${user}','${user}',null),('${other}','${other}',null);
     insert into public.image_test_members values('${user}'),('${other}');
@@ -125,6 +127,22 @@ test('localhost ledger report is server-only and contains no test photo data', (
   assert.equal(status.activeAttemptInLegacyFlow, false);
   assert.equal('source_base64' in status, false);
   assert.equal('sessionSecret' in status, false);
+}));
+
+test('only a dangling localhost lock can be reconciled after a billing check', () => scenario(async () => {
+  await db.query('update public.localhost_image_test_pool set active_attempt=$1', [request(999)]);
+  await db.exec('set role service_role');
+  const status = await scalar('select public.localhost_image_test_reconcile_dangling_lock()');
+  await db.exec('reset role');
+  assert.equal(status.activeAttempt, false);
+  assert.equal(await scalar('select active_attempt is null from public.localhost_image_test_pool'), true);
+
+  await db.exec('set role service_role');
+  const session = 'cccccccc-cccc-4ccc-8ccc-000000000009';
+  await scalar('select public.guest_image_test_prepare($1,$2,$3,$4,$5,$6,$7,$8)', [session, 'c'.repeat(64), 'Japandi', 1500, null, 'a'.repeat(64), 'AQ==', 'image/png']);
+  await scalar('select public.guest_image_test_reserve($1,$2,$3)', [session, 'c'.repeat(64), request(999)]);
+  await assert.rejects(scalar('select public.localhost_image_test_reconcile_dangling_lock()'), /requires provider and billing reconciliation/);
+  await db.exec('reset role');
 }));
 
 test('a guest preparation accepts no visible architecture counts and reserves before the server scan', () => scenario(async () => {
