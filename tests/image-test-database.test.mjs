@@ -82,6 +82,7 @@ before(async () => {
   await db.exec(ledgerStatusDetail);
   const reconcileDanglingLock = await readFile(new URL('../supabase/migrations/202609100003_reconcile_dangling_localhost_image_test_lock.sql', import.meta.url), 'utf8');
   await db.exec(reconcileDanglingLock);
+  await db.exec(await readFile(new URL('../supabase/migrations/202609100004_guest_failure_diagnostics.sql', import.meta.url), 'utf8'));
   await db.exec(`insert into auth.users values('${user}'),('${other}');
     insert into public.projects values('${user}','${user}',null),('${other}','${other}',null);
     insert into public.image_test_members values('${user}'),('${other}');
@@ -143,6 +144,27 @@ test('only a dangling localhost lock can be reconciled after a billing check', (
   await scalar('select public.guest_image_test_reserve($1,$2,$3)', [session, 'c'.repeat(64), request(999)]);
   await assert.rejects(scalar('select public.localhost_image_test_reconcile_dangling_lock()'), /requires provider and billing reconciliation/);
   await db.exec('reset role');
+}));
+
+test('guest receipt survives failure while polling excludes original image and private reports', () => scenario(async () => {
+  const session = 'cccccccc-cccc-4ccc-8ccc-000000000019';
+  const secret = 'c'.repeat(64);
+  await db.exec('set role service_role');
+  await scalar('select public.guest_image_test_prepare($1,$2,$3,$4,$5,$6,$7,$8)', [session, secret, 'Japandi', 1500, null, 'a'.repeat(64), 'AQ==', 'image/png']);
+  await scalar('select public.guest_image_test_reserve($1,$2,$3)', [session, secret, request(919)]);
+  await scalar('select public.guest_image_test_record_provider_image($1,$2,$3,$4,$5,$6,$7,$8)', [session,secret,request(919),'AQ==','image/png',20,'fake-provider','{}']);
+  await scalar('select public.guest_image_test_record_failure($1,$2,$3,$4,$5)', [session,secret,request(919),'Raumtreue-Prüfung','UNCLASSIFIED']);
+  await scalar('select public.guest_image_test_finish($1,$2,$3)', [session,secret,request(919)]);
+  const state = await scalar('select public.guest_image_test_state($1,$2)', [session,secret]);
+  assert.equal(state.attempts[0].failure_stage,'Raumtreue-Prüfung');
+  assert.equal(state.attempts[0].imageReady,false);
+  assert.equal('provider_image_base64' in state.attempts[0],false);
+  assert.equal('automatic_fidelity_report' in state.attempts[0],false);
+  await assert.rejects(scalar('select public.guest_image_test_record_failure($1,$2,$3,$4,$5)', [session,secret,request(919),'secret','secret']), /invalid diagnostic/);
+  await db.exec('reset role');
+  assert.equal(await scalar('select provider_image_base64 from public.guest_image_test_attempts where id=$1',[request(919)]),'AQ==');
+  assert.equal(await scalar('select active_attempt is not null from public.localhost_image_test_pool'),true);
+  assert.equal(await scalar("select has_function_privilege('anon','public.guest_image_test_record_failure(uuid,text,uuid,text,text)','execute')"),false);
 }));
 
 test('a guest preparation accepts no visible architecture counts and reserves before the server scan', () => scenario(async () => {

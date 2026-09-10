@@ -387,6 +387,15 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 - **Datenschutz:** Original und Ergebnis bleiben getrennt von Projektdaten und werden spätestens nach 24 Stunden gelöscht. Die Einwilligung gilt für genau diesen einzelnen Versuch, nicht als allgemeine Freigabe für spätere Bilder.
 - **Ergebnisintegrität:** Raumly speichert die vom Anbieter erhaltenen Bildbytes und deren Abschlussstatus in einer gemeinsamen Datenbanktransaktion, bevor die Bildadresse an den Browser zurückgegeben wird. Die rechte Ergebnisfläche lädt nur diese gespeicherte Fassung nach. Bei einem Speicher- oder Abschlussfehler wird kein Ersatzbild und kein automatischer neuer Anbieteraufruf erzeugt.
 
+## Technischer Nachtrag: Vertex-Diagnose und Wiederherstellung (10.09.2026)
+
+- Der Versuch vom 10.09.2026 um 15:48 UTC stoppte nach rund zehn Sekunden im Schritt `architecture`. Kein Architekturprofil und kein Bildbeleg wurden gespeichert. Die konkrete historische Ursache ist mangels Fehlerdetails nicht beweisbar.
+- Die Raumanalyse verwendet ein strukturiertes Antwortschema, 512 Ausgabetokens und für Gemini 2.5 Flash deaktiviertes Thinking. Leere, abgeschnittene und ungültige Antworten werden getrennt erkannt; keine automatische Modellwiederholung.
+- Fehlerstufe und erlaubte Fehlerkategorie werden serverseitig gespeichert und als JSON-Zeile protokolliert. Provider-Rohtexte, Fotos und Zugangsdaten werden nicht protokolliert.
+- Statusabfragen enthalten ausschließlich ausgewählte Statusfelder, keine Rohbilder oder internen Architekturberichte. Empfangene Bilder werden vor weiteren Fortschrittsmeldungen gesichert.
+- Freigegebene Ergebnisse lassen sich innerhalb der gültigen Testsitzung und Aufbewahrungsfrist nach Neuladen im zugehörigen Projekt wiederanzeigen. Das ist keine Garantie für die Wiederherstellung eines Bildes, das Google nie geliefert hat oder das nicht erfolgreich gespeichert wurde. Abgelehnte Ergebnisse werden nicht als erfolgreiche Bildadresse angezeigt.
+- Die offene Reservierung bleibt bestehen. Vertex bleibt lokal ausgeschaltet, bis Abrechnung und nächste Testfreigabe geklärt sind. 30 Cent sind eine interne Reservierung, keine vom Google-Dienst erzwungene Rechnungsobergrenze.
+
 ## Offene Entscheidungen
 
 - Markenname und visuelle Identität

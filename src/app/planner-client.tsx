@@ -654,7 +654,8 @@ export default function Home() {
           </ol>
           <div className="generate-panel">
             <GuestImageTestPanel
-              key={images[0]?.previewUrl}
+              projectId={activeProject.id}
+              key={activeProject.id}
               image={images[0]}
               style={style}
               budgetEuro={budget}
@@ -676,7 +677,7 @@ export default function Home() {
                 <h2 id="design-results-title">Ihr KI-Entwurf</h2>
                 <strong>{progressText[imageProgress] ?? "Bild wird vorbereitet"}</strong>
                 <div><span style={{ width: `${({ preparing: 18, architecture: 38, generating: 64, saving: 82, validating: 94, failed: 100 }[imageProgress] ?? 12)}%` }} /></div>
-                <p>{imageProgress === "failed" ? "Es wurde kein neuer Versuch gestartet. Raumly bewahrt den Status für die sichere Prüfung auf." : "Raumly zeigt den Entwurf erst, nachdem er sicher gespeichert und geprüft wurde."}</p>
+                <p>{imageProgress === "failed" ? "Der Ablauf konnte nicht abgeschlossen werden. Eine mögliche Kostenreservierung bleibt bis zur Prüfung bestehen. Es erfolgt keine automatische Wiederholung." : "Raumly zeigt den Entwurf erst, nachdem er sicher gespeichert und geprüft wurde."}</p>
               </div>
             ) : (
               <div>

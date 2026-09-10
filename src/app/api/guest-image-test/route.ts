@@ -7,6 +7,7 @@ import { isTrustedImageTestOrigin } from "@/lib/ai/image-generation/test-origin"
 import { createVertexImageProvider } from "@/lib/ai/image-generation/vertex-provider.server";
 import { scanRoomArchitecture } from "@/lib/ai/image-generation/vertex-architecture-scan.server";
 import { validateStructuralFidelity } from "@/lib/ai/image-generation/structural-fidelity.server";
+import { safeTestErrorCode } from "@/lib/ai/image-generation/safe-test-error";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -29,7 +30,7 @@ function serverEnabled() {
 async function call(client: SupabaseClient, name: string, args: Record<string, unknown>) {
   const { data, error } = await client.rpc(name, args);
   if (error) {
-    console.error("guest-image-test RPC failed", { name, code: error.code, message: error.message });
+    console.error(JSON.stringify({ event: "guest-image-test-rpc-failed", name, code: error.code }));
     const failure = new Error("Die Testaktion ist gesperrt oder konnte nicht bestätigt werden.");
     Object.assign(failure, { code: error.code });
     throw failure;
@@ -157,7 +158,6 @@ async function generate(session: { id: string; secret: string }, client: Supabas
     const provider = createVertexImageProvider({ projectId: process.env.GOOGLE_CLOUD_PROJECT, location: process.env.GOOGLE_CLOUD_LOCATION, maximumRequestCents: reservation.reservedCents });
     const result = await provider.generate({ input: { sourceImage: bytes, sourceImageMimeType: mime, roomType: "living-room", style: reservation.style, budgetEuro: reservation.budgetEuro, roomFidelity: profile }, consent: { granted: true, grantedAt: reservation.grantedAt, policyVersion: reservation.policyVersion }, maximumChargeCents: reservation.reservedCents }, new AbortController().signal);
     stage = "Vertex-Ergebnis sichern";
-    await call(client, "guest_image_test_set_progress", { target_session: session.id, target_secret_hash: session.secret, request_id: requestId, next_stage: "saving" });
     await call(client, "guest_image_test_record_provider_image", { target_session: session.id, target_secret_hash: session.secret, request_id: requestId,
       provider_image: Buffer.from(result.image).toString("base64"), provider_mime: result.imageMimeType, elapsed_ms: result.durationMs,
       provider_id: result.providerRequestId, usage_data: result.usage ?? {} });
@@ -170,12 +170,11 @@ async function generate(session: { id: string; secret: string }, client: Supabas
     catch { await call(client, "guest_image_test_finish", finishArgs); }
     return Response.json({ ok: true, requestId }, { headers });
   } catch (error) {
-    console.error("guest-image-test generation failed", {
-      stage,
-      name: error instanceof Error ? error.name : "UnknownError",
-      message: error instanceof Error ? error.message : "unknown error",
-    });
+    const code = safeTestErrorCode(error);
+    console.error(JSON.stringify({ event: "guest-image-test-generation-failed", requestId, stage, code }));
+    try { await call(client, "guest_image_test_record_failure", { target_session: session.id, target_secret_hash: session.secret, request_id: requestId, failure_stage: stage, failure_code: code }); }
+    catch { /* The JSON log retains diagnostics if the database is unreachable. */ }
     try { await call(client, "guest_image_test_finish", { target_session: session.id, target_secret_hash: session.secret, request_id: requestId }); } catch { /* retain unresolved reservation */ }
-    throw new Error("Versuch ungeklärt. Reservierung bleibt bestehen; keine automatische Wiederholung.");
+    throw new Error(`Abbruch bei „${stage}“ (${code}). Die Reservierung bleibt bis zur Prüfung bestehen. Keine automatische Wiederholung.`);
   }
 }

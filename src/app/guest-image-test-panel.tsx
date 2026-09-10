@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type Props = {
+  projectId: string;
   image?: { name: string; previewUrl: string; file?: File };
   style: string;
   budgetEuro: number;
@@ -12,11 +13,41 @@ type Props = {
 };
 
 // The server independently enforces consent, a 30-cent reservation and one attempt.
-export default function GuestImageTestPanel({ image, style, budgetEuro, ready, onGenerated, onProgress }: Props) {
+export default function GuestImageTestPanel({ projectId, image, style, budgetEuro, ready, onGenerated, onProgress }: Props) {
   const [consent, setConsent] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const enabled = process.env.NEXT_PUBLIC_RAUMLY_GUEST_IMAGE_TEST_ENABLED === "true";
+  const scope = JSON.stringify([projectId, style, budgetEuro]);
+
+  useEffect(() => {
+    if (sessionStorage.getItem("raumly-image-test-scope") !== scope) return;
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    async function restore() {
+      try {
+        const response = await fetch("/api/guest-image-test", { credentials: "same-origin", cache: "no-store" });
+        const state = response.ok ? await response.json() : null;
+        if (cancelled) return;
+        const attempt = state?.attempts?.[0];
+        if (attempt?.imageReady && typeof attempt.id === "string") {
+          onGenerated(`/api/guest-image-test?candidate=${encodeURIComponent(attempt.id)}`);
+          onProgress(null);
+          setBusy(false);
+        } else if (attempt?.status === "reserved") {
+          setBusy(true);
+          onProgress(attempt.progress_stage);
+          timer = setTimeout(restore, 1500);
+        } else if (attempt) {
+          setBusy(false);
+          onProgress("failed");
+          setMessage(attempt.status === "discarded" ? "Der Entwurf hat die Raumtreue-Prüfung nicht bestanden." : "Der Versuch ist ungeklärt. Bitte vor einem weiteren Versuch prüfen lassen.");
+        }
+      } catch { /* A later reload can read the same session; never generate during recovery. */ }
+    }
+    void restore();
+    return () => { cancelled = true; if (timer) clearTimeout(timer); };
+  }, [scope, onGenerated, onProgress]);
 
   async function generate() {
     if (!image || !consent || !ready || busy) return;
@@ -27,6 +58,7 @@ export default function GuestImageTestPanel({ image, style, budgetEuro, ready, o
     try {
       const session = await fetch("/api/guest-image-test?session=new", { credentials: "same-origin", cache: "no-store" });
       if (!session.ok) throw new Error("Der Bildversuch konnte nicht sicher vorbereitet werden.");
+      sessionStorage.setItem("raumly-image-test-scope", scope);
       const body = new FormData();
       body.set("action", "generate");
       body.set("consent", "true");
@@ -50,6 +82,10 @@ export default function GuestImageTestPanel({ image, style, budgetEuro, ready, o
       poll = undefined;
       const result = await response.json().catch(() => ({}));
       if (!response.ok || typeof result.requestId !== "string") throw new Error(typeof result.error === "string" ? result.error : "Bildversuch fehlgeschlagen.");
+      const stateResponse = await fetch("/api/guest-image-test", { credentials: "same-origin", cache: "no-store" });
+      const state = stateResponse.ok ? await stateResponse.json() : null;
+      const attempt = state?.attempts?.find((item: { id: string }) => item.id === result.requestId);
+      if (!attempt?.imageReady) throw new Error(attempt?.status === "discarded" ? "Der Entwurf hat die Raumtreue-Prüfung nicht bestanden und wird nicht angezeigt." : "Das Ergebnis ist noch nicht zur Anzeige freigegeben. Der gespeicherte Status bleibt erhalten.");
       onGenerated(`/api/guest-image-test?candidate=${encodeURIComponent(result.requestId)}`);
       onProgress(null);
       setMessage("Der Bildversuch wurde automatisch auf Raumtreue geprüft.");
