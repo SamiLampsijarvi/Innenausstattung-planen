@@ -70,6 +70,16 @@ before(async () => {
   await db.exec(localhostImageTestPool);
   const durableVertexResultFinalization = await readFile(new URL('../supabase/migrations/202609080005_durable_vertex_result_finalization.sql', import.meta.url), 'utf8');
   await db.exec(durableVertexResultFinalization);
+  const unresolvedLocalhostAttempt = await readFile(new URL('../supabase/migrations/202609090001_reconcile_unresolved_localhost_attempt.sql', import.meta.url), 'utf8');
+  await db.exec(unresolvedLocalhostAttempt);
+  const durableVertexReceipt = await readFile(new URL('../supabase/migrations/202609090002_durable_vertex_receipt.sql', import.meta.url), 'utf8');
+  await db.exec(durableVertexReceipt);
+  const imageTestProgress = await readFile(new URL('../supabase/migrations/202609090003_image_test_progress.sql', import.meta.url), 'utf8');
+  await db.exec(imageTestProgress);
+  const ledgerStatus = await readFile(new URL('../supabase/migrations/202609100001_localhost_image_test_ledger_status.sql', import.meta.url), 'utf8');
+  await db.exec(ledgerStatus);
+  const ledgerStatusDetail = await readFile(new URL('../supabase/migrations/202609100002_localhost_image_test_ledger_status_detail.sql', import.meta.url), 'utf8');
+  await db.exec(ledgerStatusDetail);
   await db.exec(`insert into auth.users values('${user}'),('${other}');
     insert into public.projects values('${user}','${user}',null),('${other}','${other}',null);
     insert into public.image_test_members values('${user}'),('${other}');
@@ -101,6 +111,20 @@ test('anonymous preparation is private, short-lived and reserves one localhost a
   await scalar('select public.guest_image_test_revoke($1,$2)', [guestSession, guestSecret]);
   await db.exec('reset role');
   assert.equal(await scalar('select source_base64 is null from public.guest_image_test_sessions where id=$1', [guestSession]), true);
+}));
+
+test('localhost ledger report is server-only and contains no test photo data', () => scenario(async () => {
+  assert.equal(await scalar("select has_function_privilege('anon','public.localhost_image_test_ledger_status()','execute')"), false);
+  assert.equal(await scalar("select has_function_privilege('authenticated','public.localhost_image_test_ledger_status()','execute')"), false);
+  await db.exec('set role service_role');
+  const status = await scalar('select public.localhost_image_test_ledger_status()');
+  await db.exec('reset role');
+  assert.equal(status.maximumTotalCents, 300);
+  assert.equal(status.activeAttempt, false);
+  assert.equal(status.activeAttemptInGuestFlow, false);
+  assert.equal(status.activeAttemptInLegacyFlow, false);
+  assert.equal('source_base64' in status, false);
+  assert.equal('sessionSecret' in status, false);
 }));
 
 test('a guest preparation accepts no visible architecture counts and reserves before the server scan', () => scenario(async () => {

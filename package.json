@@ -15,7 +15,8 @@
     "test:room-fidelity-calibration": "playwright test --config=playwright.room-fidelity-calibration.config.ts",
     "prepare:room-fidelity-calibration": "node scripts/prepare-public-room-fidelity-corpus.mjs",
     "evaluate:images": "node scripts/image-evaluation.mjs",
-    "arm:image-test": "node scripts/arm-controlled-image-test.mjs"
+    "arm:image-test": "node scripts/arm-controlled-image-test.mjs",
+    "check:image-test-ledger": "node scripts/check-localhost-image-test-ledger.mjs"
   },
   "dependencies": {
     "@google/genai": "2.19.0",
