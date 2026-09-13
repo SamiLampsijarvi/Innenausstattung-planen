@@ -396,6 +396,11 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 - Freigegebene Ergebnisse lassen sich innerhalb der gültigen Testsitzung und Aufbewahrungsfrist nach Neuladen im zugehörigen Projekt wiederanzeigen. Das ist keine Garantie für die Wiederherstellung eines Bildes, das Google nie geliefert hat oder das nicht erfolgreich gespeichert wurde. Abgelehnte Ergebnisse werden nicht als erfolgreiche Bildadresse angezeigt.
 - Die offene Reservierung bleibt bestehen. Vertex bleibt lokal ausgeschaltet, bis Abrechnung und nächste Testfreigabe geklärt sind. 30 Cent sind eine interne Reservierung, keine vom Google-Dienst erzwungene Rechnungsobergrenze.
 
+## Technischer Nachtrag: Datenschutz und Abrechnungsnachweis bei abgelaufenen Tests (13.09.2026)
+
+- Nach spätestens 24 Stunden werden Originalfoto, dessen Hash und das interne Architekturprofil auch bei einem ungeklärten Versuch gelöscht. Erhalten bleibt nur eine anonymisierte Sperr- und Buchungsspur, bis Google Billing geprüft wurde. Dadurch kann ein abgebrochener, möglicherweise kostenpflichtiger Versuch nicht mehr durch die Löschung unauffindbar werden.
+- Nach dem heutigen Billing-Abgleich (01.–12.09.2026) entstand für den abgebrochenen Versuch keine zusätzliche Google-Belastung. Die verwaiste Sperre wurde deshalb kontrolliert entfernt. Der lokale Pool weist 0,12 € tatsächlich erfasste Kosten, 0,90 € Reservierungen und 1,50 € verbleibenden Rahmen aus.
+
 ## Offene Entscheidungen
 
 - Markenname und visuelle Identität

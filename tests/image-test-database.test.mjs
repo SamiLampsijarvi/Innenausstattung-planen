@@ -83,6 +83,7 @@ before(async () => {
   const reconcileDanglingLock = await readFile(new URL('../supabase/migrations/202609100003_reconcile_dangling_localhost_image_test_lock.sql', import.meta.url), 'utf8');
   await db.exec(reconcileDanglingLock);
   await db.exec(await readFile(new URL('../supabase/migrations/202609100004_guest_failure_diagnostics.sql', import.meta.url), 'utf8'));
+  await db.exec(await readFile(new URL('../supabase/migrations/202609130001_preserve_unresolved_guest_attempt_audit.sql', import.meta.url), 'utf8'));
   await db.exec(`insert into auth.users values('${user}'),('${other}');
     insert into public.projects values('${user}','${user}',null),('${other}','${other}',null);
     insert into public.image_test_members values('${user}'),('${other}');
@@ -165,6 +166,26 @@ test('guest receipt survives failure while polling excludes original image and p
   assert.equal(await scalar('select provider_image_base64 from public.guest_image_test_attempts where id=$1',[request(919)]),'AQ==');
   assert.equal(await scalar('select active_attempt is not null from public.localhost_image_test_pool'),true);
   assert.equal(await scalar("select has_function_privilege('anon','public.guest_image_test_record_failure(uuid,text,uuid,text,text)','execute')"),false);
+}));
+
+test('retention removes expired photos but retains an active unresolved audit lock', () => scenario(async () => {
+  const session = 'cccccccc-cccc-4ccc-8ccc-000000000029';
+  const secret = 'd'.repeat(64);
+  await db.exec('set role service_role');
+  await scalar('select public.guest_image_test_prepare($1,$2,$3,$4,$5,$6,$7,$8)', [session, secret, 'Japandi', 1500, null, 'a'.repeat(64), 'AQ==', 'image/png']);
+  await scalar('select public.guest_image_test_reserve($1,$2,$3)', [session, secret, request(929)]);
+  await db.exec('reset role');
+  await db.exec("update public.guest_image_test_sessions set expires_at=now()-interval '1 second' where id='cccccccc-cccc-4ccc-8ccc-000000000029'");
+  await db.exec('set role service_role');
+  await scalar('select public.guest_image_test_purge()');
+  await db.exec('reset role');
+  const row = (await db.query('select source_base64,source_hash,room_fidelity_profile,revoked_at,redacted_at from public.guest_image_test_sessions where id=$1',[session])).rows[0];
+  assert.equal(row.source_base64,null);
+  assert.equal(row.source_hash,'0'.repeat(64));
+  assert.equal(row.room_fidelity_profile,null);
+  assert.ok(row.revoked_at && row.redacted_at);
+  assert.equal(await scalar('select status from public.guest_image_test_attempts where id=$1',[request(929)]),'unknown');
+  assert.equal(await scalar('select active_attempt=$1 from public.localhost_image_test_pool',[request(929)]),true);
 }));
 
 test('a guest preparation accepts no visible architecture counts and reserves before the server scan', () => scenario(async () => {
