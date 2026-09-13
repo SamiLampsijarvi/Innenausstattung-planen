@@ -96,9 +96,10 @@ function buildRoomPrompt(request: ImageGenerationRequest) {
     "Erstelle aus diesem Wohnzimmerfoto ein realistisches Inspirationsbild.",
     `Designstil: ${request.input.style}.`,
     `Budgetrahmen für die spätere Einrichtung: höchstens ${request.input.budgetEuro} Euro.`,
-    "Bewahre Raumgeometrie, Perspektive, Fenster, Türen, Wände und Boden so genau wie möglich.",
+    "Bearbeite das vorliegende Foto, statt einen neuen Raum zu entwerfen: übernimm denselben Kamerastandpunkt, denselben Bildausschnitt und dieselbe Raumgeometrie.",
+    "Lass alle bestehenden Architekturpixel unverändert: Fenster, Türen, Durchgänge, Wände, Boden, Decke und feste Einbauten bleiben exakt an ihrer Position. Verdecke, verschiebe, entferne oder erfinde keine dieser Flächen.",
     "Erzeuge keine Personen, Texte, Logos, Grundrisse oder Maßangaben.",
-    "Das Ergebnis ist eine Inspiration und keine maßgenaue Planung.",
+    "Füge nur realistisch platzierte Möbel, Textilien und Dekoration hinzu; ändere weder Raumform noch Lichtquelle oder Wandgestaltung außerhalb der Möbelwirkung.",
     roomFidelityInstruction(request.input.roomFidelity),
   ].join(" ");
 }

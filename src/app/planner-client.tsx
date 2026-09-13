@@ -101,7 +101,7 @@ export default function Home() {
   const briefingIsComplete = Boolean(style && images.length && emptyRoomConfirmed && measurementIsComplete);
   const budgetLabel = useMemo(() => budget.toLocaleString("de-DE"), [budget]);
   const activeProject = projects.find((project) => project.id === activeProjectId) ?? null;
-  const progressText: Record<string, string> = { preparing: "Bild wird sicher vorbereitet", architecture: "Raum wird geschützt geprüft", generating: "Ihr Bild entsteht", saving: "Bild wird sicher gespeichert", validating: "Die letzten Feinheiten werden geprüft", failed: "Der Versuch wurde sicher angehalten" };
+  const progressText: Record<string, string> = { preparing: "Bild wird sicher vorbereitet", architecture: "Raum wird geschützt geprüft", generating: "Ihr Bild entsteht", saving: "Bild wird sicher gespeichert", validating: "Die letzten Feinheiten werden geprüft", rejected: "Bild wegen Raumtreue verworfen", failed: "Der Versuch wurde sicher angehalten" };
 
   useEffect(() => {
     if (imageProgress) resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -676,8 +676,8 @@ export default function Home() {
               <div className="image-progress" aria-live="polite">
                 <h2 id="design-results-title">Ihr KI-Entwurf</h2>
                 <strong>{progressText[imageProgress] ?? "Bild wird vorbereitet"}</strong>
-                <div><span style={{ width: `${({ preparing: 18, architecture: 38, generating: 64, saving: 82, validating: 94, failed: 100 }[imageProgress] ?? 12)}%` }} /></div>
-                <p>{imageProgress === "failed" ? "Der Ablauf konnte nicht abgeschlossen werden. Eine mögliche Kostenreservierung bleibt bis zur Prüfung bestehen. Es erfolgt keine automatische Wiederholung." : "Raumly zeigt den Entwurf erst, nachdem er sicher gespeichert und geprüft wurde."}</p>
+                <div><span style={{ width: `${({ preparing: 18, architecture: 38, generating: 64, saving: 82, validating: 94, rejected: 100, failed: 100 }[imageProgress] ?? 12)}%` }} /></div>
+                <p>{imageProgress === "rejected" ? "Das Bild wurde erzeugt, aber wegen einer Abweichung bei Architektur oder Perspektive nicht angezeigt. Es handelt sich nicht um einen technischen Absturz." : imageProgress === "failed" ? "Der Ablauf konnte nicht abgeschlossen werden. Eine mögliche Kostenreservierung bleibt bis zur Prüfung bestehen. Es erfolgt keine automatische Wiederholung." : "Raumly zeigt den Entwurf erst, nachdem er sicher gespeichert und geprüft wurde."}</p>
               </div>
             ) : (
               <div>

@@ -401,6 +401,12 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 - Nach spätestens 24 Stunden werden Originalfoto, dessen Hash und das interne Architekturprofil auch bei einem ungeklärten Versuch gelöscht. Erhalten bleibt nur eine anonymisierte Sperr- und Buchungsspur, bis Google Billing geprüft wurde. Dadurch kann ein abgebrochener, möglicherweise kostenpflichtiger Versuch nicht mehr durch die Löschung unauffindbar werden.
 - Nach dem heutigen Billing-Abgleich (01.–12.09.2026) entstand für den abgebrochenen Versuch keine zusätzliche Google-Belastung. Die verwaiste Sperre wurde deshalb kontrolliert entfernt. Der lokale Pool weist 0,12 € tatsächlich erfasste Kosten, 0,90 € Reservierungen und 1,50 € verbleibenden Rahmen aus.
 
+## Technischer Nachtrag: Auswertung der verworfenen Vertex-Antwort (13.09.2026)
+
+- Der heutige Kandidat wurde von Vertex geliefert, aber durch `structure-v3` verworfen. Das Seitenverhältnis blieb praktisch gleich; jedoch blieben nur 65 % der starken Raumkanten und 42 % an ihrer ursprünglichen Position erhalten. Im Wandbereich änderten sich 45 % der Bildflächen. Dies ist kein Grenzfall einer zu engen Schwelle, sondern ein deutlicher Hinweis auf veränderte Raumstruktur oder Perspektive.
+- Die bestehenden Prüfschwellen werden deshalb nicht gelockert. Stattdessen verlangt der Vertex-Auftrag ausdrücklich eine Fotobearbeitung mit identischem Kamerastandpunkt, Bildausschnitt und unveränderten Architekturpixeln. Eine serverseitige Diagnose liefert Betreibern nur die anonymisierten Prüfmesswerte, niemals Bild- oder Fotodaten.
+- Ein abgeschlossener, auch wegen Raumtreue verworfener Versuch blockiert nun zwingend den nächsten kostenpflichtigen Start bis zum expliziten Google-Billing-Abgleich. Der Bericht stand am 13. September nur bis einschließlich 12. September bereit; der tatsächliche Betrag des heutigen Versuchs bleibt daher vorerst offen.
+
 ## Offene Entscheidungen
 
 - Markenname und visuelle Identität

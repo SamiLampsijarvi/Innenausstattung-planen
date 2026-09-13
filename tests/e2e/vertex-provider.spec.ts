@@ -51,6 +51,8 @@ test("wandelt eine kontrollierte Vertex-Testantwort in das gemeinsame Format um"
   expect(receivedConfig).toMatchObject({ candidateCount: 1, maxOutputTokens: 2048, imageConfig: { imageSize: "1K" }, httpOptions: { retryOptions: { attempts: 1 }, timeout: 120000 } });
   expect(receivedPrompt).toContain("1 Türen, 2 Fenster");
   expect(receivedPrompt).toContain("Füge keine Architektur hinzu");
+  expect(receivedPrompt).toContain("denselben Kamerastandpunkt");
+  expect(receivedPrompt).toContain("alle bestehenden Architekturpixel unverändert");
   expect(result.provider).toBe("google-vertex");
   expect(result.providerRequestId).toBe("vertex-test-response");
   expect(result.imageMimeType).toBe("image/png");

@@ -28,13 +28,18 @@ for (const outcome of ["succeeded", "discarded", "unknown"] as const) {
     await page.getByLabel(/Ich willige ein/).check();
     await page.getByRole("button", { name: "Bild generieren" }).click();
     if (outcome === "succeeded") await expect(page.getByAltText("KI-Entwurf für das Wohnzimmer")).toBeVisible();
-    else {
+    else if (outcome === "discarded") {
+      await expect(page.getByText("Bild wegen Raumtreue verworfen")).toBeVisible();
+      await expect(page.getByText("Es handelt sich nicht um einen technischen Absturz.")).toBeVisible();
+      await expect(page.getByAltText("KI-Entwurf für das Wohnzimmer")).toHaveCount(0);
+    } else {
       await expect(page.getByText("Der Versuch wurde sicher angehalten")).toBeVisible();
       await expect(page.getByAltText("KI-Entwurf für das Wohnzimmer")).toHaveCount(0);
     }
     await page.reload();
     await page.locator(".project-grid article").filter({ hasText: "Bildtest" }).getByRole("button", { name: "Öffnen" }).click();
     if (outcome === "succeeded") await expect(page.getByAltText("KI-Entwurf für das Wohnzimmer")).toBeVisible();
+    else if (outcome === "discarded") await expect(page.getByText("Bild wegen Raumtreue verworfen")).toBeVisible();
     else await expect(page.getByText("Der Versuch wurde sicher angehalten")).toBeVisible();
     expect(posts).toBe(1);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
