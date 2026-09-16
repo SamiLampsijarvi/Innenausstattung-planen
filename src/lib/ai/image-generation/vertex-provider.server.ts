@@ -97,6 +97,7 @@ function buildRoomPrompt(request: ImageGenerationRequest) {
     `Designstil: ${request.input.style}.`,
     `Budgetrahmen für die spätere Einrichtung: höchstens ${request.input.budgetEuro} Euro.`,
     "Bearbeite das vorliegende Foto, statt einen neuen Raum zu entwerfen: übernimm denselben Kamerastandpunkt, denselben Bildausschnitt und dieselbe Raumgeometrie.",
+    "Gib das Bild aufrecht aus: Die obere Bildkante des Ausgangsfotos bleibt oben. Drehe und spiegele das Foto nicht.",
     "Lass alle bestehenden Architekturpixel unverändert: Fenster, Türen, Durchgänge, Wände, Boden, Decke und feste Einbauten bleiben exakt an ihrer Position. Verdecke, verschiebe, entferne oder erfinde keine dieser Flächen.",
     "Erzeuge keine Personen, Texte, Logos, Grundrisse oder Maßangaben.",
     "Füge nur realistisch platzierte Möbel, Textilien und Dekoration hinzu; ändere weder Raumform noch Lichtquelle oder Wandgestaltung außerhalb der Möbelwirkung.",

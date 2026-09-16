@@ -428,6 +428,11 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 - Ein von der automatischen Raumtreue verworfenes Bild bleibt im normalen Produktablauf unsichtbar. Für die lokale Anbieterevaluation kann der Betreiber die zusätzliche interne Vorschau ausdrücklich aktivieren.
 - Die Vorschau ist auf die gleiche anonyme Testsession, die konkrete verworfene Vertex-Quittung und die bestehende 24-Stunden-Frist beschränkt. Sie stellt keine Produktfreigabe dar und ist standardmäßig deaktiviert.
 
+## Technischer Nachtrag: Einheitliche Bildorientierung vor Vertex (16.09.2026)
+
+- Raumly normalisiert hochgeladene JPEG-, PNG- und WEBP-Fotos vor dem Vertex-Aufruf: EXIF-Ausrichtung wird in die Pixel eingebacken und entfernt. Dadurch sehen Browser, Vertex und Raumtreueprüfung dieselbe aufrechte Bildorientierung.
+- Vertex erhält zusätzlich die klare Anweisung, das Bild aufrecht und ohne Spiegelung auszugeben. Kommt dennoch eine reine 90°-, 180°- oder 270°-Drehung zurück, wird sie nur korrigiert, wenn das gedrehte Ergebnis anschließend sämtliche bestehenden Raumtreue-Grenzen erfüllt. Andernfalls bleibt der Entwurf verworfen.
+
 ## Offene Entscheidungen
 
 - Markenname und visuelle Identität

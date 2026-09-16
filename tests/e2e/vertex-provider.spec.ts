@@ -52,6 +52,7 @@ test("wandelt eine kontrollierte Vertex-Testantwort in das gemeinsame Format um"
   expect(receivedPrompt).toContain("1 Türen, 2 Fenster");
   expect(receivedPrompt).toContain("Füge keine Architektur hinzu");
   expect(receivedPrompt).toContain("denselben Kamerastandpunkt");
+  expect(receivedPrompt).toContain("Gib das Bild aufrecht aus");
   expect(receivedPrompt).toContain("alle bestehenden Architekturpixel unverändert");
   expect(result.provider).toBe("google-vertex");
   expect(result.providerRequestId).toBe("vertex-test-response");

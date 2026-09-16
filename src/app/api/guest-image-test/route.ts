@@ -5,8 +5,8 @@ import { hashTestPhoto } from "@/lib/ai/image-generation/test-runner";
 import { MAXIMUM_VERTEX_SOURCE_BYTES } from "@/lib/ai/image-generation/test-limits";
 import { isTrustedImageTestOrigin } from "@/lib/ai/image-generation/test-origin";
 import { createVertexImageProvider } from "@/lib/ai/image-generation/vertex-provider.server";
-import { validateStructuralFidelity } from "@/lib/ai/image-generation/structural-fidelity.server";
 import { safeTestErrorCode } from "@/lib/ai/image-generation/safe-test-error";
+import { correctCandidateOrientation, normalizeImageOrientation } from "@/lib/ai/image-generation/image-orientation.server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -146,6 +146,8 @@ async function generate(session: { id: string; secret: string }, client: Supabas
     if (!source?.data || !["image/jpeg", "image/png", "image/webp"].includes(source.mime)) throw new Error("Testfoto nicht verfügbar.");
     const bytes = new Uint8Array(Buffer.from(source.data, "base64"));
     const mime = source.mime as "image/jpeg" | "image/png" | "image/webp";
+    const normalizedSource = await normalizeImageOrientation(bytes, mime);
+    if (normalizedSource.bytes.length > MAXIMUM_VERTEX_SOURCE_BYTES) throw new Error("Das aufrecht vorbereitete Testfoto ist größer als 7 MB.");
     stage = "Kostenreservierung";
     const reservation = await call(client, "guest_image_test_reserve", { target_session: session.id, target_secret_hash: session.secret, request_id: requestId });
     stage = "Versandfreigabe";
@@ -153,16 +155,25 @@ async function generate(session: { id: string; secret: string }, client: Supabas
     stage = "Vertex-Bildgenerierung";
     await call(client, "guest_image_test_set_progress", { target_session: session.id, target_secret_hash: session.secret, request_id: requestId, next_stage: "generating" });
     const provider = createVertexImageProvider({ projectId: process.env.GOOGLE_CLOUD_PROJECT, location: process.env.GOOGLE_CLOUD_LOCATION, maximumRequestCents: reservation.reservedCents });
-    const result = await provider.generate({ input: { sourceImage: bytes, sourceImageMimeType: mime, roomType: "living-room", style: reservation.style, budgetEuro: reservation.budgetEuro }, consent: { granted: true, grantedAt: reservation.grantedAt, policyVersion: reservation.policyVersion }, maximumChargeCents: reservation.reservedCents }, new AbortController().signal);
+    const result = await provider.generate({ input: { sourceImage: normalizedSource.bytes, sourceImageMimeType: normalizedSource.mime, roomType: "living-room", style: reservation.style, budgetEuro: reservation.budgetEuro }, consent: { granted: true, grantedAt: reservation.grantedAt, policyVersion: reservation.policyVersion }, maximumChargeCents: reservation.reservedCents }, new AbortController().signal);
     stage = "Vertex-Ergebnis sichern";
     await call(client, "guest_image_test_record_provider_image", { target_session: session.id, target_secret_hash: session.secret, request_id: requestId,
       provider_image: Buffer.from(result.image).toString("base64"), provider_mime: result.imageMimeType, elapsed_ms: result.durationMs,
       provider_id: result.providerRequestId, usage_data: result.usage ?? {} });
     stage = "Raumtreue-Prüfung";
     await call(client, "guest_image_test_set_progress", { target_session: session.id, target_secret_hash: session.secret, request_id: requestId, next_stage: "validating" });
-    const validation = await validateStructuralFidelity(bytes, result.image);
+    let corrected: Awaited<ReturnType<typeof correctCandidateOrientation>>;
+    try { corrected = await correctCandidateOrientation(normalizedSource.bytes, result.image, result.imageMimeType); }
+    catch {
+      corrected = { bytes: result.image, mime: result.imageMimeType, correctionDegrees: 0, report: {
+        status: "rejected", version: "structure-v3", reasons: ["Die automatische Strukturprüfung konnte das Ergebnis nicht sicher auswerten."],
+        sourceWidth: 0, sourceHeight: 0, candidateWidth: 0, candidateHeight: 0, aspectRatioDifference: 1,
+        edgeRetention: 0, alignedEdgeRetention: 0, wallAppearanceChangeRate: 1, orientationSimilarity: 0, regionalStructureSimilarity: 0,
+      } };
+    }
+    const validation = corrected.report;
     stage = "Ergebnis speichern";
-    const finishArgs = { target_session: session.id, target_secret_hash: session.secret, request_id: requestId, result_image: validation.status === "passed" ? Buffer.from(result.image).toString("base64") : null, result_mime: validation.status === "passed" ? result.imageMimeType : null, elapsed_ms: result.durationMs, provider_id: result.providerRequestId, usage_data: { ...result.usage, raumlyValidation: validation } };
+    const finishArgs = { target_session: session.id, target_secret_hash: session.secret, request_id: requestId, result_image: validation.status === "passed" ? Buffer.from(corrected.bytes).toString("base64") : null, result_mime: validation.status === "passed" ? corrected.mime : null, elapsed_ms: result.durationMs, provider_id: result.providerRequestId, usage_data: { ...result.usage, orientationCorrectionDegrees: corrected.correctionDegrees, raumlyValidation: validation } };
     try { await call(client, "guest_image_test_finish", finishArgs); }
     catch { await call(client, "guest_image_test_finish", finishArgs); }
     return Response.json({ ok: true, requestId }, { headers });

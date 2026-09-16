@@ -5,7 +5,12 @@ import { assertImageTestWithinLimits } from "../../src/lib/ai/image-generation/t
 import { isTrustedImageTestOrigin } from "../../src/lib/ai/image-generation/test-origin";
 import { MAXIMUM_VERTEX_SOURCE_BYTES } from "../../src/lib/ai/image-generation/test-limits";
 
-const result: ImageGenerationResult = { provider: "google-vertex", providerRequestId: "fake", image: new Uint8Array([1]),
+const testPng = new Uint8Array(Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAIAAAD8GO2jAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAAMUlEQVRIie3QMQ0AAAjAMPybBgm7+FoDSzb7bASKRcmiZFGyKFmULEoWJYuSRel90QGLVfSmL9cHVAAAAABJRU5ErkJggg==",
+  "base64",
+));
+
+const result: ImageGenerationResult = { provider: "google-vertex", providerRequestId: "fake", image: testPng,
   imageMimeType: "image/png", durationMs: 1, reservedCents: 30, actualChargedCents: null };
 
 function fixture() {
@@ -17,7 +22,7 @@ function fixture() {
   };
   const provider: ImageGenerationProvider = { id: "google-vertex", maximumChargeCentsPerRequest: 30,
     async generate() { events.push("google"); return result; } };
-  return { events, ledger, provider, options: { enabled: true, bytes: new Uint8Array([1]), mime: "image/png" as const, ledger, provider: () => provider } };
+  return { events, ledger, provider, options: { enabled: true, bytes: testPng, mime: "image/png" as const, ledger, provider: () => provider } };
 }
 
 test("ohne Aktivierung weder Buchung noch Anbieterzugriff", async () => {
@@ -34,7 +39,9 @@ test("zu großes Eingabefoto verbraucht weder Versuch noch Reservierung", async 
 
 test("Foto genau an der Eingabegrenze bleibt zulässig", async () => {
   const f = fixture();
-  await runImageTest({ ...f.options, bytes: new Uint8Array(MAXIMUM_VERTEX_SOURCE_BYTES) });
+  const paddedPng = new Uint8Array(MAXIMUM_VERTEX_SOURCE_BYTES);
+  paddedPng.set(testPng);
+  await runImageTest({ ...f.options, bytes: paddedPng });
   expect(f.events).toEqual(["reserve", "consent", "google", "result"]);
 });
 test("bucht vor dem Versand und prüft unmittelbar vorher die Einwilligung", async () => {
