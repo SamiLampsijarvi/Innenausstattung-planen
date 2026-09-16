@@ -29,7 +29,7 @@ function serverEnabled() {
 async function call(client: SupabaseClient, name: string, args: Record<string, unknown>) {
   const { data, error } = await client.rpc(name, args);
   if (error) {
-    console.error(JSON.stringify({ event: "guest-image-test-rpc-failed", name, code: error.code }));
+    console.error(JSON.stringify({ event: "guest-image-test-rpc-failed", name, code: error.code, message: error.message, details: error.details, hint: error.hint }));
     const failure = new Error("Die Testaktion ist gesperrt oder konnte nicht bestätigt werden.");
     Object.assign(failure, { code: error.code });
     throw failure;
