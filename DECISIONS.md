@@ -418,6 +418,11 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 - Vertex erhält weiterhin den strengen generischen Auftrag, Kamerastandpunkt, Bildausschnitt, Perspektive, Türen, Fenster, Durchgänge, Wände, Boden, Decke und feste Einbauten unverändert zu bewahren. Die automatische Strukturprüfung des fertigen Bilds bleibt verpflichtend; ein abweichendes Bild wird weiterhin nicht angezeigt.
 - Dies ist eine kontrollierte Anbieterevaluation, keine Freigabe für einen ungeschützten Produktbetrieb. Der normale Ablauf, die Einmal-Sperre, 0,30-€-Reservierung, 3-€-Gesamtgrenze, Speicherung und Löschung nach höchstens 24 Stunden bleiben unverändert.
 
+## Technischer Nachtrag: Vorsorgliche Freigabe bei ausstehendem Billing (16.09.2026)
+
+- Der Nutzer hat freigegeben, einen vor Vertex gescheiterten Versuch ohne Provider-Quittung vorsorglich freizugeben. Seine bestehende 0,30-€-Reservierung bleibt dabei vollständig im 3-€-Gesamtbudget enthalten; sie wird nicht fälschlich als tatsächliche Rechnungskosten ausgewiesen.
+- Genau ein solcher vorläufig freigegebener Fall darf einen weiteren kontrollierten Test nicht blockieren. Nach dessen Abschluss sperrt Raumly erneut, bis Google Billing beide offenen Vorgänge als gemeinsamen, höchstens 0,60 € großen Abgleich bestätigt. Ein Versuch mit Vertex-Quittung ist von dieser Ausnahme ausgeschlossen.
+
 ## Offene Entscheidungen
 
 - Markenname und visuelle Identität

@@ -89,6 +89,8 @@ before(async () => {
   await db.exec(await readFile(new URL('../supabase/migrations/202609160001_localhost_pending_billing_diagnostics.sql', import.meta.url), 'utf8'));
   await db.exec(await readFile(new URL('../supabase/migrations/202609160002_preserve_pending_billing_audit.sql', import.meta.url), 'utf8'));
   await db.exec(await readFile(new URL('../supabase/migrations/202609160003_reconcile_unknown_localhost_attempt.sql', import.meta.url), 'utf8'));
+  await db.exec(await readFile(new URL('../supabase/migrations/202609160004_provisional_unknown_attempt_release.sql', import.meta.url), 'utf8'));
+  await db.exec(await readFile(new URL('../supabase/migrations/202609160005_fix_provisional_release_function_name.sql', import.meta.url), 'utf8'));
   await db.exec(`insert into auth.users values('${user}'),('${other}');
     insert into public.projects values('${user}','${user}',null),('${other}','${other}',null);
     insert into public.image_test_members values('${user}'),('${other}');
@@ -265,6 +267,36 @@ test('an unknown localhost attempt requires and accepts explicit billing reconci
   assert.equal(ledger.activeAttempt, false);
   assert.equal(ledger.actualCents, 0);
   await assert.rejects(scalar('select public.localhost_image_test_reconcile_unknown_attempt($1)', [0]), /no active unknown attempt/);
+  await db.exec('reset role');
+}));
+
+test('a no-receipt unknown attempt can be conservatively released for one further test', () => scenario(async () => {
+  const firstSession = 'cccccccc-cccc-4ccc-8ccc-000000000070';
+  const secondSession = 'cccccccc-cccc-4ccc-8ccc-000000000071';
+  const secret = 'c'.repeat(64);
+  await db.exec('set role service_role');
+  await scalar('select public.guest_image_test_prepare($1,$2,$3,$4,$5,$6,$7,$8)', [firstSession, secret, 'Japandi', 1500, null, 'd'.repeat(64), 'AQ==', 'image/png']);
+  await scalar('select public.guest_image_test_reserve($1,$2,$3)', [firstSession, secret, request(970)]);
+  assert.equal(await scalar('select public.guest_image_test_finish($1,$2,$3)', [firstSession, secret, request(970)]), 'unknown');
+  const released = await scalar('select public.localhost_image_test_release_unknown_attempt_provisionally()');
+  assert.equal(released.activeAttempt, false);
+  await scalar('select public.guest_image_test_prepare($1,$2,$3,$4,$5,$6,$7,$8)', [secondSession, secret, 'Japandi', 1500, null, 'e'.repeat(64), 'AQ==', 'image/png']);
+  await scalar('select public.guest_image_test_reserve($1,$2,$3)', [secondSession, secret, request(971)]);
+  await db.exec('reset role');
+}));
+
+test('a provisional unknown attempt is reconciled as a bounded billing batch', () => scenario(async () => {
+  const session = 'cccccccc-cccc-4ccc-8ccc-000000000072';
+  const secret = 'd'.repeat(64);
+  await db.exec('set role service_role');
+  await scalar('select public.guest_image_test_prepare($1,$2,$3,$4,$5,$6,$7,$8)', [session, secret, 'Japandi', 1500, null, 'f'.repeat(64), 'AQ==', 'image/png']);
+  await scalar('select public.guest_image_test_reserve($1,$2,$3)', [session, secret, request(972)]);
+  assert.equal(await scalar('select public.guest_image_test_finish($1,$2,$3)', [session, secret, request(972)]), 'unknown');
+  await scalar('select public.localhost_image_test_release_unknown_attempt_provisionally()');
+  const ledger = await scalar('select public.localhost_image_test_reconcile_pending_batch($1)', [12]);
+  assert.equal(ledger.activeAttempt, false);
+  assert.equal(ledger.actualCents, 12);
+  await assert.rejects(scalar('select public.localhost_image_test_reconcile_pending_batch($1)', [0]), /unexpected pending billing batch/);
   await db.exec('reset role');
 }));
 
