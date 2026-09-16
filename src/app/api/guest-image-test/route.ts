@@ -74,8 +74,11 @@ export async function GET(request: Request) {
     }
     const session = await currentSession(false);
     const candidate = new URL(request.url).searchParams.get("candidate");
-    if (candidate && /^[0-9a-f-]{36}$/i.test(candidate)) {
-      const result = await call(client, "guest_image_test_read_candidate", { target_session: session.id, target_secret_hash: session.secret, request_id: candidate });
+    const rejectedCandidate = new URL(request.url).searchParams.get("rejectedCandidate");
+    const requestId = candidate ?? rejectedCandidate;
+    if (requestId && /^[0-9a-f-]{36}$/i.test(requestId)) {
+      if (rejectedCandidate && process.env.RAUMLY_INTERNAL_REJECTED_CANDIDATE_PREVIEW !== "true") return new Response(null, { status: 404, headers });
+      const result = await call(client, rejectedCandidate ? "guest_image_test_read_rejected_candidate" : "guest_image_test_read_candidate", { target_session: session.id, target_secret_hash: session.secret, request_id: requestId });
       if (!result?.data || !["image/jpeg", "image/png", "image/webp"].includes(result.mime)) return new Response(null, { status: 404, headers });
       return new Response(Buffer.from(result.data, "base64"), { headers: { ...headers, "Content-Type": result.mime } });
     }

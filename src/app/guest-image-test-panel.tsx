@@ -18,6 +18,7 @@ export default function GuestImageTestPanel({ projectId, image, style, budgetEur
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const enabled = process.env.NEXT_PUBLIC_RAUMLY_GUEST_IMAGE_TEST_ENABLED === "true";
+  const rejectedPreviewEnabled = process.env.NEXT_PUBLIC_RAUMLY_INTERNAL_REJECTED_CANDIDATE_PREVIEW === "true";
   const scope = JSON.stringify([projectId, style, budgetEuro]);
 
   useEffect(() => {
@@ -40,14 +41,20 @@ export default function GuestImageTestPanel({ projectId, image, style, budgetEur
           timer = setTimeout(restore, 1500);
         } else if (attempt) {
           setBusy(false);
-          onProgress(attempt.status === "discarded" ? "rejected" : "failed");
-          setMessage(attempt.status === "discarded" ? "Der Entwurf hat die Raumtreue-Prüfung nicht bestanden." : "Der Versuch ist ungeklärt. Bitte vor einem weiteren Versuch prüfen lassen.");
+          if (attempt.status === "discarded" && rejectedPreviewEnabled && typeof attempt.id === "string") {
+            onGenerated(`/api/guest-image-test?rejectedCandidate=${encodeURIComponent(attempt.id)}`);
+            onProgress(null);
+            setMessage("Interne Testansicht: Der verworfene Entwurf wird nur für die Anbieterevaluation angezeigt.");
+          } else {
+            onProgress(attempt.status === "discarded" ? "rejected" : "failed");
+            setMessage(attempt.status === "discarded" ? "Der Entwurf hat die Raumtreue-Prüfung nicht bestanden." : "Der Versuch ist ungeklärt. Bitte vor einem weiteren Versuch prüfen lassen.");
+          }
         }
       } catch { /* A later reload can read the same session; never generate during recovery. */ }
     }
     void restore();
     return () => { cancelled = true; if (timer) clearTimeout(timer); };
-  }, [scope, onGenerated, onProgress]);
+  }, [scope, onGenerated, onProgress, rejectedPreviewEnabled]);
 
   async function generate() {
     if (!image || !consent || !ready || busy) return;
@@ -87,8 +94,14 @@ export default function GuestImageTestPanel({ projectId, image, style, budgetEur
       const attempt = state?.attempts?.find((item: { id: string }) => item.id === result.requestId);
       if (!attempt?.imageReady) {
         if (attempt?.status === "discarded") {
-          onProgress("rejected");
-          setMessage("Das Bild wurde erzeugt, aber wegen einer Abweichung bei der Raumtreue nicht angezeigt.");
+          if (rejectedPreviewEnabled) {
+            onGenerated(`/api/guest-image-test?rejectedCandidate=${encodeURIComponent(result.requestId)}`);
+            onProgress(null);
+            setMessage("Interne Testansicht: Der verworfene Entwurf wird nur für die Anbieterevaluation angezeigt.");
+          } else {
+            onProgress("rejected");
+            setMessage("Das Bild wurde erzeugt, aber wegen einer Abweichung bei der Raumtreue nicht angezeigt.");
+          }
           return;
         }
         throw new Error("Das Ergebnis ist noch nicht zur Anzeige freigegeben. Der gespeicherte Status bleibt erhalten.");

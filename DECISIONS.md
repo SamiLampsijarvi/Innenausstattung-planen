@@ -423,6 +423,11 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 - Der Nutzer hat freigegeben, einen vor Vertex gescheiterten Versuch ohne Provider-Quittung vorsorglich freizugeben. Seine bestehende 0,30-€-Reservierung bleibt dabei vollständig im 3-€-Gesamtbudget enthalten; sie wird nicht fälschlich als tatsächliche Rechnungskosten ausgewiesen.
 - Genau ein solcher vorläufig freigegebener Fall darf einen weiteren kontrollierten Test nicht blockieren. Nach dessen Abschluss sperrt Raumly erneut, bis Google Billing beide offenen Vorgänge als gemeinsamen, höchstens 0,60 € großen Abgleich bestätigt. Ein Versuch mit Vertex-Quittung ist von dieser Ausnahme ausgeschlossen.
 
+## Technischer Nachtrag: Lokale Sichtprüfung verworfener Testbilder (16.09.2026)
+
+- Ein von der automatischen Raumtreue verworfenes Bild bleibt im normalen Produktablauf unsichtbar. Für die lokale Anbieterevaluation kann der Betreiber die zusätzliche interne Vorschau ausdrücklich aktivieren.
+- Die Vorschau ist auf die gleiche anonyme Testsession, die konkrete verworfene Vertex-Quittung und die bestehende 24-Stunden-Frist beschränkt. Sie stellt keine Produktfreigabe dar und ist standardmäßig deaktiviert.
+
 ## Offene Entscheidungen
 
 - Markenname und visuelle Identität

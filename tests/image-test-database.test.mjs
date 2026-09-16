@@ -91,6 +91,8 @@ before(async () => {
   await db.exec(await readFile(new URL('../supabase/migrations/202609160003_reconcile_unknown_localhost_attempt.sql', import.meta.url), 'utf8'));
   await db.exec(await readFile(new URL('../supabase/migrations/202609160004_provisional_unknown_attempt_release.sql', import.meta.url), 'utf8'));
   await db.exec(await readFile(new URL('../supabase/migrations/202609160005_fix_provisional_release_function_name.sql', import.meta.url), 'utf8'));
+  await db.exec(await readFile(new URL('../supabase/migrations/202609160006_local_rejected_candidate_preview.sql', import.meta.url), 'utf8'));
+  await db.exec(await readFile(new URL('../supabase/migrations/202609160007_local_latest_rejected_candidate_preview.sql', import.meta.url), 'utf8'));
   await db.exec(`insert into auth.users values('${user}'),('${other}');
     insert into public.projects values('${user}','${user}',null),('${other}','${other}',null);
     insert into public.image_test_members values('${user}'),('${other}');
@@ -312,6 +314,21 @@ test('pending billing diagnostics omit all image data', () => scenario(async () 
   assert.equal('provider_image_base64' in diagnostics[0], false);
   await db.exec('reset role');
   assert.equal(await scalar("select has_function_privilege('anon','public.localhost_image_test_pending_billing_diagnostics()','execute')"), false);
+}));
+
+test('only the matching active test session can read a rejected provider receipt', () => scenario(async () => {
+  const session = 'cccccccc-cccc-4ccc-8ccc-000000000073';
+  const secret = 'e'.repeat(64);
+  await db.exec('set role service_role');
+  await scalar('select public.guest_image_test_prepare($1,$2,$3,$4,$5,$6,$7,$8)', [session, secret, 'Japandi', 1500, null, 'a'.repeat(64), 'AQ==', 'image/png']);
+  await scalar('select public.guest_image_test_reserve($1,$2,$3)', [session, secret, request(973)]);
+  await scalar('select public.guest_image_test_record_provider_image($1,$2,$3,$4,$5,$6,$7,$8)', [session, secret, request(973), 'AQ==', 'image/png', 20, 'provider-test', '{}']);
+  const rejected = { raumlyValidation: { status: 'rejected', version: 'structure-v3', reasons: ['perspective changed'] } };
+  assert.equal(await scalar('select public.guest_image_test_finish($1,$2,$3,$4,$5,$6,$7,$8)', [session, secret, request(973), null, null, 20, 'provider-test', JSON.stringify(rejected)]), 'discarded');
+  assert.deepEqual(await scalar('select public.guest_image_test_read_rejected_candidate($1,$2,$3)', [session, secret, request(973)]), { data: 'AQ==', mime: 'image/png' });
+  assert.deepEqual(await scalar('select public.guest_image_test_read_latest_rejected_candidate($1,$2)', [session, secret]), { data: 'AQ==', mime: 'image/png' });
+  assert.equal(await scalar('select public.guest_image_test_read_rejected_candidate($1,$2,$3)', [session, 'f'.repeat(64), request(973)]), null);
+  await db.exec('reset role');
 }));
 
 test('a guest preparation accepts no visible architecture counts for direct generation', () => scenario(async () => {
