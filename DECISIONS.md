@@ -407,6 +407,11 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 - Die bestehenden Prüfschwellen werden deshalb nicht gelockert. Stattdessen verlangt der Vertex-Auftrag ausdrücklich eine Fotobearbeitung mit identischem Kamerastandpunkt, Bildausschnitt und unveränderten Architekturpixeln. Eine serverseitige Diagnose liefert Betreibern nur die anonymisierten Prüfmesswerte, niemals Bild- oder Fotodaten.
 - Ein abgeschlossener, auch wegen Raumtreue verworfener Versuch blockiert nun zwingend den nächsten kostenpflichtigen Start bis zum expliziten Google-Billing-Abgleich. Der Bericht stand am 13. September nur bis einschließlich 12. September bereit; der tatsächliche Betrag des heutigen Versuchs bleibt daher vorerst offen.
 
+## Technischer Nachtrag: Abgleich nach zeitverzögerter Rechnungsanzeige (16.09.2026)
+
+- Google Billing weist für die bisherigen 0,18 € Nutzungskosten vollständig Testguthaben aus; zahlbar sind 0,00 €. Der spätere Versuch wurde daher mit 0 Cent abgeglichen und die lokale Testsperre kontrolliert aufgehoben.
+- Nach Ablauf der 24-Stunden-Frist bleiben künftig bei noch nicht abgerechneten Versuchen ausschließlich anonymisierte Buchungsdaten erhalten. Foto, Hash, Architekturprofil und Bildbytes werden weiterhin gelöscht. Damit kann ein Abgleich nicht mehr durch die Datenschutzlöschung seine Zuordnung verlieren.
+
 ## Offene Entscheidungen
 
 - Markenname und visuelle Identität

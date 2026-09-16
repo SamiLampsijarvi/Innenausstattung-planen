@@ -16,5 +16,11 @@ const response = await fetch(`${values.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/rpc/loc
   headers: { apikey: values.SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${values.SUPABASE_SERVICE_ROLE_KEY}`, "Content-Type": "application/json" },
   body: JSON.stringify({ confirmed_actual_cents: confirmedActualCents }),
 });
-if (!response.ok) throw new Error(`Abrechnungsabgleich konnte nicht sicher gespeichert werden (HTTP ${response.status}).`);
-console.log(JSON.stringify(await response.json(), null, 2));
+const payload = await response.json().catch(() => null);
+if (!response.ok) {
+  const detail = payload && typeof payload === "object" && typeof payload.message === "string"
+    ? `: ${payload.message}`
+    : "";
+  throw new Error(`Abrechnungsabgleich konnte nicht sicher gespeichert werden (HTTP ${response.status})${detail}`);
+}
+console.log(JSON.stringify(payload, null, 2));
