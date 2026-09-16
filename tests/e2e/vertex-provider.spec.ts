@@ -69,6 +69,18 @@ test("erzwingt fünf Fotos, zwei Versuche und drei Euro internes Budget", () => 
   expect(() => assertImageTestWithinLimits({ distinctPhotoCount: 5, attemptsForPhoto: 0, reservedTotalCents: 295 }, 10)).toThrow("drei Euro");
 });
 
+test("erzeugt ohne Architektur-Scan einen generischen Schutzauftrag", async () => {
+  let receivedPrompt = "";
+  const client = { models: { generateContent: async (input: { contents: Array<{ parts: Array<{ text?: string }> }> }) => {
+    receivedPrompt = input.contents[0].parts.find((part) => part.text)?.text ?? "";
+    return { responseId: "scan-free-test", candidates: [{ content: { parts: [{ inlineData: { data: "BAUG", mimeType: "image/png" } }] } }] };
+  } } };
+  const provider = createVertexImageProvider({ projectId: "test-project", maximumRequestCents: 30 }, client as never);
+  await provider.generate({ ...request, input: { ...request.input, roomFidelity: undefined } }, new AbortController().signal);
+  expect(receivedPrompt).toContain("jede sichtbare Tür");
+  expect(receivedPrompt).not.toContain("1 Türen, 2 Fenster");
+});
+
 test("weist übergroße Fotos auch bei direktem Adapteraufruf ohne Netzaufruf ab", async () => {
   let called = false;
   const client = { models: { async generateContent() { called = true; return {}; } } };

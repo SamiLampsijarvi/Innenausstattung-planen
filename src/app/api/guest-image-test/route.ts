@@ -5,7 +5,6 @@ import { hashTestPhoto } from "@/lib/ai/image-generation/test-runner";
 import { MAXIMUM_VERTEX_SOURCE_BYTES } from "@/lib/ai/image-generation/test-limits";
 import { isTrustedImageTestOrigin } from "@/lib/ai/image-generation/test-origin";
 import { createVertexImageProvider } from "@/lib/ai/image-generation/vertex-provider.server";
-import { scanRoomArchitecture } from "@/lib/ai/image-generation/vertex-architecture-scan.server";
 import { validateStructuralFidelity } from "@/lib/ai/image-generation/structural-fidelity.server";
 import { safeTestErrorCode } from "@/lib/ai/image-generation/safe-test-error";
 
@@ -146,17 +145,12 @@ async function generate(session: { id: string; secret: string }, client: Supabas
     const mime = source.mime as "image/jpeg" | "image/png" | "image/webp";
     stage = "Kostenreservierung";
     const reservation = await call(client, "guest_image_test_reserve", { target_session: session.id, target_secret_hash: session.secret, request_id: requestId });
-    stage = "Architektur-Scan";
-    await call(client, "guest_image_test_set_progress", { target_session: session.id, target_secret_hash: session.secret, request_id: requestId, next_stage: "architecture" });
-    const profile = await scanRoomArchitecture({ projectId: process.env.GOOGLE_CLOUD_PROJECT, location: process.env.GOOGLE_CLOUD_LOCATION, bytes, mime });
-    stage = "Architekturprofil speichern";
-    await call(client, "guest_image_test_set_room_fidelity", { target_session: session.id, target_secret_hash: session.secret, profile });
     stage = "Versandfreigabe";
     if (!await call(client, "guest_image_test_check_dispatch", { target_session: session.id, target_secret_hash: session.secret, request_id: requestId })) throw new Error("Freigabe wurde zurückgezogen.");
     stage = "Vertex-Bildgenerierung";
     await call(client, "guest_image_test_set_progress", { target_session: session.id, target_secret_hash: session.secret, request_id: requestId, next_stage: "generating" });
     const provider = createVertexImageProvider({ projectId: process.env.GOOGLE_CLOUD_PROJECT, location: process.env.GOOGLE_CLOUD_LOCATION, maximumRequestCents: reservation.reservedCents });
-    const result = await provider.generate({ input: { sourceImage: bytes, sourceImageMimeType: mime, roomType: "living-room", style: reservation.style, budgetEuro: reservation.budgetEuro, roomFidelity: profile }, consent: { granted: true, grantedAt: reservation.grantedAt, policyVersion: reservation.policyVersion }, maximumChargeCents: reservation.reservedCents }, new AbortController().signal);
+    const result = await provider.generate({ input: { sourceImage: bytes, sourceImageMimeType: mime, roomType: "living-room", style: reservation.style, budgetEuro: reservation.budgetEuro }, consent: { granted: true, grantedAt: reservation.grantedAt, policyVersion: reservation.policyVersion }, maximumChargeCents: reservation.reservedCents }, new AbortController().signal);
     stage = "Vertex-Ergebnis sichern";
     await call(client, "guest_image_test_record_provider_image", { target_session: session.id, target_secret_hash: session.secret, request_id: requestId,
       provider_image: Buffer.from(result.image).toString("base64"), provider_mime: result.imageMimeType, elapsed_ms: result.durationMs,

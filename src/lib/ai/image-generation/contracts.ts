@@ -10,7 +10,7 @@ export type ImageGenerationInput = {
   roomType: "living-room";
   style: string;
   budgetEuro: number;
-  roomFidelity: RoomFidelityProfile;
+  roomFidelity?: RoomFidelityProfile;
 };
 
 export type ImageGenerationConsent = {

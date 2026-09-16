@@ -412,6 +412,12 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 - Google Billing weist für die bisherigen 0,18 € Nutzungskosten vollständig Testguthaben aus; zahlbar sind 0,00 €. Der spätere Versuch wurde daher mit 0 Cent abgeglichen und die lokale Testsperre kontrolliert aufgehoben.
 - Nach Ablauf der 24-Stunden-Frist bleiben künftig bei noch nicht abgerechneten Versuchen ausschließlich anonymisierte Buchungsdaten erhalten. Foto, Hash, Architekturprofil und Bildbytes werden weiterhin gelöscht. Damit kann ein Abgleich nicht mehr durch die Datenschutzlöschung seine Zuordnung verlieren.
 
+## Technischer Nachtrag: Scanfreier Vertex-Diagnosemodus (16.09.2026)
+
+- Der vorgeschaltete Gemini-Architektur-Scan wird aus dem lokalen Gast-Testpfad entfernt, nachdem er erneut mit `SCAN_INVALID` vor der eigentlichen Bildgenerierung abbrach. Der Diagnosemodus führt nach Einwilligung und Kostenreservierung genau einen Bildaufruf aus.
+- Vertex erhält weiterhin den strengen generischen Auftrag, Kamerastandpunkt, Bildausschnitt, Perspektive, Türen, Fenster, Durchgänge, Wände, Boden, Decke und feste Einbauten unverändert zu bewahren. Die automatische Strukturprüfung des fertigen Bilds bleibt verpflichtend; ein abweichendes Bild wird weiterhin nicht angezeigt.
+- Dies ist eine kontrollierte Anbieterevaluation, keine Freigabe für einen ungeschützten Produktbetrieb. Der normale Ablauf, die Einmal-Sperre, 0,30-€-Reservierung, 3-€-Gesamtgrenze, Speicherung und Löschung nach höchstens 24 Stunden bleiben unverändert.
+
 ## Offene Entscheidungen
 
 - Markenname und visuelle Identität

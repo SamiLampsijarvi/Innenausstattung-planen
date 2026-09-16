@@ -88,6 +88,7 @@ before(async () => {
   await db.exec(await readFile(new URL('../supabase/migrations/202609130003_require_billing_reconciliation_between_localhost_tests.sql', import.meta.url), 'utf8'));
   await db.exec(await readFile(new URL('../supabase/migrations/202609160001_localhost_pending_billing_diagnostics.sql', import.meta.url), 'utf8'));
   await db.exec(await readFile(new URL('../supabase/migrations/202609160002_preserve_pending_billing_audit.sql', import.meta.url), 'utf8'));
+  await db.exec(await readFile(new URL('../supabase/migrations/202609160003_reconcile_unknown_localhost_attempt.sql', import.meta.url), 'utf8'));
   await db.exec(`insert into auth.users values('${user}'),('${other}');
     insert into public.projects values('${user}','${user}',null),('${other}','${other}',null);
     insert into public.image_test_members values('${user}'),('${other}');
@@ -253,6 +254,20 @@ test('a zero-cost billing check can close a legacy case with no retained attempt
   await db.exec('reset role');
 }));
 
+test('an unknown localhost attempt requires and accepts explicit billing reconciliation', () => scenario(async () => {
+  const session = 'cccccccc-cccc-4ccc-8ccc-000000000069';
+  const secret = 'b'.repeat(64);
+  await db.exec('set role service_role');
+  await scalar('select public.guest_image_test_prepare($1,$2,$3,$4,$5,$6,$7,$8)', [session, secret, 'Japandi', 1500, null, 'c'.repeat(64), 'AQ==', 'image/png']);
+  await scalar('select public.guest_image_test_reserve($1,$2,$3)', [session, secret, request(969)]);
+  assert.equal(await scalar('select public.guest_image_test_finish($1,$2,$3)', [session, secret, request(969)]), 'unknown');
+  const ledger = await scalar('select public.localhost_image_test_reconcile_unknown_attempt($1)', [0]);
+  assert.equal(ledger.activeAttempt, false);
+  assert.equal(ledger.actualCents, 0);
+  await assert.rejects(scalar('select public.localhost_image_test_reconcile_unknown_attempt($1)', [0]), /no active unknown attempt/);
+  await db.exec('reset role');
+}));
+
 test('pending billing diagnostics omit all image data', () => scenario(async () => {
   const session = 'cccccccc-cccc-4ccc-8ccc-000000000059';
   const secret = 'a'.repeat(64);
@@ -267,7 +282,7 @@ test('pending billing diagnostics omit all image data', () => scenario(async () 
   assert.equal(await scalar("select has_function_privilege('anon','public.localhost_image_test_pending_billing_diagnostics()','execute')"), false);
 }));
 
-test('a guest preparation accepts no visible architecture counts and reserves before the server scan', () => scenario(async () => {
+test('a guest preparation accepts no visible architecture counts for direct generation', () => scenario(async () => {
   const guestSession = 'cccccccc-cccc-4ccc-8ccc-000000000002';
   const guestSecret = 'f'.repeat(64);
   await db.exec('set role service_role');

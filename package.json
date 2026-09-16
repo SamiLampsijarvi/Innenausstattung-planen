@@ -19,6 +19,7 @@
     "check:image-test-ledger": "node scripts/check-localhost-image-test-ledger.mjs",
     "check:image-test-rejection": "node scripts/check-latest-image-test-rejection.mjs",
     "reconcile:latest-image-test": "node scripts/reconcile-latest-localhost-image-test.mjs",
+    "reconcile:unknown-image-test": "node scripts/reconcile-unknown-localhost-image-test.mjs",
     "check:pending-image-test-billing": "node scripts/check-pending-localhost-image-test-billing.mjs",
     "reconcile:image-test-lock": "node scripts/reconcile-dangling-localhost-image-test-lock.mjs"
   },
