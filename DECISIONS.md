@@ -49,6 +49,20 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 
 ## Vorläufig
 
+### D-043: Automatischer Billing-Abgleich für lokale Vertex-Tests
+
+- **Status:** Bestätigt, technische Vorbereitung umgesetzt; Google-Aktivierung ausstehend
+- **Entscheidung:** Raumly darf einen eindeutig zuordenbaren lokalen Test über
+  den standardisierten Google-Cloud-Billing-Export automatisiert abgleichen.
+  Die Funktion ist standardmäßig ausgeschaltet und startet niemals selbst eine
+  Bildgenerierung.
+- **Schutz:** Unbekannte, aktive oder mehrdeutige Versuche bleiben gesperrt.
+  Der Abgleich akzeptiert nur EUR-Beträge innerhalb der bereits reservierten
+  Grenze und mit einer BigQuery-Byteobergrenze.
+- **Offen:** Billing-Export, minimale BigQuery-Leserechte und deren
+  Kostenfreigabe werden erst nach einer separaten Betreiberbestätigung
+  eingerichtet.
+
 ### D-008: Arbeitsname
 
 - **Status:** Vorläufig, nicht bestätigt
