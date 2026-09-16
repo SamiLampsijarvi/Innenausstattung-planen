@@ -10,7 +10,7 @@ export type ImageGenerationInput = {
   roomType: "living-room";
   style: string;
   budgetEuro: number;
-  roomFidelity: RoomFidelityProfile;
+  roomFidelity?: RoomFidelityProfile;
 };
 
 export type ImageGenerationConsent = {
@@ -33,7 +33,7 @@ export type ImageGenerationResult = {
   durationMs: number;
   reservedCents: number;
   actualChargedCents: number | null;
-  usage?: { promptTokens?: number; responseTokens?: number; totalTokens?: number };
+  usage?: { promptTokens?: number; responseTokens?: number; totalTokens?: number; orientationCorrectionDegrees?: 0 | 90 | 180 | 270 };
 };
 
 export interface ImageGenerationProvider {

@@ -3,7 +3,8 @@ import type { ImageGenerationProvider, ImageGenerationResult } from "./contracts
 import { createImageGenerationGateway } from "./gateway";
 import { MAXIMUM_VERTEX_SOURCE_BYTES } from "./test-limits";
 import type { RoomFidelityProfile } from "./room-fidelity";
-import { validateStructuralFidelity, type StructuralFidelityReport } from "./structural-fidelity.server";
+import type { StructuralFidelityReport } from "./structural-fidelity.server";
+import { correctCandidateOrientation, normalizeImageOrientation } from "./image-orientation.server";
 
 export type Reservation = { reservedCents: number; style: string; budgetEuro: number; grantedAt: string; policyVersion: string; roomFidelityProfile: RoomFidelityProfile };
 export type TestLedger = {
@@ -26,6 +27,8 @@ export async function runImageTest(options: {
 }) {
   if (!options.enabled) throw new Error("Externe Bild-KI ist ausgeschaltet.");
   if (!options.bytes.length || options.bytes.length > MAXIMUM_VERTEX_SOURCE_BYTES) throw new Error("Das Testfoto muss zwischen 1 Byte und 7 MB groß sein.");
+  const normalizedSource = await normalizeImageOrientation(options.bytes, options.mime);
+  if (normalizedSource.bytes.length > MAXIMUM_VERTEX_SOURCE_BYTES) throw new Error("Das aufrecht vorbereitete Testfoto ist größer als 7 MB.");
   // Never retry a failed/ambiguous reservation: its database commit may have succeeded.
   const reservation = await options.ledger.reserve(hashTestPhoto(options.bytes));
   try {
@@ -34,8 +37,8 @@ export async function runImageTest(options: {
     const gateway = createImageGenerationGateway([provider], {
       enabled: true, allowedProvider: "google-vertex", timeoutMs: options.timeoutMs,
     });
-    const result = await gateway.generate({
-      input: { sourceImage: options.bytes, sourceImageMimeType: options.mime, roomType: "living-room",
+    let result = await gateway.generate({
+      input: { sourceImage: normalizedSource.bytes, sourceImageMimeType: normalizedSource.mime, roomType: "living-room",
         style: reservation.style, budgetEuro: reservation.budgetEuro, roomFidelity: reservation.roomFidelityProfile },
       consent: { granted: true, grantedAt: reservation.grantedAt, policyVersion: reservation.policyVersion },
       maximumChargeCents: reservation.reservedCents,
@@ -43,7 +46,9 @@ export async function runImageTest(options: {
     if (!result.image.length || result.image.length > 10 * 1024 * 1024) throw new Error("Ungültige Ergebnisgröße.");
     let validation: StructuralFidelityReport;
     try {
-      validation = await validateStructuralFidelity(options.bytes, result.image);
+      const corrected = await correctCandidateOrientation(normalizedSource.bytes, result.image, result.imageMimeType);
+      validation = corrected.report;
+      result = { ...result, image: corrected.bytes, imageMimeType: corrected.mime, usage: { ...result.usage, orientationCorrectionDegrees: corrected.correctionDegrees } };
     } catch {
       validation = {
         status: "rejected", version: "structure-v3", reasons: ["Die automatische Strukturprüfung konnte das Ergebnis nicht sicher auswerten."],

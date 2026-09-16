@@ -387,6 +387,52 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 - **Datenschutz:** Original und Ergebnis bleiben getrennt von Projektdaten und werden spätestens nach 24 Stunden gelöscht. Die Einwilligung gilt für genau diesen einzelnen Versuch, nicht als allgemeine Freigabe für spätere Bilder.
 - **Ergebnisintegrität:** Raumly speichert die vom Anbieter erhaltenen Bildbytes und deren Abschlussstatus in einer gemeinsamen Datenbanktransaktion, bevor die Bildadresse an den Browser zurückgegeben wird. Die rechte Ergebnisfläche lädt nur diese gespeicherte Fassung nach. Bei einem Speicher- oder Abschlussfehler wird kein Ersatzbild und kein automatischer neuer Anbieteraufruf erzeugt.
 
+## Technischer Nachtrag: Vertex-Diagnose und Wiederherstellung (10.09.2026)
+
+- Der Versuch vom 10.09.2026 um 15:48 UTC stoppte nach rund zehn Sekunden im Schritt `architecture`. Kein Architekturprofil und kein Bildbeleg wurden gespeichert. Die konkrete historische Ursache ist mangels Fehlerdetails nicht beweisbar.
+- Die Raumanalyse verwendet ein strukturiertes Antwortschema, 512 Ausgabetokens und für Gemini 2.5 Flash deaktiviertes Thinking. Leere, abgeschnittene und ungültige Antworten werden getrennt erkannt; keine automatische Modellwiederholung.
+- Fehlerstufe und erlaubte Fehlerkategorie werden serverseitig gespeichert und als JSON-Zeile protokolliert. Provider-Rohtexte, Fotos und Zugangsdaten werden nicht protokolliert.
+- Statusabfragen enthalten ausschließlich ausgewählte Statusfelder, keine Rohbilder oder internen Architekturberichte. Empfangene Bilder werden vor weiteren Fortschrittsmeldungen gesichert.
+- Freigegebene Ergebnisse lassen sich innerhalb der gültigen Testsitzung und Aufbewahrungsfrist nach Neuladen im zugehörigen Projekt wiederanzeigen. Das ist keine Garantie für die Wiederherstellung eines Bildes, das Google nie geliefert hat oder das nicht erfolgreich gespeichert wurde. Abgelehnte Ergebnisse werden nicht als erfolgreiche Bildadresse angezeigt.
+- Die offene Reservierung bleibt bestehen. Vertex bleibt lokal ausgeschaltet, bis Abrechnung und nächste Testfreigabe geklärt sind. 30 Cent sind eine interne Reservierung, keine vom Google-Dienst erzwungene Rechnungsobergrenze.
+
+## Technischer Nachtrag: Datenschutz und Abrechnungsnachweis bei abgelaufenen Tests (13.09.2026)
+
+- Nach spätestens 24 Stunden werden Originalfoto, dessen Hash und das interne Architekturprofil auch bei einem ungeklärten Versuch gelöscht. Erhalten bleibt nur eine anonymisierte Sperr- und Buchungsspur, bis Google Billing geprüft wurde. Dadurch kann ein abgebrochener, möglicherweise kostenpflichtiger Versuch nicht mehr durch die Löschung unauffindbar werden.
+- Nach dem heutigen Billing-Abgleich (01.–12.09.2026) entstand für den abgebrochenen Versuch keine zusätzliche Google-Belastung. Die verwaiste Sperre wurde deshalb kontrolliert entfernt. Der lokale Pool weist 0,12 € tatsächlich erfasste Kosten, 0,90 € Reservierungen und 1,50 € verbleibenden Rahmen aus.
+
+## Technischer Nachtrag: Auswertung der verworfenen Vertex-Antwort (13.09.2026)
+
+- Der heutige Kandidat wurde von Vertex geliefert, aber durch `structure-v3` verworfen. Das Seitenverhältnis blieb praktisch gleich; jedoch blieben nur 65 % der starken Raumkanten und 42 % an ihrer ursprünglichen Position erhalten. Im Wandbereich änderten sich 45 % der Bildflächen. Dies ist kein Grenzfall einer zu engen Schwelle, sondern ein deutlicher Hinweis auf veränderte Raumstruktur oder Perspektive.
+- Die bestehenden Prüfschwellen werden deshalb nicht gelockert. Stattdessen verlangt der Vertex-Auftrag ausdrücklich eine Fotobearbeitung mit identischem Kamerastandpunkt, Bildausschnitt und unveränderten Architekturpixeln. Eine serverseitige Diagnose liefert Betreibern nur die anonymisierten Prüfmesswerte, niemals Bild- oder Fotodaten.
+- Ein abgeschlossener, auch wegen Raumtreue verworfener Versuch blockiert nun zwingend den nächsten kostenpflichtigen Start bis zum expliziten Google-Billing-Abgleich. Der Bericht stand am 13. September nur bis einschließlich 12. September bereit; der tatsächliche Betrag des heutigen Versuchs bleibt daher vorerst offen.
+
+## Technischer Nachtrag: Abgleich nach zeitverzögerter Rechnungsanzeige (16.09.2026)
+
+- Google Billing weist für die bisherigen 0,18 € Nutzungskosten vollständig Testguthaben aus; zahlbar sind 0,00 €. Der spätere Versuch wurde daher mit 0 Cent abgeglichen und die lokale Testsperre kontrolliert aufgehoben.
+- Nach Ablauf der 24-Stunden-Frist bleiben künftig bei noch nicht abgerechneten Versuchen ausschließlich anonymisierte Buchungsdaten erhalten. Foto, Hash, Architekturprofil und Bildbytes werden weiterhin gelöscht. Damit kann ein Abgleich nicht mehr durch die Datenschutzlöschung seine Zuordnung verlieren.
+
+## Technischer Nachtrag: Scanfreier Vertex-Diagnosemodus (16.09.2026)
+
+- Der vorgeschaltete Gemini-Architektur-Scan wird aus dem lokalen Gast-Testpfad entfernt, nachdem er erneut mit `SCAN_INVALID` vor der eigentlichen Bildgenerierung abbrach. Der Diagnosemodus führt nach Einwilligung und Kostenreservierung genau einen Bildaufruf aus.
+- Vertex erhält weiterhin den strengen generischen Auftrag, Kamerastandpunkt, Bildausschnitt, Perspektive, Türen, Fenster, Durchgänge, Wände, Boden, Decke und feste Einbauten unverändert zu bewahren. Die automatische Strukturprüfung des fertigen Bilds bleibt verpflichtend; ein abweichendes Bild wird weiterhin nicht angezeigt.
+- Dies ist eine kontrollierte Anbieterevaluation, keine Freigabe für einen ungeschützten Produktbetrieb. Der normale Ablauf, die Einmal-Sperre, 0,30-€-Reservierung, 3-€-Gesamtgrenze, Speicherung und Löschung nach höchstens 24 Stunden bleiben unverändert.
+
+## Technischer Nachtrag: Vorsorgliche Freigabe bei ausstehendem Billing (16.09.2026)
+
+- Der Nutzer hat freigegeben, einen vor Vertex gescheiterten Versuch ohne Provider-Quittung vorsorglich freizugeben. Seine bestehende 0,30-€-Reservierung bleibt dabei vollständig im 3-€-Gesamtbudget enthalten; sie wird nicht fälschlich als tatsächliche Rechnungskosten ausgewiesen.
+- Genau ein solcher vorläufig freigegebener Fall darf einen weiteren kontrollierten Test nicht blockieren. Nach dessen Abschluss sperrt Raumly erneut, bis Google Billing beide offenen Vorgänge als gemeinsamen, höchstens 0,60 € großen Abgleich bestätigt. Ein Versuch mit Vertex-Quittung ist von dieser Ausnahme ausgeschlossen.
+
+## Technischer Nachtrag: Lokale Sichtprüfung verworfener Testbilder (16.09.2026)
+
+- Ein von der automatischen Raumtreue verworfenes Bild bleibt im normalen Produktablauf unsichtbar. Für die lokale Anbieterevaluation kann der Betreiber die zusätzliche interne Vorschau ausdrücklich aktivieren.
+- Die Vorschau ist auf die gleiche anonyme Testsession, die konkrete verworfene Vertex-Quittung und die bestehende 24-Stunden-Frist beschränkt. Sie stellt keine Produktfreigabe dar und ist standardmäßig deaktiviert.
+
+## Technischer Nachtrag: Einheitliche Bildorientierung vor Vertex (16.09.2026)
+
+- Raumly normalisiert hochgeladene JPEG-, PNG- und WEBP-Fotos vor dem Vertex-Aufruf: EXIF-Ausrichtung wird in die Pixel eingebacken und entfernt. Dadurch sehen Browser, Vertex und Raumtreueprüfung dieselbe aufrechte Bildorientierung.
+- Vertex erhält zusätzlich die klare Anweisung, das Bild aufrecht und ohne Spiegelung auszugeben. Kommt dennoch eine reine 90°-, 180°- oder 270°-Drehung zurück, wird sie nur korrigiert, wenn das gedrehte Ergebnis anschließend sämtliche bestehenden Raumtreue-Grenzen erfüllt. Andernfalls bleibt der Entwurf verworfen.
+
 ## Offene Entscheidungen
 
 - Markenname und visuelle Identität

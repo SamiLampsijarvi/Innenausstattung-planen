@@ -5,8 +5,8 @@ import { hashTestPhoto } from "@/lib/ai/image-generation/test-runner";
 import { MAXIMUM_VERTEX_SOURCE_BYTES } from "@/lib/ai/image-generation/test-limits";
 import { isTrustedImageTestOrigin } from "@/lib/ai/image-generation/test-origin";
 import { createVertexImageProvider } from "@/lib/ai/image-generation/vertex-provider.server";
-import { scanRoomArchitecture } from "@/lib/ai/image-generation/vertex-architecture-scan.server";
-import { validateStructuralFidelity } from "@/lib/ai/image-generation/structural-fidelity.server";
+import { safeTestErrorCode } from "@/lib/ai/image-generation/safe-test-error";
+import { correctCandidateOrientation, normalizeImageOrientation } from "@/lib/ai/image-generation/image-orientation.server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -29,7 +29,7 @@ function serverEnabled() {
 async function call(client: SupabaseClient, name: string, args: Record<string, unknown>) {
   const { data, error } = await client.rpc(name, args);
   if (error) {
-    console.error("guest-image-test RPC failed", { name, code: error.code, message: error.message });
+    console.error(JSON.stringify({ event: "guest-image-test-rpc-failed", name, code: error.code, message: error.message, details: error.details, hint: error.hint }));
     const failure = new Error("Die Testaktion ist gesperrt oder konnte nicht bestätigt werden.");
     Object.assign(failure, { code: error.code });
     throw failure;
@@ -74,8 +74,11 @@ export async function GET(request: Request) {
     }
     const session = await currentSession(false);
     const candidate = new URL(request.url).searchParams.get("candidate");
-    if (candidate && /^[0-9a-f-]{36}$/i.test(candidate)) {
-      const result = await call(client, "guest_image_test_read_candidate", { target_session: session.id, target_secret_hash: session.secret, request_id: candidate });
+    const rejectedCandidate = new URL(request.url).searchParams.get("rejectedCandidate");
+    const requestId = candidate ?? rejectedCandidate;
+    if (requestId && /^[0-9a-f-]{36}$/i.test(requestId)) {
+      if (rejectedCandidate && process.env.RAUMLY_INTERNAL_REJECTED_CANDIDATE_PREVIEW !== "true") return new Response(null, { status: 404, headers });
+      const result = await call(client, rejectedCandidate ? "guest_image_test_read_rejected_candidate" : "guest_image_test_read_candidate", { target_session: session.id, target_secret_hash: session.secret, request_id: requestId });
       if (!result?.data || !["image/jpeg", "image/png", "image/webp"].includes(result.mime)) return new Response(null, { status: 404, headers });
       return new Response(Buffer.from(result.data, "base64"), { headers: { ...headers, "Content-Type": result.mime } });
     }
@@ -143,39 +146,43 @@ async function generate(session: { id: string; secret: string }, client: Supabas
     if (!source?.data || !["image/jpeg", "image/png", "image/webp"].includes(source.mime)) throw new Error("Testfoto nicht verfügbar.");
     const bytes = new Uint8Array(Buffer.from(source.data, "base64"));
     const mime = source.mime as "image/jpeg" | "image/png" | "image/webp";
+    const normalizedSource = await normalizeImageOrientation(bytes, mime);
+    if (normalizedSource.bytes.length > MAXIMUM_VERTEX_SOURCE_BYTES) throw new Error("Das aufrecht vorbereitete Testfoto ist größer als 7 MB.");
     stage = "Kostenreservierung";
     const reservation = await call(client, "guest_image_test_reserve", { target_session: session.id, target_secret_hash: session.secret, request_id: requestId });
-    stage = "Architektur-Scan";
-    await call(client, "guest_image_test_set_progress", { target_session: session.id, target_secret_hash: session.secret, request_id: requestId, next_stage: "architecture" });
-    const profile = await scanRoomArchitecture({ projectId: process.env.GOOGLE_CLOUD_PROJECT, location: process.env.GOOGLE_CLOUD_LOCATION, bytes, mime });
-    stage = "Architekturprofil speichern";
-    await call(client, "guest_image_test_set_room_fidelity", { target_session: session.id, target_secret_hash: session.secret, profile });
     stage = "Versandfreigabe";
     if (!await call(client, "guest_image_test_check_dispatch", { target_session: session.id, target_secret_hash: session.secret, request_id: requestId })) throw new Error("Freigabe wurde zurückgezogen.");
     stage = "Vertex-Bildgenerierung";
     await call(client, "guest_image_test_set_progress", { target_session: session.id, target_secret_hash: session.secret, request_id: requestId, next_stage: "generating" });
     const provider = createVertexImageProvider({ projectId: process.env.GOOGLE_CLOUD_PROJECT, location: process.env.GOOGLE_CLOUD_LOCATION, maximumRequestCents: reservation.reservedCents });
-    const result = await provider.generate({ input: { sourceImage: bytes, sourceImageMimeType: mime, roomType: "living-room", style: reservation.style, budgetEuro: reservation.budgetEuro, roomFidelity: profile }, consent: { granted: true, grantedAt: reservation.grantedAt, policyVersion: reservation.policyVersion }, maximumChargeCents: reservation.reservedCents }, new AbortController().signal);
+    const result = await provider.generate({ input: { sourceImage: normalizedSource.bytes, sourceImageMimeType: normalizedSource.mime, roomType: "living-room", style: reservation.style, budgetEuro: reservation.budgetEuro }, consent: { granted: true, grantedAt: reservation.grantedAt, policyVersion: reservation.policyVersion }, maximumChargeCents: reservation.reservedCents }, new AbortController().signal);
     stage = "Vertex-Ergebnis sichern";
-    await call(client, "guest_image_test_set_progress", { target_session: session.id, target_secret_hash: session.secret, request_id: requestId, next_stage: "saving" });
     await call(client, "guest_image_test_record_provider_image", { target_session: session.id, target_secret_hash: session.secret, request_id: requestId,
       provider_image: Buffer.from(result.image).toString("base64"), provider_mime: result.imageMimeType, elapsed_ms: result.durationMs,
       provider_id: result.providerRequestId, usage_data: result.usage ?? {} });
     stage = "Raumtreue-Prüfung";
     await call(client, "guest_image_test_set_progress", { target_session: session.id, target_secret_hash: session.secret, request_id: requestId, next_stage: "validating" });
-    const validation = await validateStructuralFidelity(bytes, result.image);
+    let corrected: Awaited<ReturnType<typeof correctCandidateOrientation>>;
+    try { corrected = await correctCandidateOrientation(normalizedSource.bytes, result.image, result.imageMimeType); }
+    catch {
+      corrected = { bytes: result.image, mime: result.imageMimeType, correctionDegrees: 0, report: {
+        status: "rejected", version: "structure-v3", reasons: ["Die automatische Strukturprüfung konnte das Ergebnis nicht sicher auswerten."],
+        sourceWidth: 0, sourceHeight: 0, candidateWidth: 0, candidateHeight: 0, aspectRatioDifference: 1,
+        edgeRetention: 0, alignedEdgeRetention: 0, wallAppearanceChangeRate: 1, orientationSimilarity: 0, regionalStructureSimilarity: 0,
+      } };
+    }
+    const validation = corrected.report;
     stage = "Ergebnis speichern";
-    const finishArgs = { target_session: session.id, target_secret_hash: session.secret, request_id: requestId, result_image: validation.status === "passed" ? Buffer.from(result.image).toString("base64") : null, result_mime: validation.status === "passed" ? result.imageMimeType : null, elapsed_ms: result.durationMs, provider_id: result.providerRequestId, usage_data: { ...result.usage, raumlyValidation: validation } };
+    const finishArgs = { target_session: session.id, target_secret_hash: session.secret, request_id: requestId, result_image: validation.status === "passed" ? Buffer.from(corrected.bytes).toString("base64") : null, result_mime: validation.status === "passed" ? corrected.mime : null, elapsed_ms: result.durationMs, provider_id: result.providerRequestId, usage_data: { ...result.usage, orientationCorrectionDegrees: corrected.correctionDegrees, raumlyValidation: validation } };
     try { await call(client, "guest_image_test_finish", finishArgs); }
     catch { await call(client, "guest_image_test_finish", finishArgs); }
     return Response.json({ ok: true, requestId }, { headers });
   } catch (error) {
-    console.error("guest-image-test generation failed", {
-      stage,
-      name: error instanceof Error ? error.name : "UnknownError",
-      message: error instanceof Error ? error.message : "unknown error",
-    });
+    const code = safeTestErrorCode(error);
+    console.error(JSON.stringify({ event: "guest-image-test-generation-failed", requestId, stage, code }));
+    try { await call(client, "guest_image_test_record_failure", { target_session: session.id, target_secret_hash: session.secret, request_id: requestId, failure_stage: stage, failure_code: code }); }
+    catch { /* The JSON log retains diagnostics if the database is unreachable. */ }
     try { await call(client, "guest_image_test_finish", { target_session: session.id, target_secret_hash: session.secret, request_id: requestId }); } catch { /* retain unresolved reservation */ }
-    throw new Error("Versuch ungeklärt. Reservierung bleibt bestehen; keine automatische Wiederholung.");
+    throw new Error(`Abbruch bei „${stage}“ (${code}). Die Reservierung bleibt bis zur Prüfung bestehen. Keine automatische Wiederholung.`);
   }
 }

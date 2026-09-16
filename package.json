@@ -15,7 +15,15 @@
     "test:room-fidelity-calibration": "playwright test --config=playwright.room-fidelity-calibration.config.ts",
     "prepare:room-fidelity-calibration": "node scripts/prepare-public-room-fidelity-corpus.mjs",
     "evaluate:images": "node scripts/image-evaluation.mjs",
-    "arm:image-test": "node scripts/arm-controlled-image-test.mjs"
+    "arm:image-test": "node scripts/arm-controlled-image-test.mjs",
+    "check:image-test-ledger": "node scripts/check-localhost-image-test-ledger.mjs",
+    "check:image-test-rejection": "node scripts/check-latest-image-test-rejection.mjs",
+    "reconcile:latest-image-test": "node scripts/reconcile-latest-localhost-image-test.mjs",
+    "reconcile:unknown-image-test": "node scripts/reconcile-unknown-localhost-image-test.mjs",
+    "release:unknown-image-test-with-cap": "node scripts/release-unknown-localhost-image-test-with-cap.mjs",
+    "reconcile:pending-image-test-batch": "node scripts/reconcile-pending-localhost-image-test-batch.mjs",
+    "check:pending-image-test-billing": "node scripts/check-pending-localhost-image-test-billing.mjs",
+    "reconcile:image-test-lock": "node scripts/reconcile-dangling-localhost-image-test-lock.mjs"
   },
   "dependencies": {
     "@google/genai": "2.19.0",

@@ -12,7 +12,13 @@ export function isRoomFidelityProfile(value: unknown): value is RoomFidelityProf
     && profile.protectedArchitecture === true;
 }
 
-export function roomFidelityInstruction(profile: RoomFidelityProfile) {
+export function roomFidelityInstruction(profile?: RoomFidelityProfile) {
+  if (!profile) return [
+    "Dies ist eine kontrollierte Bearbeitung des vorhandenen Raumfotos, keine freie Neugenerierung.",
+    "Erhalte jede sichtbare Tür, jedes Fenster, jeden Durchgang, alle Wände, den Boden, die Decke, feste Einbauten, Kameraposition und Perspektive exakt.",
+    "Füge keine Architektur hinzu, entferne oder verschiebe keine Architektur und verändere sie nicht.",
+    "Verändere ausschließlich Möbel, Textilien und Dekoration. Wenn eine Fläche unklar ist, bewahre sie unverändert.",
+  ].join(" ");
   return [
     "Dies ist eine kontrollierte Raum-Bearbeitung, keine freie Neugestaltung.",
     `Im Ausgangsfoto sichtbar: ${profile.doors} Türen, ${profile.windows} Fenster und ${profile.openings} Durchgänge.`,

@@ -12,3 +12,10 @@ test("der Raumtreue-Auftrag verbietet erfundene Architektur", () => {
   expect(instruction).toContain("1 Türen, 3 Fenster");
   expect(instruction).toContain("Füge keine Architektur hinzu");
 });
+
+test("der scanfreie Auftrag schützt Architektur ohne erfundene Zählwerte", () => {
+  const instruction = roomFidelityInstruction();
+  expect(instruction).toContain("vorhandenen Raumfotos");
+  expect(instruction).toContain("jede sichtbare Tür");
+  expect(instruction).not.toMatch(/\d+ Türen/);
+});

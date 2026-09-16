@@ -70,6 +70,29 @@ before(async () => {
   await db.exec(localhostImageTestPool);
   const durableVertexResultFinalization = await readFile(new URL('../supabase/migrations/202609080005_durable_vertex_result_finalization.sql', import.meta.url), 'utf8');
   await db.exec(durableVertexResultFinalization);
+  const unresolvedLocalhostAttempt = await readFile(new URL('../supabase/migrations/202609090001_reconcile_unresolved_localhost_attempt.sql', import.meta.url), 'utf8');
+  await db.exec(unresolvedLocalhostAttempt);
+  const durableVertexReceipt = await readFile(new URL('../supabase/migrations/202609090002_durable_vertex_receipt.sql', import.meta.url), 'utf8');
+  await db.exec(durableVertexReceipt);
+  const imageTestProgress = await readFile(new URL('../supabase/migrations/202609090003_image_test_progress.sql', import.meta.url), 'utf8');
+  await db.exec(imageTestProgress);
+  const ledgerStatus = await readFile(new URL('../supabase/migrations/202609100001_localhost_image_test_ledger_status.sql', import.meta.url), 'utf8');
+  await db.exec(ledgerStatus);
+  const ledgerStatusDetail = await readFile(new URL('../supabase/migrations/202609100002_localhost_image_test_ledger_status_detail.sql', import.meta.url), 'utf8');
+  await db.exec(ledgerStatusDetail);
+  const reconcileDanglingLock = await readFile(new URL('../supabase/migrations/202609100003_reconcile_dangling_localhost_image_test_lock.sql', import.meta.url), 'utf8');
+  await db.exec(reconcileDanglingLock);
+  await db.exec(await readFile(new URL('../supabase/migrations/202609100004_guest_failure_diagnostics.sql', import.meta.url), 'utf8'));
+  await db.exec(await readFile(new URL('../supabase/migrations/202609130001_preserve_unresolved_guest_attempt_audit.sql', import.meta.url), 'utf8'));
+  await db.exec(await readFile(new URL('../supabase/migrations/202609130002_localhost_rejection_diagnostics.sql', import.meta.url), 'utf8'));
+  await db.exec(await readFile(new URL('../supabase/migrations/202609130003_require_billing_reconciliation_between_localhost_tests.sql', import.meta.url), 'utf8'));
+  await db.exec(await readFile(new URL('../supabase/migrations/202609160001_localhost_pending_billing_diagnostics.sql', import.meta.url), 'utf8'));
+  await db.exec(await readFile(new URL('../supabase/migrations/202609160002_preserve_pending_billing_audit.sql', import.meta.url), 'utf8'));
+  await db.exec(await readFile(new URL('../supabase/migrations/202609160003_reconcile_unknown_localhost_attempt.sql', import.meta.url), 'utf8'));
+  await db.exec(await readFile(new URL('../supabase/migrations/202609160004_provisional_unknown_attempt_release.sql', import.meta.url), 'utf8'));
+  await db.exec(await readFile(new URL('../supabase/migrations/202609160005_fix_provisional_release_function_name.sql', import.meta.url), 'utf8'));
+  await db.exec(await readFile(new URL('../supabase/migrations/202609160006_local_rejected_candidate_preview.sql', import.meta.url), 'utf8'));
+  await db.exec(await readFile(new URL('../supabase/migrations/202609160007_local_latest_rejected_candidate_preview.sql', import.meta.url), 'utf8'));
   await db.exec(`insert into auth.users values('${user}'),('${other}');
     insert into public.projects values('${user}','${user}',null),('${other}','${other}',null);
     insert into public.image_test_members values('${user}'),('${other}');
@@ -103,7 +126,212 @@ test('anonymous preparation is private, short-lived and reserves one localhost a
   assert.equal(await scalar('select source_base64 is null from public.guest_image_test_sessions where id=$1', [guestSession]), true);
 }));
 
-test('a guest preparation accepts no visible architecture counts and reserves before the server scan', () => scenario(async () => {
+test('localhost ledger report is server-only and contains no test photo data', () => scenario(async () => {
+  assert.equal(await scalar("select has_function_privilege('anon','public.localhost_image_test_ledger_status()','execute')"), false);
+  assert.equal(await scalar("select has_function_privilege('authenticated','public.localhost_image_test_ledger_status()','execute')"), false);
+  await db.exec('set role service_role');
+  const status = await scalar('select public.localhost_image_test_ledger_status()');
+  await db.exec('reset role');
+  assert.equal(status.maximumTotalCents, 300);
+  assert.equal(status.activeAttempt, false);
+  assert.equal(status.activeAttemptInGuestFlow, false);
+  assert.equal(status.activeAttemptInLegacyFlow, false);
+  assert.equal('source_base64' in status, false);
+  assert.equal('sessionSecret' in status, false);
+}));
+
+test('only a dangling localhost lock can be reconciled after a billing check', () => scenario(async () => {
+  await db.query('update public.localhost_image_test_pool set active_attempt=$1', [request(999)]);
+  await db.exec('set role service_role');
+  const status = await scalar('select public.localhost_image_test_reconcile_dangling_lock()');
+  await db.exec('reset role');
+  assert.equal(status.activeAttempt, false);
+  assert.equal(await scalar('select active_attempt is null from public.localhost_image_test_pool'), true);
+
+  await db.exec('set role service_role');
+  const session = 'cccccccc-cccc-4ccc-8ccc-000000000009';
+  await scalar('select public.guest_image_test_prepare($1,$2,$3,$4,$5,$6,$7,$8)', [session, 'c'.repeat(64), 'Japandi', 1500, null, 'a'.repeat(64), 'AQ==', 'image/png']);
+  await scalar('select public.guest_image_test_reserve($1,$2,$3)', [session, 'c'.repeat(64), request(999)]);
+  await assert.rejects(scalar('select public.localhost_image_test_reconcile_dangling_lock()'), /requires provider and billing reconciliation/);
+  await db.exec('reset role');
+}));
+
+test('guest receipt survives failure while polling excludes original image and private reports', () => scenario(async () => {
+  const session = 'cccccccc-cccc-4ccc-8ccc-000000000019';
+  const secret = 'c'.repeat(64);
+  await db.exec('set role service_role');
+  await scalar('select public.guest_image_test_prepare($1,$2,$3,$4,$5,$6,$7,$8)', [session, secret, 'Japandi', 1500, null, 'a'.repeat(64), 'AQ==', 'image/png']);
+  await scalar('select public.guest_image_test_reserve($1,$2,$3)', [session, secret, request(919)]);
+  await scalar('select public.guest_image_test_record_provider_image($1,$2,$3,$4,$5,$6,$7,$8)', [session,secret,request(919),'AQ==','image/png',20,'fake-provider','{}']);
+  await scalar('select public.guest_image_test_record_failure($1,$2,$3,$4,$5)', [session,secret,request(919),'Raumtreue-Prüfung','UNCLASSIFIED']);
+  await scalar('select public.guest_image_test_finish($1,$2,$3)', [session,secret,request(919)]);
+  const state = await scalar('select public.guest_image_test_state($1,$2)', [session,secret]);
+  assert.equal(state.attempts[0].failure_stage,'Raumtreue-Prüfung');
+  assert.equal(state.attempts[0].imageReady,false);
+  assert.equal('provider_image_base64' in state.attempts[0],false);
+  assert.equal('automatic_fidelity_report' in state.attempts[0],false);
+  await assert.rejects(scalar('select public.guest_image_test_record_failure($1,$2,$3,$4,$5)', [session,secret,request(919),'secret','secret']), /invalid diagnostic/);
+  await db.exec('reset role');
+  assert.equal(await scalar('select provider_image_base64 from public.guest_image_test_attempts where id=$1',[request(919)]),'AQ==');
+  assert.equal(await scalar('select active_attempt is not null from public.localhost_image_test_pool'),true);
+  assert.equal(await scalar("select has_function_privilege('anon','public.guest_image_test_record_failure(uuid,text,uuid,text,text)','execute')"),false);
+}));
+
+test('retention removes expired photos but retains an active unresolved audit lock', () => scenario(async () => {
+  const session = 'cccccccc-cccc-4ccc-8ccc-000000000029';
+  const secret = 'd'.repeat(64);
+  await db.exec('set role service_role');
+  await scalar('select public.guest_image_test_prepare($1,$2,$3,$4,$5,$6,$7,$8)', [session, secret, 'Japandi', 1500, null, 'a'.repeat(64), 'AQ==', 'image/png']);
+  await scalar('select public.guest_image_test_reserve($1,$2,$3)', [session, secret, request(929)]);
+  await db.exec('reset role');
+  await db.exec("update public.guest_image_test_sessions set expires_at=now()-interval '1 second' where id='cccccccc-cccc-4ccc-8ccc-000000000029'");
+  await db.exec('set role service_role');
+  await scalar('select public.guest_image_test_purge()');
+  await db.exec('reset role');
+  const row = (await db.query('select source_base64,source_hash,room_fidelity_profile,revoked_at,redacted_at from public.guest_image_test_sessions where id=$1',[session])).rows[0];
+  assert.equal(row.source_base64,null);
+  assert.equal(row.source_hash,'0'.repeat(64));
+  assert.equal(row.room_fidelity_profile,null);
+  assert.ok(row.revoked_at && row.redacted_at);
+  assert.equal(await scalar('select status from public.guest_image_test_attempts where id=$1',[request(929)]),'unknown');
+  assert.equal(await scalar('select active_attempt=$1 from public.localhost_image_test_pool',[request(929)]),true);
+}));
+
+test('retention redacts a completed attempt until its billing check', () => scenario(async () => {
+  const session = 'cccccccc-cccc-4ccc-8ccc-000000000031';
+  const secret = 'e'.repeat(64);
+  const rejection = { raumlyValidation: { status: 'rejected', version: 'structure-v3', reasons: ['perspective changed'] } };
+  await db.exec('set role service_role');
+  await scalar('select public.guest_image_test_prepare($1,$2,$3,$4,$5,$6,$7,$8)', [session, secret, 'Japandi', 1500, null, 'a'.repeat(64), 'AQ==', 'image/png']);
+  await scalar('select public.guest_image_test_reserve($1,$2,$3)', [session, secret, request(931)]);
+  await scalar('select public.guest_image_test_finish($1,$2,$3,$4,$5,$6,$7,$8)', [session, secret, request(931), null, null, 20, 'provider-test', JSON.stringify(rejection)]);
+  await db.exec('reset role');
+  await db.exec("update public.guest_image_test_sessions set expires_at=now()-interval '1 second' where id='cccccccc-cccc-4ccc-8ccc-000000000031'");
+  await db.exec('set role service_role');
+  await scalar('select public.guest_image_test_purge()');
+  await db.exec('reset role');
+  assert.equal(await scalar('select source_base64 is null from public.guest_image_test_sessions where id=$1',[session]),true);
+  assert.equal(await scalar('select status from public.guest_image_test_attempts where id=$1',[request(931)]),'discarded');
+}));
+
+test('operator diagnostics reveal only the rejected structural report', () => scenario(async () => {
+  const session = 'cccccccc-cccc-4ccc-8ccc-000000000039';
+  const secret = 'e'.repeat(64);
+  const rejection = { raumlyValidation: { status: 'rejected', version: 'structure-v3', reasons: ['perspective changed'], edgeRetention: 0.2 } };
+  await db.exec('set role service_role');
+  await scalar('select public.guest_image_test_prepare($1,$2,$3,$4,$5,$6,$7,$8)', [session, secret, 'Japandi', 1500, null, 'a'.repeat(64), 'AQ==', 'image/png']);
+  await scalar('select public.guest_image_test_reserve($1,$2,$3)', [session, secret, request(939)]);
+  await scalar('select public.guest_image_test_finish($1,$2,$3,$4,$5,$6,$7,$8)', [session, secret, request(939), null, null, 20, 'provider-test', JSON.stringify(rejection)]);
+  const report = await scalar('select public.localhost_image_test_latest_rejection_diagnostics()');
+  assert.equal(report.status, 'discarded');
+  assert.deepEqual(report.validation, rejection.raumlyValidation);
+  assert.equal('source_base64' in report, false);
+  await db.exec('reset role');
+  assert.equal(await scalar("select has_function_privilege('anon','public.localhost_image_test_latest_rejection_diagnostics()','execute')"), false);
+}));
+
+test('a completed localhost attempt blocks the next reservation until billing is reconciled', () => scenario(async () => {
+  const firstSession = 'cccccccc-cccc-4ccc-8ccc-000000000049';
+  const secondSession = 'cccccccc-cccc-4ccc-8ccc-000000000050';
+  const secret = 'f'.repeat(64);
+  const rejection = { raumlyValidation: { status: 'rejected', version: 'structure-v3', reasons: ['perspective changed'] } };
+  await db.exec('set role service_role');
+  await scalar('select public.guest_image_test_prepare($1,$2,$3,$4,$5,$6,$7,$8)', [firstSession, secret, 'Japandi', 1500, null, 'a'.repeat(64), 'AQ==', 'image/png']);
+  await scalar('select public.guest_image_test_reserve($1,$2,$3)', [firstSession, secret, request(949)]);
+  await scalar('select public.guest_image_test_finish($1,$2,$3,$4,$5,$6,$7,$8)', [firstSession, secret, request(949), null, null, 20, 'provider-test', JSON.stringify(rejection)]);
+  await scalar('select public.guest_image_test_prepare($1,$2,$3,$4,$5,$6,$7,$8)', [secondSession, secret, 'Japandi', 1500, null, 'b'.repeat(64), 'AQ==', 'image/png']);
+  await assert.rejects(scalar('select public.guest_image_test_reserve($1,$2,$3)', [secondSession, secret, request(950)]), /billing reconciliation required/);
+  const ledger = await scalar('select public.localhost_image_test_reconcile_completed_attempt($1)', [0]);
+  assert.equal(ledger.activeAttempt, false);
+  await db.exec('reset role');
+  assert.equal(await scalar('select actual_cents from public.localhost_image_test_pool'), 0);
+  await db.exec('set role service_role');
+  await scalar('select public.guest_image_test_reserve($1,$2,$3)', [secondSession, secret, request(950)]);
+  await db.exec('reset role');
+}));
+
+test('a zero-cost billing check can close a legacy case with no retained attempt', () => scenario(async () => {
+  await db.exec('set role service_role');
+  const ledger = await scalar('select public.localhost_image_test_reconcile_completed_attempt($1)', [0]);
+  assert.equal(ledger.activeAttempt, false);
+  await assert.rejects(scalar('select public.localhost_image_test_reconcile_completed_attempt($1)', [1]), /no retained attempt/);
+  await db.exec('reset role');
+}));
+
+test('an unknown localhost attempt requires and accepts explicit billing reconciliation', () => scenario(async () => {
+  const session = 'cccccccc-cccc-4ccc-8ccc-000000000069';
+  const secret = 'b'.repeat(64);
+  await db.exec('set role service_role');
+  await scalar('select public.guest_image_test_prepare($1,$2,$3,$4,$5,$6,$7,$8)', [session, secret, 'Japandi', 1500, null, 'c'.repeat(64), 'AQ==', 'image/png']);
+  await scalar('select public.guest_image_test_reserve($1,$2,$3)', [session, secret, request(969)]);
+  assert.equal(await scalar('select public.guest_image_test_finish($1,$2,$3)', [session, secret, request(969)]), 'unknown');
+  const ledger = await scalar('select public.localhost_image_test_reconcile_unknown_attempt($1)', [0]);
+  assert.equal(ledger.activeAttempt, false);
+  assert.equal(ledger.actualCents, 0);
+  await assert.rejects(scalar('select public.localhost_image_test_reconcile_unknown_attempt($1)', [0]), /no active unknown attempt/);
+  await db.exec('reset role');
+}));
+
+test('a no-receipt unknown attempt can be conservatively released for one further test', () => scenario(async () => {
+  const firstSession = 'cccccccc-cccc-4ccc-8ccc-000000000070';
+  const secondSession = 'cccccccc-cccc-4ccc-8ccc-000000000071';
+  const secret = 'c'.repeat(64);
+  await db.exec('set role service_role');
+  await scalar('select public.guest_image_test_prepare($1,$2,$3,$4,$5,$6,$7,$8)', [firstSession, secret, 'Japandi', 1500, null, 'd'.repeat(64), 'AQ==', 'image/png']);
+  await scalar('select public.guest_image_test_reserve($1,$2,$3)', [firstSession, secret, request(970)]);
+  assert.equal(await scalar('select public.guest_image_test_finish($1,$2,$3)', [firstSession, secret, request(970)]), 'unknown');
+  const released = await scalar('select public.localhost_image_test_release_unknown_attempt_provisionally()');
+  assert.equal(released.activeAttempt, false);
+  await scalar('select public.guest_image_test_prepare($1,$2,$3,$4,$5,$6,$7,$8)', [secondSession, secret, 'Japandi', 1500, null, 'e'.repeat(64), 'AQ==', 'image/png']);
+  await scalar('select public.guest_image_test_reserve($1,$2,$3)', [secondSession, secret, request(971)]);
+  await db.exec('reset role');
+}));
+
+test('a provisional unknown attempt is reconciled as a bounded billing batch', () => scenario(async () => {
+  const session = 'cccccccc-cccc-4ccc-8ccc-000000000072';
+  const secret = 'd'.repeat(64);
+  await db.exec('set role service_role');
+  await scalar('select public.guest_image_test_prepare($1,$2,$3,$4,$5,$6,$7,$8)', [session, secret, 'Japandi', 1500, null, 'f'.repeat(64), 'AQ==', 'image/png']);
+  await scalar('select public.guest_image_test_reserve($1,$2,$3)', [session, secret, request(972)]);
+  assert.equal(await scalar('select public.guest_image_test_finish($1,$2,$3)', [session, secret, request(972)]), 'unknown');
+  await scalar('select public.localhost_image_test_release_unknown_attempt_provisionally()');
+  const ledger = await scalar('select public.localhost_image_test_reconcile_pending_batch($1)', [12]);
+  assert.equal(ledger.activeAttempt, false);
+  assert.equal(ledger.actualCents, 12);
+  await assert.rejects(scalar('select public.localhost_image_test_reconcile_pending_batch($1)', [0]), /unexpected pending billing batch/);
+  await db.exec('reset role');
+}));
+
+test('pending billing diagnostics omit all image data', () => scenario(async () => {
+  const session = 'cccccccc-cccc-4ccc-8ccc-000000000059';
+  const secret = 'a'.repeat(64);
+  await db.exec('set role service_role');
+  await scalar('select public.guest_image_test_prepare($1,$2,$3,$4,$5,$6,$7,$8)', [session, secret, 'Japandi', 1500, null, 'b'.repeat(64), 'AQ==', 'image/png']);
+  await scalar('select public.guest_image_test_reserve($1,$2,$3)', [session, secret, request(959)]);
+  const diagnostics = await scalar('select public.localhost_image_test_pending_billing_diagnostics()');
+  assert.equal(diagnostics[0].status, 'reserved');
+  assert.equal('source_base64' in diagnostics[0], false);
+  assert.equal('provider_image_base64' in diagnostics[0], false);
+  await db.exec('reset role');
+  assert.equal(await scalar("select has_function_privilege('anon','public.localhost_image_test_pending_billing_diagnostics()','execute')"), false);
+}));
+
+test('only the matching active test session can read a rejected provider receipt', () => scenario(async () => {
+  const session = 'cccccccc-cccc-4ccc-8ccc-000000000073';
+  const secret = 'e'.repeat(64);
+  await db.exec('set role service_role');
+  await scalar('select public.guest_image_test_prepare($1,$2,$3,$4,$5,$6,$7,$8)', [session, secret, 'Japandi', 1500, null, 'a'.repeat(64), 'AQ==', 'image/png']);
+  await scalar('select public.guest_image_test_reserve($1,$2,$3)', [session, secret, request(973)]);
+  await scalar('select public.guest_image_test_record_provider_image($1,$2,$3,$4,$5,$6,$7,$8)', [session, secret, request(973), 'AQ==', 'image/png', 20, 'provider-test', '{}']);
+  const rejected = { raumlyValidation: { status: 'rejected', version: 'structure-v3', reasons: ['perspective changed'] } };
+  assert.equal(await scalar('select public.guest_image_test_finish($1,$2,$3,$4,$5,$6,$7,$8)', [session, secret, request(973), null, null, 20, 'provider-test', JSON.stringify(rejected)]), 'discarded');
+  assert.deepEqual(await scalar('select public.guest_image_test_read_rejected_candidate($1,$2,$3)', [session, secret, request(973)]), { data: 'AQ==', mime: 'image/png' });
+  assert.deepEqual(await scalar('select public.guest_image_test_read_latest_rejected_candidate($1,$2)', [session, secret]), { data: 'AQ==', mime: 'image/png' });
+  assert.equal(await scalar('select public.guest_image_test_read_rejected_candidate($1,$2,$3)', [session, 'f'.repeat(64), request(973)]), null);
+  await db.exec('reset role');
+}));
+
+test('a guest preparation accepts no visible architecture counts for direct generation', () => scenario(async () => {
   const guestSession = 'cccccccc-cccc-4ccc-8ccc-000000000002';
   const guestSecret = 'f'.repeat(64);
   await db.exec('set role service_role');

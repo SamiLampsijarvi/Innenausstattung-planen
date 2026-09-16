@@ -51,6 +51,9 @@ test("wandelt eine kontrollierte Vertex-Testantwort in das gemeinsame Format um"
   expect(receivedConfig).toMatchObject({ candidateCount: 1, maxOutputTokens: 2048, imageConfig: { imageSize: "1K" }, httpOptions: { retryOptions: { attempts: 1 }, timeout: 120000 } });
   expect(receivedPrompt).toContain("1 Türen, 2 Fenster");
   expect(receivedPrompt).toContain("Füge keine Architektur hinzu");
+  expect(receivedPrompt).toContain("denselben Kamerastandpunkt");
+  expect(receivedPrompt).toContain("Gib das Bild aufrecht aus");
+  expect(receivedPrompt).toContain("alle bestehenden Architekturpixel unverändert");
   expect(result.provider).toBe("google-vertex");
   expect(result.providerRequestId).toBe("vertex-test-response");
   expect(result.imageMimeType).toBe("image/png");
@@ -65,6 +68,18 @@ test("erzwingt fünf Fotos, zwei Versuche und drei Euro internes Budget", () => 
   expect(() => assertImageTestWithinLimits({ distinctPhotoCount: 6, attemptsForPhoto: 0, reservedTotalCents: 0 }, 10)).toThrow("fünf freigegebene Fotos");
   expect(() => assertImageTestWithinLimits({ distinctPhotoCount: 5, attemptsForPhoto: 2, reservedTotalCents: 0 }, 10)).toThrow("zwei Versuche");
   expect(() => assertImageTestWithinLimits({ distinctPhotoCount: 5, attemptsForPhoto: 0, reservedTotalCents: 295 }, 10)).toThrow("drei Euro");
+});
+
+test("erzeugt ohne Architektur-Scan einen generischen Schutzauftrag", async () => {
+  let receivedPrompt = "";
+  const client = { models: { generateContent: async (input: { contents: Array<{ parts: Array<{ text?: string }> }> }) => {
+    receivedPrompt = input.contents[0].parts.find((part) => part.text)?.text ?? "";
+    return { responseId: "scan-free-test", candidates: [{ content: { parts: [{ inlineData: { data: "BAUG", mimeType: "image/png" } }] } }] };
+  } } };
+  const provider = createVertexImageProvider({ projectId: "test-project", maximumRequestCents: 30 }, client as never);
+  await provider.generate({ ...request, input: { ...request.input, roomFidelity: undefined } }, new AbortController().signal);
+  expect(receivedPrompt).toContain("jede sichtbare Tür");
+  expect(receivedPrompt).not.toContain("1 Türen, 2 Fenster");
 });
 
 test("weist übergroße Fotos auch bei direktem Adapteraufruf ohne Netzaufruf ab", async () => {
