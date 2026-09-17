@@ -44,6 +44,12 @@ Schritte nötig, da sie Kosten oder zusätzliche Leserechte verursachen können:
 5. Erst nach einem sichtbaren, eindeutig zuordenbaren Exporteintrag die
    wiederkehrende lokale Prüfung mit `--apply` aktivieren.
 
+Der Dienstname wird nicht geschätzt: Erst der sichtbare Exportposten bestimmt
+`RAUMLY_BILLING_EXPORT_SERVICE_DESCRIPTION`. Für die lokale Prüfung wird das
+Lesekonto über kurzlebige Dienstkonto-Impersonation aus der lokalen
+Betreiberanmeldung verwendet. Es besitzt keinen herunterladbaren Schlüssel und
+keinen Vertex-Zugang.
+
 Google exportiert Billing-Daten zeitversetzt. Der automatische Abgleich ist
 deshalb kein Echtzeitbeleg und ersetzt weder das Projekt-Spend-Cap noch die
 3-Euro-Grenze in Raumly. Der gegenwärtig ungeklärte Altbestand wird nicht von

@@ -19,7 +19,7 @@ if (!apply) {
   console.log(JSON.stringify({ status: "dry-run", reason: "pass---apply-only-from-the-approved-automation" }));
   process.exit(0);
 }
-if (!values.NEXT_PUBLIC_SUPABASE_URL || !values.SUPABASE_SERVICE_ROLE_KEY || !values.RAUMLY_BILLING_EXPORT_BIGQUERY_PROJECT || !values.RAUMLY_BILLING_EXPORT_TABLE || !values.GOOGLE_CLOUD_PROJECT || !values.RAUMLY_BILLING_EXPORT_MAX_BYTES_BILLED) {
+if (!values.NEXT_PUBLIC_SUPABASE_URL || !values.SUPABASE_SERVICE_ROLE_KEY || !values.RAUMLY_BILLING_EXPORT_BIGQUERY_PROJECT || !values.RAUMLY_BILLING_EXPORT_TABLE || !values.GOOGLE_CLOUD_PROJECT || !values.RAUMLY_BILLING_EXPORT_SERVICE_DESCRIPTION || !values.RAUMLY_BILLING_EXPORT_MAX_BYTES_BILLED) {
   throw new Error("Die lokale Billing-Export-Konfiguration ist unvollständig.");
 }
 const maxBytesBilled = Number(values.RAUMLY_BILLING_EXPORT_MAX_BYTES_BILLED);
@@ -42,13 +42,17 @@ if (selection.kind === "nothing-pending" || selection.kind === "manual-review") 
   process.exit(0);
 }
 
-const { stdout } = await execFileAsync("gcloud", ["auth", "application-default", "print-access-token"], { windowsHide: true });
+// Billing runs through the locally authenticated operator and impersonates the
+// read-only reconciler. Do not reuse the Vertex application's ADC identity.
+const tokenArgs = ["auth", "print-access-token"];
+if (values.RAUMLY_BILLING_EXPORT_IMPERSONATE_SERVICE_ACCOUNT) tokenArgs.push(`--impersonate-service-account=${values.RAUMLY_BILLING_EXPORT_IMPERSONATE_SERVICE_ACCOUNT}`);
+const { stdout } = await execFileAsync("gcloud", tokenArgs, { windowsHide: true });
 const accessToken = stdout.trim();
 if (!accessToken) throw new Error("Kein kurzlebiges Application-Default-Token verfügbar.");
 const query = buildBillingQuery({
   table: values.RAUMLY_BILLING_EXPORT_TABLE,
   projectId: values.GOOGLE_CLOUD_PROJECT,
-  serviceDescription: values.RAUMLY_BILLING_EXPORT_SERVICE_DESCRIPTION || "Vertex AI",
+  serviceDescription: values.RAUMLY_BILLING_EXPORT_SERVICE_DESCRIPTION,
   startedAt: selection.startedAt,
 });
 query.location = values.RAUMLY_BILLING_EXPORT_LOCATION || undefined;
