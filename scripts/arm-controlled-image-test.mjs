@@ -1,5 +1,7 @@
 import { readFile } from "node:fs/promises";
 
+// This arms the historical internal campaign only. The current guest website
+// flow uses localhost_image_test_pool and reserves at the user-confirmed click.
 const priceReviewFlag = process.argv.find((argument) => argument.startsWith("--price-reviewed-on="));
 const priceReviewedOn = priceReviewFlag?.slice("--price-reviewed-on=".length);
 
@@ -21,7 +23,11 @@ if (process.argv[2] !== "--confirm" || !/^\d{4}-\d{2}-\d{2}$/.test(priceReviewed
       active_for_seconds: 600,
     }),
   });
-  if (!response.ok) throw new Error(`The controlled test could not be armed (HTTP ${response.status}).`);
-  const result = await response.json();
+  const payload = await response.json().catch(() => null);
+  if (!response.ok) {
+    const reason = typeof payload?.message === "string" ? payload.message : typeof payload?.hint === "string" ? payload.hint : "ohne sichere Fehlerbeschreibung";
+    throw new Error(`The controlled test could not be armed (HTTP ${response.status}): ${reason}`);
+  }
+  const result = payload;
   console.log(`Test armed until ${result.approvedUntil}; reservation: ${(result.reservationCents / 100).toFixed(2)} EUR.`);
 }
