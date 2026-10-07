@@ -39,37 +39,37 @@ const [ledger, pending] = await Promise.all([
 const selection = selectReconciliation(pending, ledger);
 if (selection.kind === "nothing-pending" || selection.kind === "manual-review") {
   console.log(JSON.stringify({ status: "not-reconciled", ...selection }));
-  process.exit(0);
+} else {
+  // Billing runs through the locally authenticated operator and impersonates the
+  // read-only reconciler. Do not reuse the Vertex application's ADC identity.
+  const tokenArgs = ["auth", "print-access-token"];
+  if (values.RAUMLY_BILLING_EXPORT_IMPERSONATE_SERVICE_ACCOUNT) tokenArgs.push(`--impersonate-service-account=${values.RAUMLY_BILLING_EXPORT_IMPERSONATE_SERVICE_ACCOUNT}`);
+  const gcloudBinary = values.RAUMLY_GCLOUD_BIN || "gcloud";
+  const { stdout } = await execFileAsync(gcloudBinary, tokenArgs, { windowsHide: true });
+  const accessToken = stdout.trim();
+  if (!accessToken) throw new Error("Kein kurzlebiges Application-Default-Token verfügbar.");
+  const query = buildBillingQuery({
+    table: values.RAUMLY_BILLING_EXPORT_TABLE,
+    projectId: values.GOOGLE_CLOUD_PROJECT,
+    serviceDescription: values.RAUMLY_BILLING_EXPORT_SERVICE_DESCRIPTION,
+    startedAt: selection.startedAt,
+  });
+  query.location = values.RAUMLY_BILLING_EXPORT_LOCATION || undefined;
+  query.maximumBytesBilled = String(maxBytesBilled);
+  const response = await fetch(`https://bigquery.googleapis.com/bigquery/v2/projects/${encodeURIComponent(values.RAUMLY_BILLING_EXPORT_BIGQUERY_PROJECT)}/queries`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
+    body: JSON.stringify(query),
+  });
+  const billingPayload = await response.json().catch(() => null);
+  if (!response.ok) throw new Error(`BigQuery-Billing-Abfrage fehlgeschlagen (HTTP ${response.status}).`);
+  const actualCents = parseBigQueryCost(billingPayload);
+  if (actualCents === null) {
+    console.log(JSON.stringify({ status: "not-reconciled", reason: "billing-export-not-yet-available", selection }));
+  } else {
+    if (actualCents > selection.maximumCents) throw new Error("Billing-Betrag überschreitet die reservierte sichere Grenze.");
+    const method = selection.kind === "batch" ? "localhost_image_test_reconcile_pending_batch" : "localhost_image_test_reconcile_completed_attempt";
+    const updatedLedger = await rpc(method, { confirmed_actual_cents: actualCents });
+    console.log(JSON.stringify({ status: "reconciled", kind: selection.kind, actualCents, ledger: updatedLedger }));
+  }
 }
-
-// Billing runs through the locally authenticated operator and impersonates the
-// read-only reconciler. Do not reuse the Vertex application's ADC identity.
-const tokenArgs = ["auth", "print-access-token"];
-if (values.RAUMLY_BILLING_EXPORT_IMPERSONATE_SERVICE_ACCOUNT) tokenArgs.push(`--impersonate-service-account=${values.RAUMLY_BILLING_EXPORT_IMPERSONATE_SERVICE_ACCOUNT}`);
-const { stdout } = await execFileAsync("gcloud", tokenArgs, { windowsHide: true });
-const accessToken = stdout.trim();
-if (!accessToken) throw new Error("Kein kurzlebiges Application-Default-Token verfügbar.");
-const query = buildBillingQuery({
-  table: values.RAUMLY_BILLING_EXPORT_TABLE,
-  projectId: values.GOOGLE_CLOUD_PROJECT,
-  serviceDescription: values.RAUMLY_BILLING_EXPORT_SERVICE_DESCRIPTION,
-  startedAt: selection.startedAt,
-});
-query.location = values.RAUMLY_BILLING_EXPORT_LOCATION || undefined;
-query.maximumBytesBilled = String(maxBytesBilled);
-const response = await fetch(`https://bigquery.googleapis.com/bigquery/v2/projects/${encodeURIComponent(values.RAUMLY_BILLING_EXPORT_BIGQUERY_PROJECT)}/queries`, {
-  method: "POST",
-  headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
-  body: JSON.stringify(query),
-});
-const billingPayload = await response.json().catch(() => null);
-if (!response.ok) throw new Error(`BigQuery-Billing-Abfrage fehlgeschlagen (HTTP ${response.status}).`);
-const actualCents = parseBigQueryCost(billingPayload);
-if (actualCents === null) {
-  console.log(JSON.stringify({ status: "not-reconciled", reason: "billing-export-not-yet-available", selection }));
-  process.exit(0);
-}
-if (actualCents > selection.maximumCents) throw new Error("Billing-Betrag überschreitet die reservierte sichere Grenze.");
-const method = selection.kind === "batch" ? "localhost_image_test_reconcile_pending_batch" : "localhost_image_test_reconcile_completed_attempt";
-const updatedLedger = await rpc(method, { confirmed_actual_cents: actualCents });
-console.log(JSON.stringify({ status: "reconciled", kind: selection.kind, actualCents, ledger: updatedLedger }));

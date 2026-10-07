@@ -51,7 +51,8 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 
 ### D-043: Automatischer Billing-Abgleich für lokale Vertex-Tests
 
-- **Status:** Bestätigt, technische Vorbereitung umgesetzt; Google-Aktivierung ausstehend
+- **Status:** Aktiviert am 7. Oktober 2026; die erste Exporttabelle und der
+  Dienstname `Vertex AI` sind verifiziert.
 - **Entscheidung:** Raumly darf einen eindeutig zuordenbaren lokalen Test über
   den standardisierten Google-Cloud-Billing-Export automatisiert abgleichen.
   Die Funktion ist standardmäßig ausgeschaltet und startet niemals selbst eine
@@ -59,9 +60,10 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 - **Schutz:** Unbekannte, aktive oder mehrdeutige Versuche bleiben gesperrt.
   Der Abgleich akzeptiert nur EUR-Beträge innerhalb der bereits reservierten
   Grenze und mit einer BigQuery-Byteobergrenze.
-- **Offen:** Billing-Export, minimale BigQuery-Leserechte und deren
-  Kostenfreigabe werden erst nach einer separaten Betreiberbestätigung
-  eingerichtet.
+- **Betrieb:** Der Abgleich läuft täglich, liest ausschließlich die
+  konfigurierte BigQuery-Exporttabelle mit einer Obergrenze von 10 MiB und
+  verwendet ein separates, nur lesendes Konto ohne Vertex-Zugang. Bei keinem
+  offenen oder bei einem mehrdeutigen Versuch bleibt der Stand unverändert.
 
 ### D-008: Arbeitsname
 

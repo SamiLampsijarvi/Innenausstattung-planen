@@ -1,4 +1,4 @@
-# Automatischer Google-Billing-Abgleich (lokal, ausgeschaltet)
+# Automatischer Google-Billing-Abgleich (lokal, kontrolliert aktiviert)
 
 ## Zweck
 
@@ -25,24 +25,31 @@ wirkungsfreier Trockenlauf.
   entsperrt. Fehlende oder noch nicht exportierte Billing-Zeilen führen zu
   keiner Datenbankänderung.
 - Foto-, Bild- und Providerantwortdaten werden weder abgefragt noch geloggt.
-- Der Zugang nutzt ein kurzlebiges Application-Default-Token von `gcloud`.
-  Dauerhafte Dienstkontoschlüssel sind ausgeschlossen.
+- Der Zugang nutzt ein kurzlebiges Token der lokalen `gcloud`-Anmeldung und
+  impersoniert ausschließlich das lesende Billing-Konto. Dauerhafte
+  Dienstkontoschlüssel sind ausgeschlossen.
 
-## Noch nicht aktiviert
+## Aktivierungsstand
 
-Vor der Aktivierung sind eine erneute Betreiberfreigabe und diese Google-
-Schritte nötig, da sie Kosten oder zusätzliche Leserechte verursachen können:
+Vor der Aktivierung waren eine Betreiberfreigabe und diese Google-Schritte
+nötig, da sie Kosten oder zusätzliche Leserechte verursachen können:
 
 1. Standardisierten Cloud-Billing-Export in ein BigQuery-Dataset einrichten.
 2. Ein separates, ausschließlich lesendes Konto nur für Dataset und
    BigQuery-Abfragen berechtigen; keine Vertex- oder Billing-Adminrolle.
 3. Eine konservative BigQuery-Bytegrenze festlegen und die monatlichen
    BigQuery-Kosten prüfen.
-4. Die Exporttabelle, Region, Projektkennung und Grenze ausschließlich in
-   `.env.local` hinterlegen. Keine Zugangsdaten oder Abrechnungskennungen nach
-   Git einchecken.
+4. Die Exporttabelle, Region, Projektkennung, Grenze und bei Bedarf den lokalen
+   `gcloud`-Pfad ausschließlich in `.env.local` hinterlegen. Keine
+   Zugangsdaten oder Abrechnungskennungen nach Git einchecken.
 5. Erst nach einem sichtbaren, eindeutig zuordenbaren Exporteintrag die
    wiederkehrende lokale Prüfung mit `--apply` aktivieren.
+
+Diese Voraussetzungen sind am 7. Oktober 2026 erfüllt: Die tägliche
+Exporttabelle ist vorhanden, der Dienstname `Vertex AI` wurde aus einer
+Leseabfrage ermittelt und der Abgleich ist mit einer Obergrenze von 10 MiB
+aktiviert. Ein fehlender oder mehrdeutiger Betrag führt weiterhin zu keiner
+Änderung.
 
 Der Dienstname wird nicht geschätzt: Erst der sichtbare Exportposten bestimmt
 `RAUMLY_BILLING_EXPORT_SERVICE_DESCRIPTION`. Für die lokale Prüfung wird das
