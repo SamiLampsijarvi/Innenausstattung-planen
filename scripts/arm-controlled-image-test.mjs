@@ -1,7 +1,10 @@
 import { readFile } from "node:fs/promises";
 
-if (process.argv[2] !== "--confirm") {
-  console.error("Refusing to arm the image test. Re-run with --confirm after the required human cost approval.");
+const priceReviewFlag = process.argv.find((argument) => argument.startsWith("--price-reviewed-on="));
+const priceReviewedOn = priceReviewFlag?.slice("--price-reviewed-on=".length);
+
+if (process.argv[2] !== "--confirm" || !/^\d{4}-\d{2}-\d{2}$/.test(priceReviewedOn ?? "")) {
+  console.error("Refusing to arm the image test. Re-run with --confirm --price-reviewed-on=YYYY-MM-DD after the required human cost approval and same-day price review.");
   process.exitCode = 2;
 } else {
   const values = Object.fromEntries((await readFile(".env.local", "utf8"))
@@ -13,7 +16,7 @@ if (process.argv[2] !== "--confirm") {
     method: "POST",
     headers: { apikey: values.SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${values.SUPABASE_SERVICE_ROLE_KEY}`, "Content-Type": "application/json" },
     body: JSON.stringify({
-      target_price_review: "Google published list price reviewed 2026-09-01; one user-approved 30-cent reservation; no automatic retry.",
+      target_price_review: `Google price reviewed on ${priceReviewedOn}; one user-approved 30-cent reservation; no automatic retry.`,
       target_reservation_cents: 30,
       active_for_seconds: 600,
     }),

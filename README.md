@@ -58,7 +58,7 @@ Bei Pull Requests nach `main` und Änderungen an `main` führt GitHub Actions di
 
 ## Bewusste MVP-Grenzen
 
-- Phase 7 bereitet unter `/internal/image-test` einen getrennten internen Vertex-Test vor: fünf Fotos, zwei bewusste Versuche und 3 € Reservierungsgrenze bei 5 € gewünschtem Gesamtbudget. Google bleibt ausgeschaltet; [Freigaben und offene Betriebsprüfungen](docs/PHASE_7_CONTROLLED_VERTEX_TEST.md) sind vor echter Nutzung erforderlich.
+- Der getrennte lokale Vertex-Test bleibt ausgeschaltet. Ein einzelner Versuch benötigt eine eigene Fotoeinwilligung, eine tagesaktuelle Preisprüfung und eine 30-Cent-Reservierung; der gesamte lokale Testpool bleibt auf 3 € begrenzt. Der tägliche Billing-Abgleich liest höchstens 10 MiB aus BigQuery und startet niemals Vertex. Details: [Betriebs- und Sicherheitsregeln](docs/AUTOMATED_GOOGLE_BILLING_RECONCILIATION.md).
 
 - Der verwendete kostenlose Supabase-Tarif erstellt keine automatischen Datenbanksicherungen; vor einer öffentlichen Veröffentlichung wird ein passendes Sicherungs- und Löschkonzept benötigt
 - Rechtlich verbindliche Anbieter- und Verantwortlichenangaben sowie die abschließende Datenschutzerklärung benötigen vor einer Veröffentlichung eine juristische Prüfung

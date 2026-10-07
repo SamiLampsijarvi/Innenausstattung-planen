@@ -59,6 +59,16 @@ keinen Vertex-Zugang.
 
 Google exportiert Billing-Daten zeitversetzt. Der automatische Abgleich ist
 deshalb kein Echtzeitbeleg und ersetzt weder das Projekt-Spend-Cap noch die
-3-Euro-Grenze in Raumly. Der gegenwärtig ungeklärte Altbestand wird nicht von
-dieser Automatisierung übernommen und bleibt bis zu einer eindeutigen
-manuellen Klärung gesperrt.
+3-Euro-Grenze in Raumly.
+
+## Geprüfter Betriebsstand am 7. Oktober 2026
+
+Die rein lesende Statusprüfung meldete keinen aktiven Versuch und keine offene
+Billing-Zeile. Die Testbuchhaltung weist 18 Cent tatsächliche Kosten, 180 Cent
+Reservierungen und 60 Cent verbleibenden Rahmen aus. `billingCheckedAt` steht
+auf dem 16. September 2026; bei einem täglichen Lauf ohne offenen Versuch
+bleibt dieser Wert unverändert, weil nichts gebucht oder freigegeben wird.
+
+Vertex bleibt ausgeschaltet. Der Abgleich selbst kann Vertex nicht starten,
+keine Reservierung anlegen und die Grenze von 30 Cent pro Versuch oder 3 Euro
+insgesamt nicht verändern.
