@@ -49,7 +49,7 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 
 ## Vorläufig
 
-### D-043: Automatischer Billing-Abgleich für lokale Vertex-Tests
+### D-045: Automatischer Billing-Abgleich für lokale Vertex-Tests
 
 - **Status:** Aktiviert am 7. Oktober 2026; die erste Exporttabelle und der
   Dienstname `Vertex AI` sind verifiziert.

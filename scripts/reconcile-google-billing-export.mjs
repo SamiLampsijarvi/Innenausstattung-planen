@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { buildBillingQuery, parseBigQueryCost, selectReconciliation } from "./lib/google-billing-reconciliation.mjs";
+import { buildBillingQuery, parseBigQueryCost, selectReconciliation, waitForBigQueryQueryResult } from "./lib/google-billing-reconciliation.mjs";
 
 const execFileAsync = promisify(execFile);
 const apply = process.argv.includes("--apply");
@@ -45,7 +45,18 @@ if (selection.kind === "nothing-pending" || selection.kind === "manual-review") 
   const tokenArgs = ["auth", "print-access-token"];
   if (values.RAUMLY_BILLING_EXPORT_IMPERSONATE_SERVICE_ACCOUNT) tokenArgs.push(`--impersonate-service-account=${values.RAUMLY_BILLING_EXPORT_IMPERSONATE_SERVICE_ACCOUNT}`);
   const gcloudBinary = values.RAUMLY_GCLOUD_BIN || "gcloud";
-  const { stdout } = await execFileAsync(gcloudBinary, tokenArgs, { windowsHide: true });
+  const command = process.platform === "win32" && /\.(?:cmd|bat)$/i.test(gcloudBinary)
+    ? {
+        file: "powershell.exe",
+        args: ["-NoLogo", "-NoProfile", "-NonInteractive", "-Command", "$cliArgs = ConvertFrom-Json $env:RAUMLY_BILLING_TOKEN_ARGS; & $env:RAUMLY_BILLING_GCLOUD_BIN @cliArgs; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }"],
+        env: {
+          ...process.env,
+          RAUMLY_BILLING_GCLOUD_BIN: gcloudBinary,
+          RAUMLY_BILLING_TOKEN_ARGS: JSON.stringify(tokenArgs),
+        },
+      }
+    : { file: gcloudBinary, args: tokenArgs, env: process.env };
+  const { stdout } = await execFileAsync(command.file, command.args, { windowsHide: true, env: command.env });
   const accessToken = stdout.trim();
   if (!accessToken) throw new Error("Kein kurzlebiges Application-Default-Token verfügbar.");
   const query = buildBillingQuery({
@@ -61,15 +72,24 @@ if (selection.kind === "nothing-pending" || selection.kind === "manual-review") 
     headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
     body: JSON.stringify(query),
   });
-  const billingPayload = await response.json().catch(() => null);
+  let billingPayload = await response.json().catch(() => null);
   if (!response.ok) throw new Error(`BigQuery-Billing-Abfrage fehlgeschlagen (HTTP ${response.status}).`);
-  const actualCents = parseBigQueryCost(billingPayload);
-  if (actualCents === null) {
-    console.log(JSON.stringify({ status: "not-reconciled", reason: "billing-export-not-yet-available", selection }));
+  billingPayload = await waitForBigQueryQueryResult(billingPayload, {
+    projectId: values.RAUMLY_BILLING_EXPORT_BIGQUERY_PROJECT,
+    accessToken,
+    location: query.location,
+  });
+  if (billingPayload?.jobComplete !== true) {
+    console.log(JSON.stringify({ status: "not-reconciled", reason: "billing-export-query-incomplete", selection }));
   } else {
-    if (actualCents > selection.maximumCents) throw new Error("Billing-Betrag überschreitet die reservierte sichere Grenze.");
-    const method = selection.kind === "batch" ? "localhost_image_test_reconcile_pending_batch" : "localhost_image_test_reconcile_completed_attempt";
-    const updatedLedger = await rpc(method, { confirmed_actual_cents: actualCents });
-    console.log(JSON.stringify({ status: "reconciled", kind: selection.kind, actualCents, ledger: updatedLedger }));
+    const actualCents = parseBigQueryCost(billingPayload);
+    if (actualCents === null) {
+      console.log(JSON.stringify({ status: "not-reconciled", reason: "billing-export-not-yet-available", selection }));
+    } else {
+      if (actualCents > selection.maximumCents) throw new Error("Billing-Betrag überschreitet die reservierte sichere Grenze.");
+      const method = selection.kind === "batch" ? "localhost_image_test_reconcile_pending_batch" : "localhost_image_test_reconcile_completed_attempt";
+      const updatedLedger = await rpc(method, { confirmed_actual_cents: actualCents });
+      console.log(JSON.stringify({ status: "reconciled", kind: selection.kind, actualCents, ledger: updatedLedger }));
+    }
   }
 }

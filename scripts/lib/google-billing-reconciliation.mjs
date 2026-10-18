@@ -1,5 +1,36 @@
 const allowedStatuses = new Set(["succeeded", "discarded"]);
 
+export async function waitForBigQueryQueryResult(initialResult, {
+  projectId,
+  accessToken,
+  location,
+  fetchImpl = fetch,
+  timeoutMs = 120_000,
+  pollIntervalMs = 1_000,
+} = {}) {
+  let result = initialResult;
+  const jobId = result?.jobReference?.jobId;
+  if (result?.jobComplete === true || typeof jobId !== "string") return result;
+
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const parameters = new URLSearchParams({ timeoutMs: "10000" });
+    const jobLocation = result?.jobReference?.location || location;
+    if (jobLocation) parameters.set("location", jobLocation);
+    const url = `https://bigquery.googleapis.com/bigquery/v2/projects/${encodeURIComponent(projectId)}/queries/${encodeURIComponent(jobId)}?${parameters}`;
+    const response = await fetchImpl(url, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+      signal: AbortSignal.timeout(15_000),
+    });
+    const payload = await response.json().catch(() => null);
+    if (!response.ok) throw new Error(`BigQuery-Ergebnis konnte nicht gelesen werden (HTTP ${response.status}).`);
+    result = payload;
+    if (result?.jobComplete === true) return result;
+    await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));
+  }
+  return result;
+}
+
 export function selectReconciliation(pending, ledger) {
   if (!Array.isArray(pending) || !ledger || typeof ledger !== "object") {
     throw new Error("Ungültige lokale Abrechnungsdiagnose.");
@@ -39,10 +70,11 @@ export function ceilingEuroToCents(value) {
 }
 
 export function parseBigQueryCost(payload) {
-  if (!payload || payload.jobComplete !== true || !Array.isArray(payload.rows)) {
+  if (!payload || payload.jobComplete !== true) {
     throw new Error("BigQuery-Abfrage ist nicht vollständig.");
   }
-  if (payload.rows.length === 0) return null;
+  if (payload.totalRows === "0" || payload.totalRows === 0 || (Array.isArray(payload.rows) && payload.rows.length === 0)) return null;
+  if (!Array.isArray(payload.rows)) throw new Error("BigQuery-Ergebnis enthält keine Zeilenliste.");
   if (payload.rows.length !== 1) throw new Error("Google Billing ist nicht eindeutig einer Währung zuordenbar.");
   const values = payload.rows[0]?.f?.map((field) => field.v);
   if (!values || values.length !== 2 || values[0] !== "EUR") {
