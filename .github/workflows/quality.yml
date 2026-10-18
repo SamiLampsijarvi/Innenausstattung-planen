@@ -27,6 +27,7 @@ jobs:
         uses: supabase/setup-cli@v1
         with:
           version: latest
+          github-token: ${{ github.token }}
 
       - name: pnpm einrichten
         uses: pnpm/action-setup@v6

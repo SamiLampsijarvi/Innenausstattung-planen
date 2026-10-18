@@ -93,6 +93,7 @@ before(async () => {
   await db.exec(await readFile(new URL('../supabase/migrations/202609160005_fix_provisional_release_function_name.sql', import.meta.url), 'utf8'));
   await db.exec(await readFile(new URL('../supabase/migrations/202609160006_local_rejected_candidate_preview.sql', import.meta.url), 'utf8'));
   await db.exec(await readFile(new URL('../supabase/migrations/202609160007_local_latest_rejected_candidate_preview.sql', import.meta.url), 'utf8'));
+  await db.exec(await readFile(new URL('../supabase/migrations/202609160008_pending_billing_provisional_hold.sql', import.meta.url), 'utf8'));
   await db.exec(`insert into auth.users values('${user}'),('${other}');
     insert into public.projects values('${user}','${user}',null),('${other}','${other}',null);
     insert into public.image_test_members values('${user}'),('${other}');
@@ -312,6 +313,7 @@ test('pending billing diagnostics omit all image data', () => scenario(async () 
   assert.equal(diagnostics[0].status, 'reserved');
   assert.equal('source_base64' in diagnostics[0], false);
   assert.equal('provider_image_base64' in diagnostics[0], false);
+  assert.equal('provisionalBillingHold' in diagnostics[0], true);
   await db.exec('reset role');
   assert.equal(await scalar("select has_function_privilege('anon','public.localhost_image_test_pending_billing_diagnostics()','execute')"), false);
 }));
