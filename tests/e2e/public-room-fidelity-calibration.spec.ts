@@ -10,7 +10,7 @@ import { validateStructuralFidelity } from "../../src/lib/ai/image-generation/st
 const root = path.resolve("private-evaluation/room-fidelity-calibration");
 const files = ["R01.jpg", "R02.jpg", "R03.jpg", "R04.jpg", "R05.jpg", "R06.jpg"];
 
-async function transformed(source: Uint8Array, type: "light" | "crop" | "perspective" | "furniture" | "door") {
+async function transformed(source: Uint8Array, type: "light" | "crop" | "perspective" | "furniture" | "door" | "wallArt") {
   const image = sharp(source).rotate();
   if (type === "light") return new Uint8Array(await image.modulate({ brightness: 1.08, saturation: 0.9 }).jpeg().toBuffer());
   if (type === "crop") {
@@ -25,9 +25,39 @@ async function transformed(source: Uint8Array, type: "light" | "crop" | "perspec
   if (!width || !height) throw new Error("Unlesbares Kalibrierungsbild.");
   const overlay = type === "furniture"
     ? `<svg width="${width}" height="${height}"><ellipse cx="${width * 0.5}" cy="${height * 0.83}" rx="${width * 0.18}" ry="${height * 0.045}" fill="#cdbba5" opacity=".72"/><rect x="${width * 0.38}" y="${height * 0.67}" width="${width * 0.24}" height="${height * 0.13}" rx="18" fill="#807466" opacity=".78"/><rect x="${width * 0.35}" y="${height * 0.72}" width="${width * 0.3}" height="${height * 0.11}" rx="12" fill="#9f9384" opacity=".78"/></svg>`
-    : `<svg width="${width}" height="${height}"><rect x="${width * 0.72}" y="${height * 0.16}" width="${width * 0.15}" height="${height * 0.58}" fill="#8c7561" stroke="#3d342e" stroke-width="10"/><circle cx="${width * 0.84}" cy="${height * 0.47}" r="9" fill="#d8ba77"/></svg>`;
+    : type === "wallArt"
+      ? `<svg width="${width}" height="${height}"><rect x="${width * 0.69}" y="${height * 0.22}" width="${width * 0.16}" height="${height * 0.22}" fill="#bbac93" stroke="#6d5d49" stroke-width="9"/><circle cx="${width * 0.77}" cy="${height * 0.33}" r="${width * 0.045}" fill="#e3d4bb"/></svg>`
+      : `<svg width="${width}" height="${height}"><rect x="${width * 0.72}" y="${height * 0.16}" width="${width * 0.15}" height="${height * 0.58}" fill="#8c7561" stroke="#3d342e" stroke-width="10"/><circle cx="${width * 0.84}" cy="${height * 0.47}" r="9" fill="#d8ba77"/></svg>`;
   return new Uint8Array(await image.composite([{ input: Buffer.from(overlay) }]).jpeg().toBuffer());
 }
+
+test("R06.jpg: kleine Wanddekoration auf freier Wandfläche bleibt erlaubt", async () => {
+  const filePath = path.join(root, "R06.jpg");
+  test.skip(!existsSync(filePath), "Lokales Kalibrierungsbild R06.jpg fehlt.");
+  const source = new Uint8Array(await readFile(filePath));
+  const report = await validateStructuralFidelity(source, await transformed(source, "wallArt"));
+  expect(report.status, JSON.stringify(report)).toBe("passed");
+});
+
+test("R06.jpg: entfernte Testmöbel dürfen feste Raumkanten nicht verändern", async () => {
+  const filePath = path.join(root, "R06.jpg");
+  test.skip(!existsSync(filePath), "Lokales Kalibrierungsbild R06.jpg fehlt.");
+  const emptyRoom = new Uint8Array(await readFile(filePath));
+  const furnishedRoom = await transformed(emptyRoom, "furniture");
+  const report = await validateStructuralFidelity(furnishedRoom, emptyRoom);
+  expect(report.status, JSON.stringify(report)).toBe("passed");
+});
+
+test("R06.jpg: bekannte Grenze bei kombinierter Umgestaltung eines möblierten Raums", async () => {
+  const filePath = path.join(root, "R06.jpg");
+  test.skip(!existsSync(filePath), "Lokales Kalibrierungsbild R06.jpg fehlt.");
+  test.fail(true, "Die gemeinsame Änderung von Möbeln, Licht und Wanddekor ist mit structure-v3 noch nicht sicher freigebbar.");
+  const emptyRoom = new Uint8Array(await readFile(filePath));
+  const furnishedRoom = await transformed(emptyRoom, "furniture");
+  const redesignedRoom = await transformed(await transformed(emptyRoom, "light"), "wallArt");
+  const report = await validateStructuralFidelity(furnishedRoom, redesignedRoom);
+  expect(report.status, JSON.stringify(report)).toBe("passed");
+});
 
 for (const file of files) {
   test(`${file}: Lichtänderung besteht, Zuschnitt und Perspektive werden verworfen`, async () => {

@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import sharp from "sharp";
 import { validateStructuralFidelity } from "../../src/lib/ai/image-generation/structural-fidelity.server";
 
-async function roomImage(options?: { shifted?: boolean; width?: number; tint?: string }) {
+async function roomImage(options?: { shifted?: boolean; width?: number; tint?: string; furniture?: boolean; wallArt?: boolean; extraDoor?: boolean }) {
   const width = options?.width ?? 640;
   const shift = options?.shifted ? 70 : 0;
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="480">
@@ -11,6 +11,9 @@ async function roomImage(options?: { shifted?: boolean; width?: number; tint?: s
     <path d="M320 ${210 + shift} L320 0 M40 40 L40 330 M600 40 L600 330" stroke="#4a453e" stroke-width="8"/>
     <rect x="80" y="80" width="140" height="160" fill="#b9d4df" stroke="#4a453e" stroke-width="8"/>
     <rect x="430" y="110" width="120" height="220" fill="#9b8068" stroke="#4a453e" stroke-width="8"/>
+    ${options?.furniture ? '<rect x="80" y="300" width="230" height="110" rx="18" fill="#494847" stroke="#393938" stroke-width="8"/>' : ''}
+    ${options?.wallArt ? '<rect x="340" y="85" width="65" height="85" fill="#a79c87" stroke="#6b6053" stroke-width="7"/><circle cx="370" cy="125" r="20" fill="#ddd0b7"/>' : ''}
+    ${options?.extraDoor ? '<rect x="320" y="135" width="95" height="195" fill="#ad9883" stroke="#393938" stroke-width="8"/>' : ''}
   </svg>`;
   return new Uint8Array(await sharp(Buffer.from(svg)).png().toBuffer());
 }
@@ -31,4 +34,27 @@ test("verwirft einen veränderten Bildausschnitt", async () => {
   const report = await validateStructuralFidelity(await roomImage(), await roomImage({ width: 520 }));
   expect(report.status).toBe("rejected");
   expect(report.aspectRatioDifference).toBeGreaterThan(0.015);
+});
+
+test("bekannte Grenze: neue Wanddekoration bei fester Raumstruktur", async () => {
+  test.fail(true, "structure-v3 verwechselt neue Wanddekoration mit möglicher Architekturänderung.");
+  const report = await validateStructuralFidelity(await roomImage(), await roomImage({ wallArt: true }));
+  expect(report.status, JSON.stringify(report)).toBe("passed");
+});
+
+test("bekannte Grenze: ersetzte Möbel bei fester Raumstruktur", async () => {
+  test.fail(true, "structure-v3 zählt Kanten vorhandener Möbel als feste Raumkanten.");
+  const report = await validateStructuralFidelity(await roomImage({ furniture: true }), await roomImage());
+  expect(report.status, JSON.stringify(report)).toBe("passed");
+});
+
+test("bekannte Grenze: neue Wanddekoration und ersetzte Möbel zusammen", async () => {
+  test.fail(true, "Der kombinierte Fall ist noch nicht sicher von Architekturänderungen zu unterscheiden.");
+  const report = await validateStructuralFidelity(await roomImage({ furniture: true }), await roomImage({ wallArt: true }));
+  expect(report.status, JSON.stringify(report)).toBe("passed");
+});
+
+test("verwirft eine zusätzlich erfundene Tür trotz vorhandener Möbel", async () => {
+  const report = await validateStructuralFidelity(await roomImage({ furniture: true }), await roomImage({ extraDoor: true }));
+  expect(report.status, JSON.stringify(report)).toBe("rejected");
 });

@@ -28,9 +28,10 @@ Die aktuelle Anwendung basiert auf Next.js und TypeScript. Nach der Installation
 - `pnpm test:integration`: vollständige Supabase-Prüfung ausschließlich im isolierten GitHub-Testjob, mit künstlichen Daten und ausgeschalteter Google-KI
 - `pnpm test:evaluation`: Regeln der lokalen Phase-8-Bildauswertung
 - `pnpm test:room-fidelity-calibration`: lokaler Kalibrierungslauf für den nicht versionierten öffentlichen Raumtestbestand; keine Netzwerk- oder KI-Aufrufe
+- `pnpm test:structure`: synthetische Strukturprüfungen ohne Webserver, Netzwerk oder KI-Aufrufe; bekannte Fehlablehnungen sind als erwartete Fehler markiert
 - `pnpm evaluate:images docs/templates/image-evaluation.example.json`: leere Auswertung ohne Fotos, Netzwerk oder KI-Kosten
 
-Bei Pull Requests nach `main` und Änderungen an `main` führt GitHub Actions diese Prüfungen automatisch aus. Ein Playwright-Bericht wird nur bei einem Fehler für sieben Tage als GitHub-Artefakt gespeichert.
+Bei Pull Requests nach `main` und Änderungen an `main` führt GitHub Actions Build, Lint, Datenbank-, Auswertungs- und Desktop-/Mobiltests automatisch aus. Die Kalibrierung mit nicht versionierten öffentlichen Fotos bleibt eine lokale Prüfung. Ein Playwright-Bericht wird nur bei einem Fehler für sieben Tage als GitHub-Artefakt gespeichert.
 
 ## Was bereits funktioniert
 
@@ -63,17 +64,17 @@ Bei Pull Requests nach `main` und Änderungen an `main` führt GitHub Actions di
 - Der verwendete kostenlose Supabase-Tarif erstellt keine automatischen Datenbanksicherungen; vor einer öffentlichen Veröffentlichung wird ein passendes Sicherungs- und Löschkonzept benötigt
 - Rechtlich verbindliche Anbieter- und Verantwortlichenangaben sowie die abschließende Datenschutzerklärung benötigen vor einer Veröffentlichung eine juristische Prüfung
 - Die vorhandene lokale Möbelerkennung und frühere Testentwürfe sind aus dem normalen Nutzerablauf genommen, bleiben im Code und in bestehenden Projektdaten aber erhalten
-- Der Ergebnisbereich bereitet die spätere Bild-KI vor, erzeugt derzeit jedoch noch kein individuelles Raumbild
+- Ein getrennter lokaler Testpfad hat bereits ein individuelles Bild erzeugt; die automatische Raumtreueprüfung hat es verworfen. Der normale Produktablauf zeigt noch keinen freigegebenen individuellen Entwurf.
 - Eine anbieterunabhängige, standardmäßig ausgeschaltete Bild-KI-Schnittstelle schützt die spätere Integration durch Einwilligungs-, Anbieter-, Zeit- und Kostenprüfungen
 - Vollständig erzeugte Testbilder werden vor der Speicherung lokal auf Bildausschnitt, feste Raumkanten, Linienrichtungen und regionale Struktur geprüft. Automatisch verworfene Bilder werden nicht angezeigt; Details stehen in `docs/PHASE_13_AUTOMATIC_ROOM_STRUCTURE.md`.
-- Der getrennte, öffentliche Kalibrierungsbestand prüft diese Strukturregeln vor einem weiteren Vertex-Versuch ohne Fotoübertragung oder Kosten; Details stehen in `docs/PHASE_14_PUBLIC_ROOM_FIDELITY_CALIBRATION.md`.
+- Der getrennte, öffentliche Kalibrierungsbestand prüft diese Strukturregeln vor einem weiteren Vertex-Versuch ohne Fotoübertragung oder Kosten; die Nachprüfung einer möblierten Eingabe steht in `docs/PHASE_14_PUBLIC_ROOM_FIDELITY_CALIBRATION.md`.
 - Manuelle KI-Versuche lieferten überzeugende Inspirationsbilder, bewahrten vorhandene Möbel, Raumdetails und Budgets aber nicht zuverlässig exakt; zukünftige KI-Bilder sind daher keine maßgenaue Planung oder Kostengarantie
 - Noch keine Live-Produktpreise oder Händlerverfügbarkeit
 - Noch keine Bezahlung
 
 ## Empfohlene nächste Phasen
 
-Phase 8 ist als Gesamtphase beauftragt; die kostenfreie Vorbereitung und verbleibenden Freigaben stehen in `docs/PHASE_8_IMAGE_VALIDATION.md`. Echte KI-Aufrufe und eine Veröffentlichung sind noch nicht erfolgt.
+Phase 8 ist als Gesamtphase beauftragt; die Vorbereitung und verbleibenden Freigaben stehen in `docs/PHASE_8_IMAGE_VALIDATION.md`. Kontrollierte lokale KI-Versuche haben stattgefunden. Eine Veröffentlichung ist noch nicht erfolgt.
 
 1. Google Vertex AI und OpenAI nach `docs/IMAGE_PROVIDER_EVALUATION.md` mit freigegebenen Testbildern vergleichen; Konten, Schlüssel, Abrechnung und Fotoübertragung benötigen eine gesonderte Freigabe.
 2. Den vereinfachten Ablauf und die KI-Ergebnisse mit Testnutzern validieren.
