@@ -13,6 +13,7 @@
     "test:integration": "node --test --test-reporter=spec tests/supabase-integration.test.mjs",
     "test:evaluation": "node --test tests/image-evaluation.test.mjs",
     "test:room-fidelity-calibration": "playwright test --config=playwright.room-fidelity-calibration.config.ts",
+    "test:room-fidelity-holdout": "playwright test --config=playwright.room-fidelity-holdout.config.ts",
     "test:structure": "playwright test --config=playwright.structural-fidelity.config.ts",
     "prepare:room-fidelity-calibration": "node scripts/prepare-public-room-fidelity-corpus.mjs",
     "evaluate:images": "node scripts/image-evaluation.mjs",
