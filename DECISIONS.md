@@ -384,6 +384,7 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 - **Grenze:** Der öffentliche Bestand ist kein Ersatz für spätere, freiwillig bereitgestellte echte Raumfotos und keine Bild- oder Produktfreigabe. Der normale Ablauf, die Testbuchhaltung sowie die menschliche Endprüfung bleiben unverändert.
 - **Nachweis:** `docs/PHASE_14_PUBLIC_ROOM_FIDELITY_CALIBRATION.md`.
 - **Nachprüfung am 19. Oktober 2026:** Der visuell gute, jedoch automatisch verworfene Versuch mit einem möblierten Wohnzimmer offenbart eine noch nicht sicher lösbare Fehlablehnung. Zusätzliche lokale Tests unterscheiden einzelne erlaubte Änderungen von einer kombinierten Umgestaltung und prüfen weiterhin erfundene Türen, Zuschnitt und Perspektive. Die Schutzgrenzen werden nicht gelockert; möblierte Räume sind dadurch nicht als Produktumfang freigegeben. Die konkreten Befunde stehen im Nachweis.
+- **Erweiterte Nachprüfung am 20. Oktober 2026:** Sechs bekannte und zwei zuvor zurückgehaltene öffentliche Räume zeigen zugleich Fehlablehnungen erlaubter Möbel-/Dekoränderungen und drei durchgelassene kleine zusätzliche Fenster. Das Freigabekriterium für eine Filteränderung ist damit verfehlt. `structure-v3` bleibt unverändert; ein Weg mit Erkennung fester Bauteile oder ausdrücklich freigegebener menschlicher Prüfung braucht eine separate Produktentscheidung. Messwerte, Fälle und der offene Billing-Stand stehen in `docs/PHASE_15_FURNISHED_ROOM_VALIDATION.md`.
 
 ### D-043: Anonyme Vorbereitung eines einzelnen Bildtests im Planer
 

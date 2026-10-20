@@ -28,6 +28,7 @@ Die aktuelle Anwendung basiert auf Next.js und TypeScript. Nach der Installation
 - `pnpm test:integration`: vollständige Supabase-Prüfung ausschließlich im isolierten GitHub-Testjob, mit künstlichen Daten und ausgeschalteter Google-KI
 - `pnpm test:evaluation`: Regeln der lokalen Phase-8-Bildauswertung
 - `pnpm test:room-fidelity-calibration`: lokaler Kalibrierungslauf für den nicht versionierten öffentlichen Raumtestbestand; keine Netzwerk- oder KI-Aufrufe
+- `pnpm test:room-fidelity-holdout`: getrennte Schlussprüfung mit zwei weiteren, nicht versionierten öffentlichen Räumen; keine Netzwerk- oder KI-Aufrufe
 - `pnpm test:structure`: synthetische Strukturprüfungen ohne Webserver, Netzwerk oder KI-Aufrufe; bekannte Fehlablehnungen sind als erwartete Fehler markiert
 - `pnpm evaluate:images docs/templates/image-evaluation.example.json`: leere Auswertung ohne Fotos, Netzwerk oder KI-Kosten
 
@@ -68,6 +69,7 @@ Bei Pull Requests nach `main` und Änderungen an `main` führt GitHub Actions Bu
 - Eine anbieterunabhängige, standardmäßig ausgeschaltete Bild-KI-Schnittstelle schützt die spätere Integration durch Einwilligungs-, Anbieter-, Zeit- und Kostenprüfungen
 - Vollständig erzeugte Testbilder werden vor der Speicherung lokal auf Bildausschnitt, feste Raumkanten, Linienrichtungen und regionale Struktur geprüft. Automatisch verworfene Bilder werden nicht angezeigt; Details stehen in `docs/PHASE_13_AUTOMATIC_ROOM_STRUCTURE.md`.
 - Der getrennte, öffentliche Kalibrierungsbestand prüft diese Strukturregeln vor einem weiteren Vertex-Versuch ohne Fotoübertragung oder Kosten; die Nachprüfung einer möblierten Eingabe steht in `docs/PHASE_14_PUBLIC_ROOM_FIDELITY_CALIBRATION.md`.
+- Die erweiterte Prüfung in `docs/PHASE_15_FURNISHED_ROOM_VALIDATION.md` belegt Fehlablehnungen möblierter Umgestaltungen und zusätzlich durchgelassene kleine Fenster. Der produktive Filter bleibt deshalb unverändert.
 - Manuelle KI-Versuche lieferten überzeugende Inspirationsbilder, bewahrten vorhandene Möbel, Raumdetails und Budgets aber nicht zuverlässig exakt; zukünftige KI-Bilder sind daher keine maßgenaue Planung oder Kostengarantie
 - Noch keine Live-Produktpreise oder Händlerverfügbarkeit
 - Noch keine Bezahlung
