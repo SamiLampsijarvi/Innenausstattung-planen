@@ -2,7 +2,7 @@
 
 ## Ziel und Prüfmethode
 
-Raumly soll später ein bereits möbliertes Wohnzimmer umgestalten können. Möbel, Licht und Dekoration dürfen sich ändern; Türen, Fenster, Wände, Bildausschnitt und Perspektive müssen erhalten bleiben. Diese Nachprüfung bewertet die bestehende automatische Sperre `structure-v3` **offline**. Sie erzeugt kein Vertex-Bild und verändert weder den Produktfilter noch Kostenlimits, Datenbank oder normalen Nutzerablauf.
+Raumly soll später ein bereits möbliertes Wohnzimmer umgestalten können. Möbel, Licht und Dekoration dürfen sich ändern; Türen, Fenster, Wände, Bildausschnitt und Perspektive müssen erhalten bleiben. Diese Nachprüfung bewertet die damalige automatische Sperre `structure-v3` **offline**. Sie erzeugt kein Vertex-Bild und verändert weder Kostenlimits, Datenbank oder normalen Nutzerablauf.
 
 Die am 19. Oktober dokumentierten synthetischen und öffentlichen Fälle waren der Entwicklungsbestand. Vor einer Filteränderung wurden zwei weitere [Pexels-Räume](https://www.pexels.com/license/) als getrennter Rückhaltebestand gewählt und zunächst nicht zur Anpassung von Regeln benutzt. Erst nach dem Ergebnis der sechs bisherigen Räume liefen die neuen Bilder R07 und R08 einmalig als Schlussprüfung. Alle acht Originalbilder und Quellenprotokolle bleiben unter `private-evaluation/room-fidelity-calibration/` außerhalb von Git; die JPEGs wurden ohne übernommene Metadaten gespeichert. Es wurden keine privaten Nutzerfotos verarbeitet.
 
@@ -34,7 +34,7 @@ Die Ursache einer riskanten Pauschalkorrektur ist messbar: Auf R06 hat das zusä
 
 ## Entscheidung für diesen Arbeitsstand
 
-Die vereinbarten Kriterien für eine sichere Filteränderung sind **nicht erfüllt**. `structure-v3`, sämtliche Schwellen, die automatische Sperre, die menschliche Prüfung und die Kostenregeln bleiben unverändert. Die neuen Tests halten die bereits durchgelassenen Fenster sichtbar fest; sie beheben diese Lücke noch nicht. Ein realistisches Vorher-Nachher-Paar mit unveränderter Architektur ist weiterhin nötig, bevor eine Freigabe möblierter Eingaben behauptet werden kann. Der private Bildversuch vom 18. Oktober ist kein dauerhaft verfügbares Testpaar: Testfotos und Ergebnisse werden nach höchstens 24 Stunden gelöscht; Bildschirmansichten ersetzen keinen Pixelvergleich.
+Die vereinbarten Kriterien für eine Freigabe möblierter Eingaben sind **nicht erfüllt**. Die spätere lokale Nachbesserung `structure-v4` ergänzt ausschließlich ein enges Signal für ein neu eingefügtes Fensterkreuz im Wandbereich: R06 wird damit verworfen, ohne die separat geprüfte Wanddekoration zu sperren. R04 bleibt ein durchgelassenes kleines Fenster; die kombinierten erlaubten Umgestaltungen bleiben überwiegend Fehlablehnungen. Die automatische Sperre, menschliche Prüfung und Kostenregeln bleiben unverändert. Ein realistisches Vorher-Nachher-Paar mit unveränderter Architektur ist weiterhin nötig, bevor eine Freigabe möblierter Eingaben behauptet werden kann. Der private Bildversuch vom 18. Oktober ist kein dauerhaft verfügbares Testpaar: Testfotos und Ergebnisse werden nach höchstens 24 Stunden gelöscht; Bildschirmansichten ersetzen keinen Pixelvergleich.
 
 Für einen folgenden Produktabschnitt kommen eine eigenständige Erkennung fester Bauteile oder eine ausdrücklich freigegebene menschliche Prüfung unsicherer Kandidaten vor deren Anzeige in Betracht. Beide Wege ändern Umfang und Sicherheitsablauf und benötigen einen eigenen Plan und Nutzerentscheidung. Ein bloßes Verschieben der fünf numerischen Grenzwerte ist durch diese Daten widerlegt.
 

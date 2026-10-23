@@ -69,7 +69,7 @@ for (const file of files) {
   test(`${file}: ein neues kleines Fenster muss verworfen werden`, async () => {
     const filePath = path.join(root, file);
     test.skip(!existsSync(filePath), `Lokales Kalibrierungsbild ${file} fehlt; es gehört absichtlich nicht in Git.`);
-    test.fail(["R04.jpg", "R06.jpg"].includes(file), "Das neue Fenster wird derzeit fälschlich angenommen.");
+    test.fail(file === "R04.jpg", "Das neue Fenster wird derzeit fälschlich angenommen.");
     const source = new Uint8Array(await readFile(filePath));
     const report = await validateStructuralFidelity(source, await transformRoom(source, "window"));
     expect(report.status, JSON.stringify(report)).toBe("rejected");

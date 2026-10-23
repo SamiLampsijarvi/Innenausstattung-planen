@@ -12,7 +12,7 @@ Die zehn Fälle in [der Vorlage](templates/controlled-image-series.example.json)
 2. Für jeden Fall Raumzustand, Stil, Einrichtungsbudget und Einwilligung für **genau einen** Versuch prüfen. Der vorhandene Button startet nach eigenem Klick höchstens einen Anbieteraufruf. Die Datenbank reserviert vorher 30 Cent, verhindert parallele Versuche und verlangt einen Billing-Abgleich zwischen regulären Versuchen.
 3. Nach dem Versuch den automatischen Architekturfilter und die menschliche Prüfung dokumentieren. Nur ein automatisch und menschlich akzeptiertes Ergebnis darf als nutzbar gezählt werden. Eine Ablehnung, ein unklarer Ausgang oder fehlender Kostenbeleg stoppt die Serie, bis der Fall geklärt ist. Es gibt keine automatische Wiederholung.
 4. Den nächsten Fall erst nach bestätigter Buchhaltung und neuem Klick beginnen. Wegen der verzögerten Google-Abrechnung kann dies länger als einen Tag dauern; diese Vorlage beseitigt die Wartezeit nicht.
-5. Nach spätestens zehn Fällen die Gesamtzahl, leere und möblierte Fälle, nutzbare Bilder, Dauer und abgerechnete Kosten vergleichen. Ein guter Einzelversuch oder ein grüner Offline-Test beweist keine garantierte Qualität. Bekannte Fehlentscheidungen von `structure-v3` bleiben offen.
+5. Nach spätestens zehn Fällen die Gesamtzahl, leere und möblierte Fälle, nutzbare Bilder, Dauer und abgerechnete Kosten vergleichen. Ein guter Einzelversuch oder ein grüner Offline-Test beweist keine garantierte Qualität. Bekannte Fehlentscheidungen von `structure-v4` bleiben offen.
 
 ## Lokale, kostenlose Auswertung
 
