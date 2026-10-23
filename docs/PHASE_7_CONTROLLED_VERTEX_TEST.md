@@ -92,6 +92,28 @@ Der freigegebene Vorbereitungsabschnitt endet mit dieser Betriebsabnahme und erf
 
 Pro Versuch nur eine interne Kennung, Status, Laufzeit, Reservierung, Billing-Abgleich und die fünf Bewertungen (1–5) dokumentieren: Raumtreue, Stiltreue, Realismus, Nutzbarkeit und Fehlerfreiheit. Brauchbar bedeutet Raumtreue und Nutzbarkeit jeweils mindestens 3. Kosten pro brauchbarem Ergebnis nur bei geklärter Abrechnung und mindestens einem brauchbaren Ergebnis berechnen. Fünf Fotos reichen nicht für eine endgültige Anbieterentscheidung.
 
+## Erster echter Bildversuch am 18.10.2026
+
+Der Nutzer lud ein möbliertes Wohnzimmerfoto hoch und wählte Japandi. Vertex lieferte ein Bild, das in der internen Testansicht angezeigt werden konnte. Die Buchhaltung führt den Versuch jedoch als `discarded`: Die automatische Prüfung `structure-v3` erkannte verschobene feste Raumkanten und zu viele neue Wandflächen. Das Ergebnis ist daher ein erfolgreicher Nachweis des Provider-Aufrufs, aber kein akzeptiertes Ergebnis des Testablaufs.
+
+Im visuellen Vergleich blieben das große Ecksofa, die Fenster, der Holzboden und die wesentliche Raumaufteilung erkennbar. Das Ergebnis setzte Japandi mit hellem Holz, ruhigen Naturfarben und Textilien nachvollziehbar um. Die automatische Ablehnung steht damit im Widerspruch zum positiven visuellen Eindruck; ob die Prüfschwelle zu streng ist oder die Bildgeometrie tatsächlich verändert wurde, ist noch offen. Keine Lockerung der Raumtreueprüfung ohne separate Entscheidung.
+
+Die lesende Qualitätsdiagnose meldete `edgeRetention=0.949`, `alignedEdgeRetention=0.685`, `orientationSimilarity=0.974`, `wallAppearanceChangeRate=0.302` und `regionalStructureSimilarity=0.960`. Die Anfrage dauerte rund 40 Sekunden. Die Antwort wurde als verworfener Kandidat gespeichert und nur wegen der lokalen internen Vorschau angezeigt.
+
+Der Billing-Abgleich fand noch keine Exportzeile für diesen Versuch. Der zugehörige BigQuery-Auftrag endete erfolgreich mit null Ergebniszeilen; er verarbeitete 97.583 Bytes und rechnete 10 MiB innerhalb der konfigurierten Obergrenze ab. Deshalb blieb die Datenbank unverändert: 18 Cent tatsächliche Kosten, 210 Cent Reservierungen, 30 Cent verbleibender Rahmen, kein aktiver Versuch, Gesamtgrenze 300 Cent. Der 30-Cent-Betrag für den neuen Versuch bleibt reserviert, bis der Google-Export den Preis enthält. `billingCheckedAt` bleibt unverändert.
+
+Nach dem Versuch wurde `RAUMLY_IMAGE_AI_ENABLED=false` gesetzt. Es wurde keine weitere Bildgenerierung ausgelöst und kein Kostenlimit geändert. Der Billing-Abgleich wurde für Windows korrigiert, damit er `gcloud.cmd` starten, asynchrone BigQuery-Jobs bis zum Abschluss abfragen und eine abgeschlossene Abfrage ohne Ergebniszeilen als noch nicht verfügbar behandeln kann. Die Korrektur wurde mit sechs gezielten Tests geprüft; der Live-Abgleich wird erst nach einem neuen Billing-Export erneut ausgeführt.
+
+### Vollständiger visueller Abgleich am 18. Oktober 2026
+
+Der erneute Abruf der letzten Ablehnungsdiagnose gelang über den dokumentierten, nur lesenden Supabase-RPC. Der frühere `ENOTFOUND` trat beim Aufruf innerhalb der eingeschränkten lokalen Netzwerksandbox auf; derselbe Abruf außerhalb dieser Sandbox funktionierte. Es gibt damit keinen Nachweis für einen defekten DNS- oder Supabase-Zugang des Nutzerrechners.
+
+Das über die bestehende private Raumly-Browsersitzung abgerufene Kandidatenbild gehört zum Versuch vom 18. Oktober (`896×1195`); das Original ist `4284×5712`. Die Messwerte bestätigen zwei ausgelöste Regeln: positionsgenauer Kantenerhalt `0.685` (Mindestwert `0.82`) und Wandänderungsrate `0.302` (Höchstwert `0.015`). Seitenverhältnis `0.00028`, allgemeiner Kantenerhalt `0.949`, Perspektivrichtungen `0.974` und regionale Strukturähnlichkeit `0.960` lagen innerhalb der jeweiligen Grenzen.
+
+Im direkten visuellen Vergleich bleiben Fenster, Boden, großes Ecksofa und die wesentliche Raumaufteilung erkennbar; Japandi ist mit hellen Holzmöbeln und ruhigen Naturfarben umgesetzt. Eine klar neu hinzugefügte Tür oder ein neues Fenster ist im Kandidaten nicht erkennbar. Die Wandänderungsmessung reagiert daher wahrscheinlich auf neue oder veränderte Wanddekoration. Der niedrige positionsgenaue Kantenerhalt kann zugleich durch verschobene Bilddetails entstehen; er belegt für sich keine veränderte Architektur. Die Ablehnung wirkt für dieses Bild wahrscheinlich zu streng, ist aber kein Beleg dafür, dass alle Strukturänderungen sicher erkannt werden.
+
+Der lokale Kalibrierungslauf wurde erneut ausgeführt: `pnpm test:room-fidelity-calibration` bestand mit 24/24 Tests (Desktop und Mobilansicht über sechs öffentliche Testzimmer). Licht- und Möbelvarianten wurden akzeptiert; Zuschnitt, Perspektivänderung und zusätzliche Tür wurden abgelehnt. Diese synthetischen Fälle prüfen bekannte Einzeländerungen, aber nicht zuverlässig echte Generatorbilder mit geänderter Dekoration. Deshalb bleiben Prüfschwellen und Kostenlimits unverändert; es wurde weder ein Bild generiert noch in die Testbuchhaltung geschrieben.
+
 ## Primärquellen
 
 - [Google-Modellbeschreibung](https://docs.cloud.google.com/vertex-ai/generative-ai/docs/models/gemini/3-1-flash-image)
