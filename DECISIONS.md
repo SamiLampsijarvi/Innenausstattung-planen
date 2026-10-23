@@ -405,6 +405,13 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 - **Datenschutz:** Original und Ergebnis bleiben getrennt von Projektdaten und werden spätestens nach 24 Stunden gelöscht. Die Einwilligung gilt für genau diesen einzelnen Versuch, nicht als allgemeine Freigabe für spätere Bilder.
 - **Ergebnisintegrität:** Raumly speichert die vom Anbieter erhaltenen Bildbytes und deren Abschlussstatus in einer gemeinsamen Datenbanktransaktion, bevor die Bildadresse an den Browser zurückgegeben wird. Die rechte Ergebnisfläche lädt nur diese gespeicherte Fassung nach. Bei einem Speicher- oder Abschlussfehler wird kein Ersatzbild und kein automatischer neuer Anbieteraufruf erzeugt.
 
+### D-045: Kontrollierte Testserie für leere und eingerichtete Zimmer
+
+- **Status:** Am 23. Oktober 2026 als Ziel und lokale Vorbereitung bestätigt; ein zehnfacher Live-Test ist noch nicht freigegeben oder finanziert.
+- **Produktziel:** Raumly soll zur Veröffentlichung sowohl leere als auch bereits eingerichtete Zimmer umgestalten können. Möbel, Licht und Dekoration dürfen sich ändern; feste Architektur und Perspektive bleiben erhalten. Ein ungeprüftes oder verworfenes Bild ist kein nutzbares Ergebnis.
+- **Testweg:** Eine vorher definierte Serie enthält höchstens zehn unterschiedliche Fälle aus beiden Raumzuständen. Jeder echte Versuch verlangt eine eigene Einwilligung und einen bewussten Klick; es gibt keine automatische Wiederholung. Das Ergebnis wird mit Stil, Möbelwahl, Nutzbarkeit, Dauer und bestätigten Kosten dokumentiert. Fehlversuche zählen mit.
+- **Sperren:** Die bisherigen 30 Cent pro Versuch, 3 Euro lokaler Gesamtpool, globale Einmal-Sperre, Billing-Abgleich und `structure-v3` bleiben unverändert. Die lokale Auswertung in `docs/CONTROLLED_IMAGE_TEST_SERIES.md` kann keine kostenpflichtige Aktion starten. Für zehn neue Live-Versuche reicht der zuletzt dokumentierte freie Rahmen von 30 Cent nicht aus; eine spätere Änderung des lokalen Budgets braucht eine eigene Entscheidung. Google-Kostenlimits bleiben unberührt.
+
 ## Technischer Nachtrag: Vertex-Diagnose und Wiederherstellung (10.09.2026)
 
 - Der Versuch vom 10.09.2026 um 15:48 UTC stoppte nach rund zehn Sekunden im Schritt `architecture`. Kein Architekturprofil und kein Bildbeleg wurden gespeichert. Die konkrete historische Ursache ist mangels Fehlerdetails nicht beweisbar.

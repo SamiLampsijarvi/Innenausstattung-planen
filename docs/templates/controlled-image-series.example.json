@@ -1,0 +1,18 @@
+{
+  "seriesId": "example-series",
+  "maximumAttempts": 10,
+  "maximumTotalCents": 300,
+  "cases": [
+    { "id": "C01", "roomState": "furnished", "roomType": "living-room", "style": "Japandi", "budgetEuro": 1000 },
+    { "id": "C02", "roomState": "empty", "roomType": "living-room", "style": "Japandi", "budgetEuro": 1000 },
+    { "id": "C03", "roomState": "furnished", "roomType": "living-room", "style": "Skandinavisch", "budgetEuro": 1500 },
+    { "id": "C04", "roomState": "empty", "roomType": "living-room", "style": "Skandinavisch", "budgetEuro": 1500 },
+    { "id": "C05", "roomState": "furnished", "roomType": "living-room", "style": "Modern", "budgetEuro": 2000 },
+    { "id": "C06", "roomState": "empty", "roomType": "living-room", "style": "Modern", "budgetEuro": 2000 },
+    { "id": "C07", "roomState": "furnished", "roomType": "living-room", "style": "Japandi", "budgetEuro": 2500 },
+    { "id": "C08", "roomState": "empty", "roomType": "living-room", "style": "Japandi", "budgetEuro": 2500 },
+    { "id": "C09", "roomState": "furnished", "roomType": "living-room", "style": "Skandinavisch", "budgetEuro": 3000 },
+    { "id": "C10", "roomState": "empty", "roomType": "living-room", "style": "Skandinavisch", "budgetEuro": 3000 }
+  ],
+  "attempts": []
+}
