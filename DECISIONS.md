@@ -413,6 +413,8 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 - **Testweg:** Eine vorher definierte Serie enthält höchstens zehn unterschiedliche Fälle aus beiden Raumzuständen. Jeder echte Versuch verlangt eine eigene Einwilligung und einen bewussten Klick; es gibt keine automatische Wiederholung. Das Ergebnis wird mit Stil, Möbelwahl, Nutzbarkeit, Dauer und bestätigten Kosten dokumentiert. Fehlversuche zählen mit.
 - **Sperren:** Die bisherigen 30 Cent pro Versuch, 3 Euro lokaler Gesamtpool, globale Einmal-Sperre, Billing-Abgleich und der automatische Strukturfilter bleiben unverändert. Die lokale Auswertung in `docs/CONTROLLED_IMAGE_TEST_SERIES.md` kann keine kostenpflichtige Aktion starten. Für zehn neue Live-Versuche reicht der zuletzt dokumentierte freie Rahmen von 30 Cent nicht aus; eine spätere Änderung des lokalen Budgets braucht eine eigene Entscheidung. Google-Kostenlimits bleiben unberührt.
 
+**Nachtrag vom 23. Oktober 2026:** Die getrennte lokale Rückhalteprüfung R07/R08 bestätigt `structure-v4` für ein weiteres neu eingefügtes Fenster. Damit werden sieben von acht kleinen Testfenstern verworfen; R04 bleibt offen. Nur zwei von acht erlaubten kombinierten Umgestaltungen bestehen weiterhin. Dies ist eine Sicherheitsverbesserung und kein Nachweis, dass bereits eingerichtete Räume produktreif unterstützt werden.
+
 ## Technischer Nachtrag: Vertex-Diagnose und Wiederherstellung (10.09.2026)
 
 - Der Versuch vom 10.09.2026 um 15:48 UTC stoppte nach rund zehn Sekunden im Schritt `architecture`. Kein Architekturprofil und kein Bildbeleg wurden gespeichert. Die konkrete historische Ursache ist mangels Fehlerdetails nicht beweisbar.

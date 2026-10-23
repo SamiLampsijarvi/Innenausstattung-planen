@@ -37,7 +37,6 @@ for (const file of ["R07.jpg", "R08.jpg"]) {
 
   for (const type of ["crop", "perspective", "door", "window"] as const) {
     test(`${file}: ${type} wird verworfen`, async () => {
-      test.fail(file === "R07.jpg" && type === "window", "Das neue Fenster wird auf diesem zurückgehaltenen Raum fälschlich angenommen.");
       const source = await room();
       const report = await validateStructuralFidelity(source, await transformRoom(source, type));
       expect(report.status, JSON.stringify(report)).toBe("rejected");

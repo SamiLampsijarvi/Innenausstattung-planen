@@ -38,6 +38,17 @@ Die vereinbarten Kriterien für eine Freigabe möblierter Eingaben sind **nicht 
 
 Für einen folgenden Produktabschnitt kommen eine eigenständige Erkennung fester Bauteile oder eine ausdrücklich freigegebene menschliche Prüfung unsicherer Kandidaten vor deren Anzeige in Betracht. Beide Wege ändern Umfang und Sicherheitsablauf und benötigen einen eigenen Plan und Nutzerentscheidung. Ein bloßes Verschieben der fünf numerischen Grenzwerte ist durch diese Daten widerlegt.
 
+## Rückhalteprüfung mit `structure-v4` am 23. Oktober 2026
+
+Nach der lokalen Nachbesserung wurden die zuvor nicht verwendeten öffentlichen Räume R07 und R08 einmalig als Rückhalteprüfung ausgeführt. Dabei startet kein Anbieter: Die Prüfbilder und die Vergleichslogik laufen vollständig lokal.
+
+| Ergebnis | `structure-v3` | `structure-v4` |
+| --- | --- | --- |
+| Erfundenes kleines Fenster verworfen | 5 von 8 | 7 von 8 |
+| Erlaubte kombinierte Umgestaltung angenommen | 2 von 8 | 2 von 8 |
+
+Das neue Fenster auf R07 wird nun korrekt verworfen. R04 bleibt ein durchgelassenes kleines Fenster. Bei den erlaubten kombinierten Umgestaltungen bleiben sechs von acht Fällen fälschlich gesperrt, einschließlich R08. Die Änderung verbessert somit die Sicherheit gegen einen konkreten Architekturfehler, löst aber noch nicht das Produktziel für bereits möblierte Räume. Die Rückhaltebilder liegen weiterhin nur lokal und außerhalb von Git.
+
 ## Wiederholen und Betriebsstand
 
 - `pnpm test:structure` prüft die synthetischen Fälle ohne Webserver.
