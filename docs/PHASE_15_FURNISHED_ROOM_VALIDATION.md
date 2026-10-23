@@ -49,6 +49,12 @@ Nach der lokalen Nachbesserung wurden die zuvor nicht verwendeten öffentlichen 
 
 Das neue Fenster auf R07 wird nun korrekt verworfen. R04 bleibt ein durchgelassenes kleines Fenster. Bei den erlaubten kombinierten Umgestaltungen bleiben sechs von acht Fällen fälschlich gesperrt, einschließlich R08. Die Änderung verbessert somit die Sicherheit gegen einen konkreten Architekturfehler, löst aber noch nicht das Produktziel für bereits möblierte Räume. Die Rückhaltebilder liegen weiterhin nur lokal und außerhalb von Git.
 
+## Ausgeschlossener Lockerungsversuch am 23. Oktober 2026
+
+Die Messung bestätigte, dass Möbelkanten im unteren Bildbereich und neue Wanddekoration zu Fehlablehnungen beitragen. Eine testweise höhere Toleranz für Wandänderungen nahm zwar mehr erlaubte Umgestaltungen an, ließ aber zugleich mehrere künstliche Fenster und Türen durch. Dieser Ansatz wurde vollständig verworfen und nicht in Raumly übernommen.
+
+Als dauerhafter Schutz wurde der technische Testbestand um ein Fenster ohne sichtbare Mittelteilung ergänzt. Damit darf eine spätere Verbesserung nicht nur Fensterkreuze erkennen, sondern muss weiterhin auch eine neu eingefügte, ungeteilte Fensterfläche sperren. Der nächste sichere Lösungsansatz braucht eine verlässlichere Unterscheidung von beweglichen Gegenständen und festen Bauteilen; ein bloßes Anheben numerischer Grenzwerte bleibt ausgeschlossen.
+
 ## Wiederholen und Betriebsstand
 
 - `pnpm test:structure` prüft die synthetischen Fälle ohne Webserver.

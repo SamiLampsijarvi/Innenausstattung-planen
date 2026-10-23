@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import sharp from "sharp";
 import { validateStructuralFidelity } from "../../src/lib/ai/image-generation/structural-fidelity.server";
 
-async function roomImage(options?: { shifted?: boolean; width?: number; tint?: string; furniture?: boolean; wallArt?: boolean; extraDoor?: boolean; extraWindow?: boolean }) {
+async function roomImage(options?: { shifted?: boolean; width?: number; tint?: string; furniture?: boolean; wallArt?: boolean; extraDoor?: boolean; extraWindow?: "plain" | "divided" }) {
   const width = options?.width ?? 640;
   const shift = options?.shifted ? 70 : 0;
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="480">
@@ -14,7 +14,7 @@ async function roomImage(options?: { shifted?: boolean; width?: number; tint?: s
     ${options?.furniture ? '<rect x="80" y="300" width="230" height="110" rx="18" fill="#494847" stroke="#393938" stroke-width="8"/>' : ''}
     ${options?.wallArt ? '<rect x="340" y="85" width="65" height="85" fill="#a79c87" stroke="#6b6053" stroke-width="7"/><circle cx="370" cy="125" r="20" fill="#ddd0b7"/>' : ''}
     ${options?.extraDoor ? '<rect x="320" y="135" width="95" height="195" fill="#ad9883" stroke="#393938" stroke-width="8"/>' : ''}
-    ${options?.extraWindow ? '<rect x="345" y="95" width="100" height="105" fill="#b9d4df" stroke="#4a453e" stroke-width="8"/><path d="M395 95v105M345 147h100" stroke="#f4f0e8" stroke-width="7"/>' : ''}
+    ${options?.extraWindow ? `<rect x="345" y="95" width="100" height="105" fill="#b9d4df" stroke="#4a453e" stroke-width="8"/>${options.extraWindow === "divided" ? '<path d="M395 95v105M345 147h100" stroke="#f4f0e8" stroke-width="7"/>' : ''}` : ''}
   </svg>`;
   return new Uint8Array(await sharp(Buffer.from(svg)).png().toBuffer());
 }
@@ -61,7 +61,13 @@ test("verwirft eine zusätzlich erfundene Tür trotz vorhandener Möbel", async 
 });
 
 test("erkennt ein neu eingefügtes Fensterkreuz im Wandbereich", async () => {
-  const report = await validateStructuralFidelity(await roomImage(), await roomImage({ extraWindow: true }));
+  const report = await validateStructuralFidelity(await roomImage(), await roomImage({ extraWindow: "divided" }));
   expect(report.status, JSON.stringify(report)).toBe("rejected");
   expect(report.newOrthogonalJunctions).toBeGreaterThan(0);
+});
+
+test("verwirft auch ein neues Fenster ohne sichtbare Mittelteilung", async () => {
+  const report = await validateStructuralFidelity(await roomImage(), await roomImage({ extraWindow: "plain" }));
+  expect(report.status, JSON.stringify(report)).toBe("rejected");
+  expect(report.newOrthogonalJunctions).toBe(0);
 });
