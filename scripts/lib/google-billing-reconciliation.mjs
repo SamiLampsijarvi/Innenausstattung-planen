@@ -45,6 +45,11 @@ export function selectReconciliation(pending, ledger) {
   if (unknown.length === 0 && completed.length === 1 && pending.length === 1 && ledger.activeAttempt === false) {
     return { kind: "completed", maximumCents: 30, startedAt: completed[0].startedAt };
   }
+  if (unknown.length === 0 && completed.length >= 2 && completed.length <= 3 && completed.length === pending.length && ledger.activeAttempt === false) {
+    const startedAt = completed.map((attempt) => attempt.startedAt).filter(Boolean).sort()[0];
+    if (!startedAt) return { kind: "manual-review", reason: "missing-attempt-time" };
+    return { kind: "batch", maximumCents: completed.length * 30, startedAt };
+  }
   if (
     pending.length === 2 && unknown.length === 1 && completed.length === 1 &&
     unknown[0].provisionalBillingHold === true && unknown[0].providerReceipt === false &&

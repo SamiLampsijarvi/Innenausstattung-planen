@@ -94,6 +94,7 @@ before(async () => {
   await db.exec(await readFile(new URL('../supabase/migrations/202609160006_local_rejected_candidate_preview.sql', import.meta.url), 'utf8'));
   await db.exec(await readFile(new URL('../supabase/migrations/202609160007_local_latest_rejected_candidate_preview.sql', import.meta.url), 'utf8'));
   await db.exec(await readFile(new URL('../supabase/migrations/202609160008_pending_billing_provisional_hold.sql', import.meta.url), 'utf8'));
+  await db.exec(await readFile(new URL('../supabase/migrations/202610290001_three_attempt_localhost_campaign.sql', import.meta.url), 'utf8'));
   await db.exec(`insert into auth.users values('${user}'),('${other}');
     insert into public.projects values('${user}','${user}',null),('${other}','${other}',null);
     insert into public.image_test_members values('${user}'),('${other}');
@@ -476,6 +477,70 @@ test('other accounts never receive results', () => scenario(async () => {
   const id = await approve(1); await arm(); await reserve(id, 1); await finish(1);
   assert.equal(await scalar('select public.image_test_read_result($1,$2)', [other, request(1)]), null);
   assert.equal((await scalar('select public.image_test_read_result($1,$2)', [user, request(1)])).mime, 'image/png');
+}));
+
+test('three-attempt campaign allows three manual reservations without interim billing, then blocks', () => scenario(async () => {
+  await db.exec("update public.localhost_image_test_pool set billing_checked_at=clock_timestamp()");
+  await db.exec('set role service_role');
+  const started = await scalar('select public.localhost_image_test_start_three_attempt_campaign()');
+  assert.equal(started.campaignAttemptsRemaining, 3);
+  assert.equal(started.campaignActive, true);
+  for (let n = 1; n <= 3; n++) {
+    const session = `cccccccc-cccc-4ccc-8ccc-00000000008${n}`;
+    const secret = String(n).repeat(64);
+    const requestId = request(980 + n);
+    await scalar('select public.guest_image_test_prepare($1,$2,$3,$4,$5,$6,$7,$8)', [session, secret, 'Japandi', 1500, null, hash(n), 'AQ==', 'image/png']);
+    await scalar('select public.guest_image_test_reserve($1,$2,$3)', [session, secret, requestId]);
+    assert.equal(await scalar('select public.guest_image_test_finish($1,$2,$3,$4,$5,$6,$7,$8)', [session, secret, requestId, 'AQ==', 'image/png', 20, `provider-${n}`, JSON.stringify(passedValidation)]), 'succeeded');
+    assert.equal((await scalar('select public.localhost_image_test_ledger_status()')).campaignAttemptsRemaining, 3 - n);
+  }
+  const fourth = 'cccccccc-cccc-4ccc-8ccc-000000000089';
+  await scalar('select public.guest_image_test_prepare($1,$2,$3,$4,$5,$6,$7,$8)', [fourth, '9'.repeat(64), 'Japandi', 1500, null, hash(9), 'AQ==', 'image/png']);
+  await assert.rejects(scalar('select public.guest_image_test_reserve($1,$2,$3)', [fourth, '9'.repeat(64), request(989)]), /billing reconciliation required/);
+  await assert.rejects(scalar('select public.localhost_image_test_start_three_attempt_campaign()'), /billing reconciliation required/);
+  assert.equal((await scalar('select public.localhost_image_test_ledger_status()')).reservedCents, 90);
+  await db.exec('reset role');
+}));
+
+test('unknown campaign outcome stops remaining attempts and retains the lock', () => scenario(async () => {
+  await db.exec("update public.localhost_image_test_pool set billing_checked_at=clock_timestamp()");
+  await db.exec('set role service_role');
+  await scalar('select public.localhost_image_test_start_three_attempt_campaign()');
+  const session = 'cccccccc-cccc-4ccc-8ccc-000000000088';
+  const secret = '8'.repeat(64);
+  await scalar('select public.guest_image_test_prepare($1,$2,$3,$4,$5,$6,$7,$8)', [session, secret, 'Japandi', 1500, null, hash(8), 'AQ==', 'image/png']);
+  await scalar('select public.guest_image_test_reserve($1,$2,$3)', [session, secret, request(988)]);
+  assert.equal(await scalar('select public.guest_image_test_finish($1,$2,$3)', [session, secret, request(988)]), 'unknown');
+  const state = await scalar('select public.localhost_image_test_ledger_status()');
+  assert.equal(state.campaignAttemptsRemaining, 0);
+  assert.equal(state.campaignActive, false);
+  assert.equal(state.activeAttempt, true);
+  assert.ok(state.campaignStoppedAt);
+  await scalar('select public.localhost_image_test_release_unknown_attempt_provisionally()');
+  const laterSession = 'cccccccc-cccc-4ccc-8ccc-000000000087';
+  await scalar('select public.guest_image_test_prepare($1,$2,$3,$4,$5,$6,$7,$8)', [laterSession, '7'.repeat(64), 'Japandi', 1500, null, hash(7), 'AQ==', 'image/png']);
+  await assert.rejects(scalar('select public.guest_image_test_reserve($1,$2,$3)', [laterSession, '7'.repeat(64), request(987)]), /stopped campaign requires explicit restart/);
+  await db.exec('reset role');
+}));
+
+test('three completed attempts reconcile as one capped 90-cent batch', () => scenario(async () => {
+  await db.exec("update public.localhost_image_test_pool set billing_checked_at=clock_timestamp()");
+  await db.exec('set role service_role');
+  await scalar('select public.localhost_image_test_start_three_attempt_campaign()');
+  for (let n = 1; n <= 3; n++) {
+    const session = `cccccccc-cccc-4ccc-8ccc-00000000007${n}`;
+    const secret = String(n).repeat(64);
+    const requestId = request(970 + n);
+    await scalar('select public.guest_image_test_prepare($1,$2,$3,$4,$5,$6,$7,$8)', [session, secret, 'Japandi', 1500, null, hash(n), 'AQ==', 'image/png']);
+    await scalar('select public.guest_image_test_reserve($1,$2,$3)', [session, secret, requestId]);
+    await scalar('select public.guest_image_test_finish($1,$2,$3,$4,$5,$6,$7,$8)', [session, secret, requestId, 'AQ==', 'image/png', 20, `provider-${n}`, JSON.stringify(passedValidation)]);
+  }
+  const reconciled = await scalar('select public.localhost_image_test_reconcile_pending_batch($1)', [90]);
+  assert.equal(reconciled.actualCents, 90);
+  assert.equal(reconciled.remainingCents, 210);
+  assert.equal(reconciled.campaignAttemptsRemaining, 0);
+  await assert.rejects(scalar('select public.localhost_image_test_reconcile_pending_batch($1)', [91]), /invalid confirmed batch cost/);
+  await db.exec('reset role');
 }));
 test('account deletion removes personal data but preserves totals', () => scenario(async () => {
   const id = await approve(1); await arm(); await reserve(id, 1); await finish(1);
