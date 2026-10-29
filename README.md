@@ -29,6 +29,7 @@ Die aktuelle Anwendung basiert auf Next.js und TypeScript. Nach der Installation
 - `pnpm test:evaluation`: Regeln der lokalen Phase-8-Bildauswertung
 - `pnpm test:series`: kostenlose Schema- und Qualitätsprüfung der vorbereiteten Bildtestserie
 - `pnpm evaluate:series docs/templates/controlled-image-series.example.json`: kostenlose Testserienauswertung ohne Bild- oder Cloud-Aufruf; [Ablauf und Grenzen](docs/CONTROLLED_IMAGE_TEST_SERIES.md)
+- `pnpm evaluate:series docs/templates/controlled-image-preflight.example.json`: kostenlose Auswertung der Drei-Fälle-Vorserie ohne Bild-, Cloud- oder Buchhaltungsaufruf
 - `pnpm test:room-fidelity-calibration`: lokaler Kalibrierungslauf für den nicht versionierten öffentlichen Raumtestbestand; keine Netzwerk- oder KI-Aufrufe
 - `pnpm test:room-fidelity-holdout`: getrennte Schlussprüfung mit zwei weiteren, nicht versionierten öffentlichen Räumen; keine Netzwerk- oder KI-Aufrufe
 - `pnpm test:structure`: synthetische Strukturprüfungen ohne Webserver, Netzwerk oder KI-Aufrufe; bekannte Fehlablehnungen sind als erwartete Fehler markiert

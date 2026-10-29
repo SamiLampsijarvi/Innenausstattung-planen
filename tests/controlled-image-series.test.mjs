@@ -4,6 +4,7 @@ import { readFile } from "node:fs/promises";
 import { evaluateControlledSeries } from "../scripts/controlled-image-series.mjs";
 
 const template = JSON.parse(await readFile(new URL("../docs/templates/controlled-image-series.example.json", import.meta.url)));
+const preflightTemplate = JSON.parse(await readFile(new URL("../docs/templates/controlled-image-preflight.example.json", import.meta.url)));
 const attempt = (overrides = {}) => ({
   caseId: "C01", status: "passed", consent: true, automaticGate: "passed", humanReview: "accepted",
   displayed: true, durationMs: 1200, actualCents: 12, scores: { style: 4, furniture: 4, usefulness: 4 }, ...overrides,
@@ -17,6 +18,21 @@ test("empty example stays offline and reports both room states", () => {
   assert.equal(result.groups.furnished.planned, 5);
   assert.equal(result.actualCents, null);
   assert.equal(result.nextPlannedCase, "C01");
+});
+
+test("three-case preflight is an offline plan for furnished and empty rooms", () => {
+  const result = evaluateControlledSeries(preflightTemplate);
+  assert.equal(result.planned, 3);
+  assert.equal(result.groups.furnished.planned, 2);
+  assert.equal(result.groups.empty.planned, 1);
+  assert.equal(result.reservedCents, 0);
+  assert.equal(result.actualCents, null);
+  assert.equal(result.nextPlannedCase, "C01");
+});
+
+test("offline evaluator has no provider, database or network integration", async () => {
+  const source = await readFile(new URL("../scripts/controlled-image-series.mjs", import.meta.url), "utf8");
+  assert.doesNotMatch(source, /\bfetch\s*\(|createVertexImageProvider|@supabase\/|BigQuery/i);
 });
 
 test("one manually approved case counts one 30-cent reservation", () => {

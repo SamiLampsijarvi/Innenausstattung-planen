@@ -1,0 +1,11 @@
+{
+  "seriesId": "three-case-preflight",
+  "maximumAttempts": 3,
+  "maximumTotalCents": 90,
+  "cases": [
+    { "id": "C01", "roomState": "furnished", "roomType": "living-room", "style": "Japandi", "budgetEuro": 1000 },
+    { "id": "C02", "roomState": "empty", "roomType": "living-room", "style": "Japandi", "budgetEuro": 1000 },
+    { "id": "C03", "roomState": "furnished", "roomType": "living-room", "style": "Skandinavisch", "budgetEuro": 1500 }
+  ],
+  "attempts": []
+}

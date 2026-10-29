@@ -6,6 +6,14 @@ Raumly soll zum Start sowohl leere als auch bereits eingerichtete Zimmer umgesta
 
 Die zehn Fälle in [der Vorlage](templates/controlled-image-series.example.json) sind **Beispiele**, keine Freigabe realer Fotos, Budgets oder Bildaufrufe. Vor einer tatsächlichen Serie werden Stil und Einrichtungsbudget je Fall bewusst bestätigt. Die Auswertung verlangt bei zehn Fällen fünf leere und fünf möblierte Eingaben. Nutzerfotos und Bildresultate gehören nur in den geschützten, kurzlebigen Testablauf, nicht in diese JSON-Datei oder Git.
 
+## Kleine Vorserie: drei unterschiedliche Ausgangslagen
+
+Vor einer größeren Serie kann die [Drei-Fälle-Vorlage](templates/controlled-image-preflight.example.json) nach `private-evaluation/controlled-preflight.json` kopiert werden. Sie enthält ein möbliertes Wohnzimmer im Stil Japandi, ein leeres Wohnzimmer im gleichen Stil und ein weiteres möbliertes Wohnzimmer im skandinavischen Stil. Die Einträge sind nur anonyme Planungsdaten: Sie enthalten weder Fotos noch Namen, Dateipfade oder eine Startfreigabe.
+
+Für jeden späteren Versuch wird in dieser Reihenfolge bewertet: Erst müssen Raumform sowie Fenster und Türen erhalten bleiben (automatische Prüfung und menschliche Sichtprüfung). Danach werden Stil, Möbelwahl und allgemeine Nutzbarkeit jeweils mit 1 bis 5 bewertet. Ein Ergebnis gilt nur als nutzbar, wenn die beiden Schutzprüfungen bestanden sind, es angezeigt werden darf und die drei Bewertungen mindestens 3 erreichen. Ein verworfener, unklarer oder noch nicht abgerechneter Fall stoppt die Vorserie.
+
+Die Vorlage bereitet keinen echten Versuch vor und kann keinen starten. Sie wird erst nach einem eigenständigen, konkreten Foto-, Stil- und Einwilligungsentscheid genutzt. Der Klick auf „Bild generieren“ in Raumly bleibt der einzige Weg zu einem Vertex-Aufruf.
+
 ## Ablauf je Fall
 
 1. Vor dem ersten Fall den aktuellen Rechnungsstand und die lokale Supabase-Buchhaltung lesen. Ein Serienrahmen von zehn mal 30 Cent verlangt 300 Cent **freie** Reservierung. Der vorhandene Pool zählt frühere Reservierungen mit. Die rein lesende Prüfung am 23. Oktober 2026 meldete 30 Cent Rest und einen verworfenen Versuch vom 18. Oktober mit Provider-Quittung, aber ohne abgeschlossenen Billing-Abgleich. Diese Vorbereitung ändert weder den Pool noch Google-Grenzen.
