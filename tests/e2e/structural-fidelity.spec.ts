@@ -71,3 +71,72 @@ test("verwirft auch ein neues Fenster ohne sichtbare Mittelteilung", async () =>
   expect(report.status, JSON.stringify(report)).toBe("rejected");
   expect(report.newOrthogonalJunctions).toBe(0);
 });
+
+const allowedRoomChanges = [
+  { name: "Möbel hinzufügen", source: {}, candidate: { furniture: true } },
+  { name: "Möbel entfernen", source: { furniture: true }, candidate: {} },
+  { name: "Licht wärmer machen", source: {}, candidate: { tint: "#d8cdbb" } },
+  { name: "Wandbild ergänzen", source: {}, candidate: { wallArt: true } },
+  { name: "Licht ändern und Möbel ergänzen", source: {}, candidate: { furniture: true, tint: "#d8cdbb" } },
+  { name: "Licht ändern und Wandbild ergänzen", source: {}, candidate: { wallArt: true, tint: "#d8cdbb" } },
+  { name: "Möbel entfernen und Wandbild ergänzen", source: { furniture: true }, candidate: { wallArt: true } },
+  { name: "Möbel austauschen und Licht ändern", source: { furniture: true }, candidate: { tint: "#d8cdbb" } },
+  { name: "Möbel, Licht und Wandbild ändern", source: { furniture: true }, candidate: { furniture: true, wallArt: true, tint: "#d8cdbb" } },
+  { name: "Möbel entfernen und Licht ändern", source: { furniture: true }, candidate: { tint: "#d8cdbb" } },
+] as const;
+
+const forbiddenRoomChanges = [
+  { name: "Perspektive verschieben", source: {}, candidate: { shifted: true } },
+  { name: "Bildausschnitt ändern", source: {}, candidate: { width: 520 } },
+  { name: "Neue Tür ergänzen", source: {}, candidate: { extraDoor: true } },
+  { name: "Neue geteilte Fensterfläche ergänzen", source: {}, candidate: { extraWindow: "divided" as const } },
+  { name: "Neue ungeteilte Fensterfläche ergänzen", source: {}, candidate: { extraWindow: "plain" as const } },
+  { name: "Tür bei vorhandenen Möbeln ergänzen", source: { furniture: true }, candidate: { extraDoor: true } },
+  { name: "Fenster bei vorhandenen Möbeln ergänzen", source: { furniture: true }, candidate: { extraWindow: "divided" as const } },
+  { name: "Perspektive mit Möbeln verschieben", source: { furniture: true }, candidate: { shifted: true } },
+  { name: "Bildausschnitt mit Wandbild ändern", source: {}, candidate: { width: 520, wallArt: true } },
+  { name: "Tür und Fenster ergänzen", source: {}, candidate: { extraDoor: true, extraWindow: "plain" as const } },
+] as const;
+
+for (const scenario of allowedRoomChanges) {
+  test(`Testkorpus erlaubt: ${scenario.name}`, async () => {
+    // Das ist das gewünschte Produktverhalten. Die bekannten Fehlablehnungen
+    // bleiben als erwartete Fehler sichtbar, statt als richtiger Zustand zu gelten.
+    test.fail(
+      scenario.name !== "Licht wärmer machen",
+      "structure-v4 sperrt diese erlaubte Umgestaltung aktuell noch.",
+    );
+    const report = await validateStructuralFidelity(await roomImage(scenario.source), await roomImage(scenario.candidate));
+    expect(report.version).toBe("structure-v4");
+    expect(report.status, JSON.stringify(report)).toBe("passed");
+  });
+}
+
+for (const scenario of forbiddenRoomChanges) {
+  test(`Testkorpus sperrt: ${scenario.name}`, async () => {
+    const report = await validateStructuralFidelity(await roomImage(scenario.source), await roomImage(scenario.candidate));
+    expect(report.status, JSON.stringify(report)).toBe("rejected");
+  });
+}
+
+test("protokolliert Ausgangsmessung und unsicheren Wandtoleranz-Versuch", async () => {
+  const allowedReports = await Promise.all(allowedRoomChanges.map(async (scenario) =>
+    validateStructuralFidelity(await roomImage(scenario.source), await roomImage(scenario.candidate))));
+  const forbiddenReports = await Promise.all(forbiddenRoomChanges.map(async (scenario) =>
+    validateStructuralFidelity(await roomImage(scenario.source), await roomImage(scenario.candidate))));
+  const baselineAllowed = allowedReports.filter((report) => report.status === "passed").length;
+  const baselineForbidden = forbiddenReports.filter((report) => report.status === "rejected").length;
+  const relaxedAllowed = allowedReports.filter((report) => report.reasons.every((reason) => reason.includes("Wandbereich"))).length;
+  const relaxedForbidden = forbiddenReports.filter((report) => report.reasons.some((reason) => !reason.includes("Wandbereich"))).length;
+  console.info(JSON.stringify({
+    baseline: { allowedAccepted: `${baselineAllowed}/10`, forbiddenRejected: `${baselineForbidden}/10` },
+    wallToleranceExperiment: { allowedAccepted: `${relaxedAllowed}/10`, forbiddenRejected: `${relaxedForbidden}/10` },
+    conclusion: "Rejected: wall-only tolerance would allow structural edits.",
+  }));
+  // Die Messwerte halten den Ausgangspunkt fest. Wenn sie sich ändern, soll
+  // der Test auffallen und die Dokumentation bewusst aktualisiert werden.
+  expect(baselineAllowed).toBe(1);
+  expect(baselineForbidden).toBe(10);
+  expect(relaxedAllowed).toBeGreaterThan(baselineAllowed);
+  expect(relaxedForbidden).toBeLessThan(10);
+});

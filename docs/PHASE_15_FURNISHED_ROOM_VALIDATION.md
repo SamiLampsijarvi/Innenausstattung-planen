@@ -55,6 +55,14 @@ Die Messung bestätigte, dass Möbelkanten im unteren Bildbereich und neue Wandd
 
 Als dauerhafter Schutz wurde der technische Testbestand um ein Fenster ohne sichtbare Mittelteilung ergänzt. Damit darf eine spätere Verbesserung nicht nur Fensterkreuze erkennen, sondern muss weiterhin auch eine neu eingefügte, ungeteilte Fensterfläche sperren. Der nächste sichere Lösungsansatz braucht eine verlässlichere Unterscheidung von beweglichen Gegenständen und festen Bauteilen; ein bloßes Anheben numerischer Grenzwerte bleibt ausgeschlossen.
 
+## Synthetischer Vergleich am 29. Oktober 2026
+
+Der lokale Testbestand enthält jetzt zehn erlaubte und zehn verbotene technische Varianten. Auf dem synthetischen Beispielzimmer akzeptiert `structure-v4` die reine Lichtänderung, verwirft aber die übrigen neun erlaubten Varianten. Alle zehn synthetischen Architekturänderungen werden verworfen.
+
+Ein reiner Wandtoleranz-Versuch würde sechs von zehn erlaubten Varianten annehmen, aber zugleich vier von zehn verbotenen Änderungen durchlassen. Er erfüllt daher die Sicherheitsbedingung nicht und wird nicht in den Produktcode übernommen. Die Ergebnisse dienen als reproduzierbare technische Vergleichswerte; künstliche Überlagerungen belegen keine Erfolgsquote für echte KI-Bilder oder alle Nutzerzimmer.
+
+Zusammen mit den früheren Messungen wurden drei einfache Ansätze geprüft: höhere Wandtoleranz, geringere Bewertung des unteren Bildbereichs und zusätzliches Erkennen neuer Fensterlinien. Die ersten beiden ließen Architekturänderungen durch; der dritte verbesserte die Erkennung bestimmter Fenster, löste aber die vielen Fehlablehnungen bei erlaubten Änderungen nicht. Keiner erreicht die Freigabegrenze von 10/10 gesperrten Architekturfehlern und mindestens 8/10 angenommenen erlaubten Änderungen. Deshalb bleibt `structure-v4` aktiv und die Freigabe möblierter Räume offen.
+
 ## Wiederholen und Betriebsstand
 
 - `pnpm test:structure` prüft die synthetischen Fälle ohne Webserver.
