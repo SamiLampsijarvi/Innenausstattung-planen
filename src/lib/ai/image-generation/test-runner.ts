@@ -51,9 +51,9 @@ export async function runImageTest(options: {
       result = { ...result, image: corrected.bytes, imageMimeType: corrected.mime, usage: { ...result.usage, orientationCorrectionDegrees: corrected.correctionDegrees } };
     } catch {
       validation = {
-        status: "rejected", version: "structure-v3", reasons: ["Die automatische Strukturprüfung konnte das Ergebnis nicht sicher auswerten."],
+        status: "rejected", version: "structure-v4", reasons: ["Die automatische Strukturprüfung konnte das Ergebnis nicht sicher auswerten."],
         sourceWidth: 0, sourceHeight: 0, candidateWidth: 0, candidateHeight: 0,
-        aspectRatioDifference: 1, edgeRetention: 0, alignedEdgeRetention: 0, wallAppearanceChangeRate: 1, orientationSimilarity: 0, regionalStructureSimilarity: 0,
+        aspectRatioDifference: 1, edgeRetention: 0, alignedEdgeRetention: 0, wallAppearanceChangeRate: 1, orientationSimilarity: 0, regionalStructureSimilarity: 0, newOrthogonalJunctions: 0,
       };
     }
     return await options.ledger.finish(result, validation);

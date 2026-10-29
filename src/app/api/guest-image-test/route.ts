@@ -166,9 +166,9 @@ async function generate(session: { id: string; secret: string }, client: Supabas
     try { corrected = await correctCandidateOrientation(normalizedSource.bytes, result.image, result.imageMimeType); }
     catch {
       corrected = { bytes: result.image, mime: result.imageMimeType, correctionDegrees: 0, report: {
-        status: "rejected", version: "structure-v3", reasons: ["Die automatische Strukturprüfung konnte das Ergebnis nicht sicher auswerten."],
+        status: "rejected", version: "structure-v4", reasons: ["Die automatische Strukturprüfung konnte das Ergebnis nicht sicher auswerten."],
         sourceWidth: 0, sourceHeight: 0, candidateWidth: 0, candidateHeight: 0, aspectRatioDifference: 1,
-        edgeRetention: 0, alignedEdgeRetention: 0, wallAppearanceChangeRate: 1, orientationSimilarity: 0, regionalStructureSimilarity: 0,
+        edgeRetention: 0, alignedEdgeRetention: 0, wallAppearanceChangeRate: 1, orientationSimilarity: 0, regionalStructureSimilarity: 0, newOrthogonalJunctions: 0,
       } };
     }
     const validation = corrected.report;

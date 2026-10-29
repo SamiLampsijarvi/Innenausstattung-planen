@@ -2,7 +2,7 @@
 
 ## Ziel und Prüfmethode
 
-Raumly soll später ein bereits möbliertes Wohnzimmer umgestalten können. Möbel, Licht und Dekoration dürfen sich ändern; Türen, Fenster, Wände, Bildausschnitt und Perspektive müssen erhalten bleiben. Diese Nachprüfung bewertet die bestehende automatische Sperre `structure-v3` **offline**. Sie erzeugt kein Vertex-Bild und verändert weder den Produktfilter noch Kostenlimits, Datenbank oder normalen Nutzerablauf.
+Raumly soll später ein bereits möbliertes Wohnzimmer umgestalten können. Möbel, Licht und Dekoration dürfen sich ändern; Türen, Fenster, Wände, Bildausschnitt und Perspektive müssen erhalten bleiben. Diese Nachprüfung bewertet die damalige automatische Sperre `structure-v3` **offline**. Sie erzeugt kein Vertex-Bild und verändert weder Kostenlimits, Datenbank oder normalen Nutzerablauf.
 
 Die am 19. Oktober dokumentierten synthetischen und öffentlichen Fälle waren der Entwicklungsbestand. Vor einer Filteränderung wurden zwei weitere [Pexels-Räume](https://www.pexels.com/license/) als getrennter Rückhaltebestand gewählt und zunächst nicht zur Anpassung von Regeln benutzt. Erst nach dem Ergebnis der sechs bisherigen Räume liefen die neuen Bilder R07 und R08 einmalig als Schlussprüfung. Alle acht Originalbilder und Quellenprotokolle bleiben unter `private-evaluation/room-fidelity-calibration/` außerhalb von Git; die JPEGs wurden ohne übernommene Metadaten gespeichert. Es wurden keine privaten Nutzerfotos verarbeitet.
 
@@ -34,9 +34,34 @@ Die Ursache einer riskanten Pauschalkorrektur ist messbar: Auf R06 hat das zusä
 
 ## Entscheidung für diesen Arbeitsstand
 
-Die vereinbarten Kriterien für eine sichere Filteränderung sind **nicht erfüllt**. `structure-v3`, sämtliche Schwellen, die automatische Sperre, die menschliche Prüfung und die Kostenregeln bleiben unverändert. Die neuen Tests halten die bereits durchgelassenen Fenster sichtbar fest; sie beheben diese Lücke noch nicht. Ein realistisches Vorher-Nachher-Paar mit unveränderter Architektur ist weiterhin nötig, bevor eine Freigabe möblierter Eingaben behauptet werden kann. Der private Bildversuch vom 18. Oktober ist kein dauerhaft verfügbares Testpaar: Testfotos und Ergebnisse werden nach höchstens 24 Stunden gelöscht; Bildschirmansichten ersetzen keinen Pixelvergleich.
+Die vereinbarten Kriterien für eine Freigabe möblierter Eingaben sind **nicht erfüllt**. Die spätere lokale Nachbesserung `structure-v4` ergänzt ausschließlich ein enges Signal für ein neu eingefügtes Fensterkreuz im Wandbereich: R06 wird damit verworfen, ohne die separat geprüfte Wanddekoration zu sperren. R04 bleibt ein durchgelassenes kleines Fenster; die kombinierten erlaubten Umgestaltungen bleiben überwiegend Fehlablehnungen. Die automatische Sperre, menschliche Prüfung und Kostenregeln bleiben unverändert. Ein realistisches Vorher-Nachher-Paar mit unveränderter Architektur ist weiterhin nötig, bevor eine Freigabe möblierter Eingaben behauptet werden kann. Der private Bildversuch vom 18. Oktober ist kein dauerhaft verfügbares Testpaar: Testfotos und Ergebnisse werden nach höchstens 24 Stunden gelöscht; Bildschirmansichten ersetzen keinen Pixelvergleich.
 
 Für einen folgenden Produktabschnitt kommen eine eigenständige Erkennung fester Bauteile oder eine ausdrücklich freigegebene menschliche Prüfung unsicherer Kandidaten vor deren Anzeige in Betracht. Beide Wege ändern Umfang und Sicherheitsablauf und benötigen einen eigenen Plan und Nutzerentscheidung. Ein bloßes Verschieben der fünf numerischen Grenzwerte ist durch diese Daten widerlegt.
+
+## Rückhalteprüfung mit `structure-v4` am 23. Oktober 2026
+
+Nach der lokalen Nachbesserung wurden die zuvor nicht verwendeten öffentlichen Räume R07 und R08 einmalig als Rückhalteprüfung ausgeführt. Dabei startet kein Anbieter: Die Prüfbilder und die Vergleichslogik laufen vollständig lokal.
+
+| Ergebnis | `structure-v3` | `structure-v4` |
+| --- | --- | --- |
+| Erfundenes kleines Fenster verworfen | 5 von 8 | 7 von 8 |
+| Erlaubte kombinierte Umgestaltung angenommen | 2 von 8 | 2 von 8 |
+
+Das neue Fenster auf R07 wird nun korrekt verworfen. R04 bleibt ein durchgelassenes kleines Fenster. Bei den erlaubten kombinierten Umgestaltungen bleiben sechs von acht Fällen fälschlich gesperrt, einschließlich R08. Die Änderung verbessert somit die Sicherheit gegen einen konkreten Architekturfehler, löst aber noch nicht das Produktziel für bereits möblierte Räume. Die Rückhaltebilder liegen weiterhin nur lokal und außerhalb von Git.
+
+## Ausgeschlossener Lockerungsversuch am 23. Oktober 2026
+
+Die Messung bestätigte, dass Möbelkanten im unteren Bildbereich und neue Wanddekoration zu Fehlablehnungen beitragen. Eine testweise höhere Toleranz für Wandänderungen nahm zwar mehr erlaubte Umgestaltungen an, ließ aber zugleich mehrere künstliche Fenster und Türen durch. Dieser Ansatz wurde vollständig verworfen und nicht in Raumly übernommen.
+
+Als dauerhafter Schutz wurde der technische Testbestand um ein Fenster ohne sichtbare Mittelteilung ergänzt. Damit darf eine spätere Verbesserung nicht nur Fensterkreuze erkennen, sondern muss weiterhin auch eine neu eingefügte, ungeteilte Fensterfläche sperren. Der nächste sichere Lösungsansatz braucht eine verlässlichere Unterscheidung von beweglichen Gegenständen und festen Bauteilen; ein bloßes Anheben numerischer Grenzwerte bleibt ausgeschlossen.
+
+## Synthetischer Vergleich am 29. Oktober 2026
+
+Der lokale Testbestand enthält jetzt zehn erlaubte und zehn verbotene technische Varianten. Auf dem synthetischen Beispielzimmer akzeptiert `structure-v4` die reine Lichtänderung, verwirft aber die übrigen neun erlaubten Varianten. Alle zehn synthetischen Architekturänderungen werden verworfen.
+
+Ein reiner Wandtoleranz-Versuch würde sechs von zehn erlaubten Varianten annehmen, aber zugleich vier von zehn verbotenen Änderungen durchlassen. Er erfüllt daher die Sicherheitsbedingung nicht und wird nicht in den Produktcode übernommen. Die Ergebnisse dienen als reproduzierbare technische Vergleichswerte; künstliche Überlagerungen belegen keine Erfolgsquote für echte KI-Bilder oder alle Nutzerzimmer.
+
+Zusammen mit den früheren Messungen wurden drei einfache Ansätze geprüft: höhere Wandtoleranz, geringere Bewertung des unteren Bildbereichs und zusätzliches Erkennen neuer Fensterlinien. Die ersten beiden ließen Architekturänderungen durch; der dritte verbesserte die Erkennung bestimmter Fenster, löste aber die vielen Fehlablehnungen bei erlaubten Änderungen nicht. Keiner erreicht die Freigabegrenze von 10/10 gesperrten Architekturfehlern und mindestens 8/10 angenommenen erlaubten Änderungen. Deshalb bleibt `structure-v4` aktiv und die Freigabe möblierter Räume offen.
 
 ## Wiederholen und Betriebsstand
 

@@ -5,7 +5,7 @@ const EDGE_THRESHOLD = 38;
 
 export type StructuralFidelityReport = {
   status: "passed" | "rejected";
-  version: "structure-v3";
+  version: "structure-v4";
   reasons: string[];
   sourceWidth: number;
   sourceHeight: number;
@@ -17,6 +17,7 @@ export type StructuralFidelityReport = {
   wallAppearanceChangeRate: number;
   orientationSimilarity: number;
   regionalStructureSimilarity: number;
+  newOrthogonalJunctions: number;
 };
 
 export async function validateStructuralFidelity(
@@ -45,6 +46,7 @@ export async function validateStructuralFidelity(
     orientationHistogram(candidateEdges),
   );
   const regionalStructureSimilarity = regionalSimilarity(sourceEdges.magnitude, candidateEdges.magnitude);
+  const newOrthogonalJunctions = countNewOrthogonalJunctions(sourceEdges.magnitude, candidateEdges.magnitude);
   const reasons: string[] = [];
 
   if (aspectRatioDifference > 0.015) reasons.push("Das Seitenverhältnis und damit der Bildausschnitt wurde verändert.");
@@ -58,10 +60,14 @@ export async function validateStructuralFidelity(
   if (wallAppearanceChangeRate > 0.015) reasons.push("Im Wandbereich wurden zu viele neue Bildflächen erkannt; eine zusätzliche Tür, ein Fenster oder eine Wand ist möglich.");
   if (orientationSimilarity < 0.72) reasons.push("Die Richtungen der Raumlinien und die Perspektive weichen zu stark ab.");
   if (regionalStructureSimilarity < 0.5) reasons.push("Die räumliche Verteilung der festen Strukturen hat sich zu stark verändert.");
+  // A new window often contains a long horizontal and vertical divider that
+  // cross in an otherwise unchanged wall. This detects that pattern without
+  // treating a rectangular picture frame as a window.
+  if (newOrthogonalJunctions > 0) reasons.push("Im Wandbereich wurde ein neues rechtwinkliges Linienkreuz erkannt; ein zusätzliches Fenster ist möglich.");
 
   return {
     status: reasons.length ? "rejected" : "passed",
-    version: "structure-v3",
+    version: "structure-v4",
     reasons,
     sourceWidth: sourceMeta.width,
     sourceHeight: sourceMeta.height,
@@ -73,6 +79,7 @@ export async function validateStructuralFidelity(
     wallAppearanceChangeRate,
     orientationSimilarity,
     regionalStructureSimilarity,
+    newOrthogonalJunctions,
   };
 }
 
@@ -137,6 +144,38 @@ function wallAppearanceChanges(source: Uint8Array, candidate: Uint8Array) {
     }
   }
   return changed / ((wallEnd - 4) * (ANALYSIS_SIZE - 4));
+}
+
+function countNewOrthogonalJunctions(source: Float32Array, candidate: Float32Array) {
+  let count = 0;
+  const newEdge = (x: number, y: number) => candidate[y * ANALYSIS_SIZE + x] >= EDGE_THRESHOLD && !hasSourceEdgeNearby(source, x, y);
+  // Ignore the lower part where furniture can add table legs and frame-like
+  // details. This deliberately makes the signal a wall-window detector only.
+  const wallEnd = Math.floor(ANALYSIS_SIZE * 0.7);
+  for (let y = 6; y < wallEnd - 6; y += 1) {
+    for (let x = 6; x < ANALYSIS_SIZE - 6; x += 1) {
+      if (!newEdge(x, y)) continue;
+      if (hasNewEdgeRun(newEdge, x, y, -1, 0) && hasNewEdgeRun(newEdge, x, y, 1, 0) &&
+          hasNewEdgeRun(newEdge, x, y, 0, -1) && hasNewEdgeRun(newEdge, x, y, 0, 1)) count += 1;
+    }
+  }
+  return count;
+}
+
+function hasNewEdgeRun(newEdge: (x: number, y: number) => boolean, x: number, y: number, dx: number, dy: number) {
+  for (let step = 1; step <= 6; step += 1) {
+    if (!newEdge(x + dx * step, y + dy * step)) return false;
+  }
+  return true;
+}
+
+function hasSourceEdgeNearby(source: Float32Array, x: number, y: number) {
+  for (let dy = -2; dy <= 2; dy += 1) {
+    for (let dx = -2; dx <= 2; dx += 1) {
+      if (source[(y + dy) * ANALYSIS_SIZE + x + dx] >= EDGE_THRESHOLD) return true;
+    }
+  }
+  return false;
 }
 
 export function orientationHistogram(edges: Edges) {
