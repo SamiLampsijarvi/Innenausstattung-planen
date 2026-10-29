@@ -470,3 +470,12 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 - Hostinganbieter und Veröffentlichungszeitpunkt
 - endgültige KI-Anbieterauswahl nach dem Machbarkeitstest
 - konkrete Supabase-Region und Tarif
+
+## D-046: Begrenzte manuelle Drei-Versuche-Kampagne
+
+- **Status:** Vom Nutzer bestätigt; technische Umsetzung in Arbeit. Diese Entscheidung allein wendet keine Datenbankmigration an und startet keine Kampagne oder Bilderzeugung.
+- **Ablauf:** Nach einem frischen Google-Billing-Abgleich kann der Betreiber einmalig höchstens drei einzelne Bildversuche freigeben. Jeder Versuch erfordert den eigenen Klick „Bild generieren“, reserviert 30 Cent und zählt auch bei Ablehnung oder Fehler. Keine automatische Wiederholung.
+- **Sperre:** Ein unbekannter Ausgang beendet die Runde sofort und bleibt gesperrt, bis er manuell geklärt ist. Nach drei Versuchen sind weitere Aufrufe gesperrt, bis Google Billing alle Versuche der Runde gemeinsam abgeglichen und der Betreiber eine neue Runde ausdrücklich gestartet hat.
+- **Kostenrahmen:** Höchstens 90 Cent interne Reservierung pro Runde; die 30-Cent-Reservierung pro Versuch und der bestehende lokale Gesamtpool von 3 Euro bleiben bestehen. Die Reservierung ist keine vom Anbieter garantierte Rechnungsobergrenze. Die Datenbank startet eine Runde nur, wenn 90 Cent frei sind. Google-Kostenlimits werden nicht geändert.
+- **Start:** Der Betreiberbefehl `pnpm campaign:image-test:start -- --confirm` aktiviert nur die Runde, nicht Vertex. Die Datenbankmigration und ein erfolgreicher Billing-Abgleich müssen vorher vorliegen.
+- **Nachweis:** `docs/CONTROLLED_IMAGE_TEST_SERIES.md`.

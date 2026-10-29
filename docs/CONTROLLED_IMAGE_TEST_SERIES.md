@@ -6,6 +6,14 @@ Raumly soll zum Start sowohl leere als auch bereits eingerichtete Zimmer umgesta
 
 Die zehn Fälle in [der Vorlage](templates/controlled-image-series.example.json) sind **Beispiele**, keine Freigabe realer Fotos, Budgets oder Bildaufrufe. Vor einer tatsächlichen Serie werden Stil und Einrichtungsbudget je Fall bewusst bestätigt. Die Auswertung verlangt bei zehn Fällen fünf leere und fünf möblierte Eingaben. Nutzerfotos und Bildresultate gehören nur in den geschützten, kurzlebigen Testablauf, nicht in diese JSON-Datei oder Git.
 
+## Kleine Vorserie: drei unterschiedliche Ausgangslagen
+
+Vor einer größeren Serie kann die [Drei-Fälle-Vorlage](templates/controlled-image-preflight.example.json) nach `private-evaluation/controlled-preflight.json` kopiert werden. Sie enthält ein möbliertes Wohnzimmer im Stil Japandi, ein leeres Wohnzimmer im gleichen Stil und ein weiteres möbliertes Wohnzimmer im skandinavischen Stil. Die Einträge sind nur anonyme Planungsdaten: Sie enthalten weder Fotos noch Namen, Dateipfade oder eine Startfreigabe.
+
+Für jeden späteren Versuch wird in dieser Reihenfolge bewertet: Erst müssen Raumform sowie Fenster und Türen erhalten bleiben (automatische Prüfung und menschliche Sichtprüfung). Danach werden Stil, Möbelwahl und allgemeine Nutzbarkeit jeweils mit 1 bis 5 bewertet. Ein Ergebnis gilt nur als nutzbar, wenn die beiden Schutzprüfungen bestanden sind, es angezeigt werden darf und die drei Bewertungen mindestens 3 erreichen. Ein verworfener, unklarer oder noch nicht abgerechneter Fall stoppt die Vorserie.
+
+Die Vorlage bereitet keinen echten Versuch vor und kann keinen starten. Sie wird erst nach einem eigenständigen, konkreten Foto-, Stil- und Einwilligungsentscheid genutzt. Der Klick auf „Bild generieren“ in Raumly bleibt der einzige Weg zu einem Vertex-Aufruf.
+
 ## Ablauf je Fall
 
 1. Vor dem ersten Fall den aktuellen Rechnungsstand und die lokale Supabase-Buchhaltung lesen. Ein Serienrahmen von zehn mal 30 Cent verlangt 300 Cent **freie** Reservierung. Der vorhandene Pool zählt frühere Reservierungen mit. Die rein lesende Prüfung am 23. Oktober 2026 meldete 30 Cent Rest und einen verworfenen Versuch vom 18. Oktober mit Provider-Quittung, aber ohne abgeschlossenen Billing-Abgleich. Diese Vorbereitung ändert weder den Pool noch Google-Grenzen.
@@ -21,3 +29,11 @@ Vorlage nach `private-evaluation/controlled-series.json` kopieren und nur dort a
 Jeder Eintrag unter `attempts` enthält genau einen `caseId` aus `cases` und die Felder `status` (`passed`, `rejected`, `failed`, `unknown`), `consent` (`true`), `automaticGate` (`passed`, `rejected`, `unavailable`), `humanReview` (`accepted`, `rejected`, `pending`), `displayed` (Boolean), `durationMs` (Zahl oder `null`), `actualCents` (bestätigter Betrag oder `null`) und `scores` (entweder `null` oder drei Werte von 1 bis 5 für `style`, `furniture`, `usefulness`). Unbekannte Kosten bleiben `null`, niemals geschätzte 0 Cent. Namen, Fotos, Dateipfade, Tokens und personenbezogene Angaben sind in diesem Format nicht erlaubt.
 
 Diese Version ist absichtlich nur die kostenlose Planungs- und Auswertungsschicht. Ein zehnfacher Live-Test erfordert zuerst den belegten Abgleich des offenen Falls, danach eine separate Entscheidung zum **lokalen** Gesamtbudget und gegebenenfalls eine kontrollierte Änderung der Datenbankgrenze. Das Google-Kostenlimit und die 30-Cent-Grenze pro Versuch bleiben unverändert. Die bestehende tägliche Billing-Prüfung liest höchstens 10 MiB; sie ist kein Echtzeitbeleg. Ein Pull Request wird nur nach gesonderter Freigabe erstellt.
+
+## Drei bewusst gestartete Versuche
+
+Für eine begrenzte Lernrunde kann ein Betreiber nach einem frischen Google-Billing-Abgleich einmalig eine Kampagne mit höchstens drei Versuchen starten. Jeder Klick auf „Bild generieren“ zählt sofort als einer der drei Versuche und reserviert 30 Cent; der interne Reservierungsrahmen beträgt höchstens 90 Cent. Das ist keine vom Anbieter garantierte Rechnungsobergrenze. Es gibt keine automatische Wiederholung. Ein ungeklärter Ausgang beendet die Kampagne sofort und verlangt manuelle Klärung.
+
+Zwischen diesen drei Klicks wartet Raumly nicht auf die verspätete Google-Rechnung. Nach Ende der Runde bleiben weitere Versuche gesperrt, bis der gebündelte Google-Abgleich erfolgt und eine neue Kampagne ausdrücklich gestartet wird. Die Kampagne kann nur beginnen, wenn mindestens 90 Cent im bestehenden lokalen 3-Euro-Pool frei sind und keine Buchung auf Abgleich wartet. Sie erhöht weder den lokalen Pool noch Google-Kostenlimits.
+
+Der bewusste Betreiberstart lautet `pnpm campaign:image-test:start -- --confirm`. Er wirkt nur nach Installation der zugehörigen Datenbankmigration und scheitert sicher, falls Kostenrahmen oder Abrechnungsstatus nicht passen. Dieser Befehl startet keine Bilderzeugung; dafür bleibt der eigene Klick auf „Bild generieren“ erforderlich.

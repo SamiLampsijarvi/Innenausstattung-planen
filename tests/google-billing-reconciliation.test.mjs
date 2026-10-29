@@ -21,6 +21,20 @@ test("only a marked provisional hold can be reconciled as a two-attempt batch", 
   assert.deepEqual(result, { kind: "batch", maximumCents: 60, startedAt: "2026-09-16T10:00:00Z" });
 });
 
+test("three completed campaign attempts reconcile together with a 90-cent ceiling", () => {
+  const result = selectReconciliation([
+    { status: "succeeded", startedAt: "2026-09-16T10:00:00Z", providerReceipt: true },
+    { status: "discarded", startedAt: "2026-09-16T10:01:00Z", providerReceipt: true },
+    { status: "succeeded", startedAt: "2026-09-16T10:02:00Z", providerReceipt: true },
+  ], { activeAttempt: false });
+  assert.deepEqual(result, { kind: "batch", maximumCents: 90, startedAt: "2026-09-16T10:00:00Z" });
+  assert.equal(selectReconciliation([
+    { status: "succeeded", startedAt: "2026-09-16T10:00:00Z" },
+    { status: "succeeded", startedAt: "2026-09-16T10:01:00Z" },
+    { status: "unknown", startedAt: "2026-09-16T10:02:00Z" },
+  ], { activeAttempt: false }).kind, "manual-review");
+});
+
 test("EUR values round upward and foreign or incomplete data is rejected", () => {
   assert.equal(ceilingEuroToCents("0.120001"), 13);
   assert.equal(parseBigQueryCost({ jobComplete: true, rows: [{ f: [{ v: "EUR" }, { v: "0.12" }] }] }), 12);

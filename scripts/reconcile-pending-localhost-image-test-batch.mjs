@@ -1,8 +1,8 @@
 import { readFile } from "node:fs/promises";
 
 const confirmedActualCents = Number(process.argv[2]);
-if (!Number.isInteger(confirmedActualCents) || confirmedActualCents < 0 || confirmedActualCents > 60) {
-  throw new Error("Bitte den in Google Billing bestätigten Gesamtbetrag in Cent zwischen 0 und 60 angeben.");
+if (!Number.isInteger(confirmedActualCents) || confirmedActualCents < 0 || confirmedActualCents > 90) {
+  throw new Error("Bitte den in Google Billing bestätigten Gesamtbetrag in Cent zwischen 0 und 90 angeben.");
 }
 const envText = await readFile(new URL("../.env.local", import.meta.url), "utf8");
 const values = Object.fromEntries(envText.split(/\r?\n/).flatMap((line) => {
