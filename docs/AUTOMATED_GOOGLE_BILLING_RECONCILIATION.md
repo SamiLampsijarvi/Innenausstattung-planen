@@ -5,7 +5,7 @@
 `pnpm reconcile:billing-export --apply` kann einen einzelnen, eindeutig
 zuordenbaren lokalen Vertex-Test mit dem standardisierten Cloud-Billing-Export
 in BigQuery abgleichen. Der Befehl startet niemals Vertex und kann keine neue
-Kostenreservierung, keinen neuen Bildversuch und keine Änderung des 3-Euro-
+Kostenreservierung, keinen neuen Bildversuch und keine Änderung des 3,60-Euro-
 Gesamtlimits auslösen.
 
 Ohne `RAUMLY_BILLING_EXPORT_ENABLED=true` beendet sich der Befehl vor jedem
@@ -24,6 +24,11 @@ wirkungsfreier Trockenlauf.
 - Ein unbekannter, aktiver oder mehrdeutiger Versuch wird nie automatisch
   entsperrt. Fehlende oder noch nicht exportierte Billing-Zeilen führen zu
   keiner Datenbankänderung.
+- Genau ein mindestens sieben Tage alter, abgeschlossener Versuch mit
+  Provider-Quittung kann nach ausdrücklicher Betreiberbestätigung konservativ
+  in die begrenzte Testkampagne übertragen werden. Seine 30 Cent bleiben
+  reserviert; es wird weder 0 Cent noch ein anderer tatsächlicher Betrag
+  behauptet. Der spätere gemeinsame Abgleich bleibt auf 120 Cent begrenzt.
 - Foto-, Bild- und Providerantwortdaten werden weder abgefragt noch geloggt.
 - Der Zugang nutzt ein kurzlebiges Token der lokalen `gcloud`-Anmeldung und
   impersoniert ausschließlich das lesende Billing-Konto. Dauerhafte
@@ -59,7 +64,7 @@ keinen Vertex-Zugang.
 
 Google exportiert Billing-Daten zeitversetzt. Der automatische Abgleich ist
 deshalb kein Echtzeitbeleg und ersetzt weder das Projekt-Spend-Cap noch die
-3-Euro-Grenze in Raumly.
+3,60-Euro-Grenze in Raumly.
 
 ## Geprüfter Betriebsstand am 7. Oktober 2026
 
@@ -70,5 +75,5 @@ auf dem 16. September 2026; bei einem täglichen Lauf ohne offenen Versuch
 bleibt dieser Wert unverändert, weil nichts gebucht oder freigegeben wird.
 
 Vertex bleibt ausgeschaltet. Der Abgleich selbst kann Vertex nicht starten,
-keine Reservierung anlegen und die Grenze von 30 Cent pro Versuch oder 3 Euro
+keine Reservierung anlegen und die Grenze von 30 Cent pro Versuch oder 3,60 Euro
 insgesamt nicht verändern.
