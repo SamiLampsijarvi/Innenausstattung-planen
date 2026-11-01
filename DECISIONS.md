@@ -494,3 +494,10 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 - **Befund:** Der Google-Billing-Export ist bis zum 1. November aktuell, enthält seit dem Versuch vom 18. Oktober aber ausschließlich BigQuery- und Cloud-Logging-Zeilen zu 0 Euro und keine Zeile des konfigurierten Bilddienstes. Google nennt keine feste Latenzgarantie und erlaubt spätere Korrekturen; deshalb wird kein Betrag erfunden.
 - **Entscheidung:** Genau ein mindestens sieben Tage alter, abgeschlossener Versuch mit Provider-Quittung darf ausdrücklich als offener Billing-Übertrag markiert werden. Seine 30-Cent-Reservierung bleibt vollständig bestehen. Erst dann darf die getrennte Drei-Versuche-Runde weitere 90 Cent reservieren.
 - **Abgleich:** Der spätere Billing-Abgleich umfasst den übertragenen Versuch und höchstens drei neue Versuche gemeinsam mit maximal 120 Cent. Ein zweiter alter Fall, ein aktiver oder unbekannter Versuch oder ein fehlender Provider-Beleg bleibt gesperrt. Google-Kostenlimits werden nicht geändert.
+
+## D-049: Google-Anmeldung vor Kostenreservierung prüfen
+
+- **Status:** Am 1. November 2026 nach einem lokalen ADC-Ausfall umgesetzt und geprüft.
+- **Befund:** Der erste Kampagnenklick scheiterte vor einer Provider-Quittung, weil die lokale Application-Default-Anmeldung fehlte. Die bisherige Prüfung fand erst nach der 30-Cent-Reservierung statt.
+- **Entscheidung:** Raumly fordert künftig vor jeder Reservierung ein gültiges, kurzlebiges Google-Zugriffstoken an, ohne Vertex aufzurufen. Fehlt es, stoppt der Ablauf mit `GOOGLE_AUTH`, bevor ein Versuch oder Budget verbraucht wird.
+- **Wiederherstellung:** Genau ein bestätigter lokaler Anmeldefehler ohne Provider-Quittung darf serverseitig als nicht versendet markiert und seine 30-Cent-Reservierung zurückgenommen werden. Andere unbekannte oder möglicherweise versendete Versuche bleiben unverändert gesperrt.

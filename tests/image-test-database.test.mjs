@@ -97,6 +97,7 @@ before(async () => {
   await db.exec(await readFile(new URL('../supabase/migrations/202610290001_three_attempt_localhost_campaign.sql', import.meta.url), 'utf8'));
   await db.exec(await readFile(new URL('../supabase/migrations/202611010001_raise_localhost_test_pool_to_360.sql', import.meta.url), 'utf8'));
   await db.exec(await readFile(new URL('../supabase/migrations/202611010002_carry_stale_billing_into_campaign.sql', import.meta.url), 'utf8'));
+  await db.exec(await readFile(new URL('../supabase/migrations/202611010003_restore_pre_dispatch_auth_failure.sql', import.meta.url), 'utf8'));
   await db.exec(`insert into auth.users values('${user}'),('${other}');
     insert into public.projects values('${user}','${user}',null),('${other}','${other}',null);
     insert into public.image_test_members values('${user}'),('${other}');
@@ -557,6 +558,27 @@ test('one stale completed attempt stays reserved and can be carried into the cam
   assert.equal(started.campaignAttemptsRemaining, 3);
   assert.equal(started.remainingCents, 90);
   assert.equal(await scalar("select (usage->'campaignBillingCarry'->>'reservedCents')::integer from public.guest_image_test_attempts where id=$1", [request(986)]), 30);
+}));
+
+test('confirmed local ADC failure before provider dispatch restores the campaign budget', () => scenario(async () => {
+  const session = 'cccccccc-cccc-4ccc-8ccc-000000000085';
+  const secret = '5'.repeat(64);
+  await db.exec("update public.localhost_image_test_pool set historical_reserved_cents=60,reserved_cents=210,billing_checked_at=clock_timestamp()");
+  await db.exec('set role service_role');
+  await scalar('select public.localhost_image_test_start_three_attempt_campaign()');
+  await scalar('select public.guest_image_test_prepare($1,$2,$3,$4,$5,$6,$7,$8)', [session,secret,'Japandi',1500,null,hash(5),'AQ==','image/png']);
+  await scalar('select public.guest_image_test_reserve($1,$2,$3)', [session,secret,request(985)]);
+  await scalar('select public.guest_image_test_record_failure($1,$2,$3,$4,$5)', [session,secret,request(985),'Vertex-Bildgenerierung','UNCLASSIFIED']);
+  await scalar('select public.guest_image_test_finish($1,$2,$3)', [session,secret,request(985)]);
+  const restored = await scalar('select public.localhost_image_test_recover_pre_dispatch_auth_failure(true)');
+  assert.equal(restored.reservedCents, 210);
+  assert.equal(restored.activeAttempt, false);
+  assert.equal(restored.campaignStoppedAt, null);
+  assert.equal((await scalar('select public.localhost_image_test_pending_billing_diagnostics()')).length, 0);
+  const restarted = await scalar('select public.localhost_image_test_start_three_attempt_campaign()');
+  await db.exec('reset role');
+  assert.equal(restarted.campaignAttemptsRemaining, 3);
+  assert.equal(await scalar("select status='deleted' and failure_code='GOOGLE_AUTH' and (usage->'preDispatchRecovery'->>'nonBillable')::boolean from public.guest_image_test_attempts where id=$1", [request(985)]), true);
 }));
 
 test('three completed attempts reconcile as one capped 90-cent batch', () => scenario(async () => {

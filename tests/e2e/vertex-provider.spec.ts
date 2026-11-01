@@ -8,6 +8,7 @@ import {
   createVertexImageProvider,
   VertexImageResponseError,
 } from "../../src/lib/ai/image-generation/vertex-provider.server";
+import { assertGoogleAuthReady, GoogleAuthPreflightError } from "../../src/lib/ai/image-generation/google-auth-preflight.server";
 
 const request: ImageGenerationRequest = {
   input: {
@@ -24,6 +25,12 @@ const request: ImageGenerationRequest = {
 
 test("verlangt eine Google-Cloud-Projektkennung, ohne eine Verbindung aufzubauen", () => {
   expect(() => createVertexImageProvider({ projectId: "", maximumRequestCents: 10 })).toThrow(VertexImageResponseError);
+});
+
+test("prüft die Google-Anmeldung vor einer späteren Kostenreservierung ohne Vertex-Aufruf", async () => {
+  await expect(assertGoogleAuthReady("raumly-test", async () => "a".repeat(40))).resolves.toBeUndefined();
+  await expect(assertGoogleAuthReady("raumly-test", async () => null)).rejects.toBeInstanceOf(GoogleAuthPreflightError);
+  await expect(assertGoogleAuthReady("", async () => "a".repeat(40))).rejects.toBeInstanceOf(GoogleAuthPreflightError);
 });
 
 test("wandelt eine kontrollierte Vertex-Testantwort in das gemeinsame Format um", async () => {
