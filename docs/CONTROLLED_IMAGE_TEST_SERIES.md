@@ -36,4 +36,6 @@ Für eine begrenzte Lernrunde kann ein Betreiber nach einem frischen Google-Bill
 
 Zwischen diesen drei Klicks wartet Raumly nicht auf die verspätete Google-Rechnung. Nach Ende der Runde bleiben weitere Versuche gesperrt, bis der gebündelte Google-Abgleich erfolgt und eine neue Kampagne ausdrücklich gestartet wird. Die Kampagne kann nur beginnen, wenn mindestens 90 Cent im bestehenden lokalen 3-Euro-Pool frei sind und keine Buchung auf Abgleich wartet. Sie erhöht weder den lokalen Pool noch Google-Kostenlimits.
 
-Der bewusste Betreiberstart lautet `pnpm campaign:image-test:start -- --confirm`. Er wirkt nur nach Installation der zugehörigen Datenbankmigration und scheitert sicher, falls Kostenrahmen oder Abrechnungsstatus nicht passen. Dieser Befehl startet keine Bilderzeugung; dafür bleibt der eigene Klick auf „Bild generieren“ erforderlich.
+Vor jeder Aktivierung prüft `pnpm campaign:image-test:check` ausschließlich lesend, ob die Datenbankmigration vorhanden ist, kein Versuch oder Billing-Abgleich offen ist und mindestens 90 Cent im lokalen Pool frei sind. Der Befehl startet weder die Kampagne noch Vertex und ändert keine Kostenlimits.
+
+Erst wenn alle Prüfpunkte wahr sind, lautet der bewusste Betreiberstart `pnpm campaign:image-test:start -- --confirm`. Er wirkt nur nach Installation der zugehörigen Datenbankmigration und scheitert sicher, falls Kostenrahmen oder Abrechnungsstatus nicht passen. Auch dieser Befehl startet keine Bilderzeugung; dafür bleibt der eigene Klick auf „Bild generieren“ erforderlich.
