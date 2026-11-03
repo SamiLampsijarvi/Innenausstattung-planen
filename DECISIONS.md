@@ -473,9 +473,31 @@ Hier werden bestätigte, dauerhafte Produkt- und Architekturentscheidungen festg
 
 ## D-046: Begrenzte manuelle Drei-Versuche-Kampagne
 
-- **Status:** Vom Nutzer bestätigt; technische Umsetzung in Arbeit. Diese Entscheidung allein wendet keine Datenbankmigration an und startet keine Kampagne oder Bilderzeugung.
+- **Status:** Vom Nutzer bestätigt und in `main` umgesetzt. Die Datenbankmigration ist seit dem 1. November 2026 angewendet und eine Kampagne mit drei verfügbaren Versuchen aktiviert; eine Bilderzeugung wurde dadurch nicht gestartet.
 - **Ablauf:** Nach einem frischen Google-Billing-Abgleich kann der Betreiber einmalig höchstens drei einzelne Bildversuche freigeben. Jeder Versuch erfordert den eigenen Klick „Bild generieren“, reserviert 30 Cent und zählt auch bei Ablehnung oder Fehler. Keine automatische Wiederholung.
 - **Sperre:** Ein unbekannter Ausgang beendet die Runde sofort und bleibt gesperrt, bis er manuell geklärt ist. Nach drei Versuchen sind weitere Aufrufe gesperrt, bis Google Billing alle Versuche der Runde gemeinsam abgeglichen und der Betreiber eine neue Runde ausdrücklich gestartet hat.
 - **Kostenrahmen:** Höchstens 90 Cent interne Reservierung pro Runde; die 30-Cent-Reservierung pro Versuch und der bestehende lokale Gesamtpool von 3 Euro bleiben bestehen. Die Reservierung ist keine vom Anbieter garantierte Rechnungsobergrenze. Die Datenbank startet eine Runde nur, wenn 90 Cent frei sind. Google-Kostenlimits werden nicht geändert.
 - **Start:** Der Betreiberbefehl `pnpm campaign:image-test:start -- --confirm` aktiviert nur die Runde, nicht Vertex. Die Datenbankmigration und ein erfolgreicher Billing-Abgleich müssen vorher vorliegen.
+- **Vorprüfung:** `pnpm campaign:image-test:check` liest nur Buchhaltung und Sperrstatus. Die Prüfung verändert weder Datenbank noch Kostenlimits und startet weder Kampagne noch Vertex.
 - **Nachweis:** `docs/CONTROLLED_IMAGE_TEST_SERIES.md`.
+
+## D-047: Lokaler Testpool von 3,60 Euro
+
+- **Status:** Am 1. November 2026 ausdrücklich bestätigt, getestet und im verknüpften Supabase-Projekt aktiviert.
+- **Entscheidung:** Der dauerhafte lokale Gesamt-Testrahmen steigt einmalig von 300 auf 360 Cent, damit nach den bisherigen 270 Cent Reservierungen genau eine manuelle Drei-Versuche-Runde mit 90 Cent Reservierung möglich ist.
+- **Unverändert:** Jeder Versuch reserviert weiterhin höchstens 30 Cent, es gibt keine automatische Wiederholung und Google-Kostenlimits werden nicht verändert. Die interne Reservierung ist keine von Google garantierte Rechnungsobergrenze.
+- **Sperre:** Migration, offener Billing-Fall und Kampagnenstart bleiben getrennte Schritte. Die Kampagne darf erst nach einem sicheren Umgang mit dem noch nicht im Export sichtbaren Versuch vom 18. Oktober gestartet werden.
+
+## D-048: Konservativer Übertrag eines alten Billing-Falls
+
+- **Status:** Am 1. November 2026 getestet und im verknüpften Supabase-Projekt aktiviert. Der bekannte Altfall ist konservativ markiert; seine 30-Cent-Reservierung bleibt bestehen.
+- **Befund:** Der Google-Billing-Export ist bis zum 1. November aktuell, enthält seit dem Versuch vom 18. Oktober aber ausschließlich BigQuery- und Cloud-Logging-Zeilen zu 0 Euro und keine Zeile des konfigurierten Bilddienstes. Google nennt keine feste Latenzgarantie und erlaubt spätere Korrekturen; deshalb wird kein Betrag erfunden.
+- **Entscheidung:** Genau ein mindestens sieben Tage alter, abgeschlossener Versuch mit Provider-Quittung darf ausdrücklich als offener Billing-Übertrag markiert werden. Seine 30-Cent-Reservierung bleibt vollständig bestehen. Erst dann darf die getrennte Drei-Versuche-Runde weitere 90 Cent reservieren.
+- **Abgleich:** Der spätere Billing-Abgleich umfasst den übertragenen Versuch und höchstens drei neue Versuche gemeinsam mit maximal 120 Cent. Ein zweiter alter Fall, ein aktiver oder unbekannter Versuch oder ein fehlender Provider-Beleg bleibt gesperrt. Google-Kostenlimits werden nicht geändert.
+
+## D-049: Google-Anmeldung vor Kostenreservierung prüfen
+
+- **Status:** Am 1. November 2026 nach einem lokalen ADC-Ausfall umgesetzt und geprüft.
+- **Befund:** Der erste Kampagnenklick scheiterte vor einer Provider-Quittung, weil die lokale Application-Default-Anmeldung fehlte. Die bisherige Prüfung fand erst nach der 30-Cent-Reservierung statt.
+- **Entscheidung:** Raumly fordert künftig vor jeder Reservierung ein gültiges, kurzlebiges Google-Zugriffstoken an, ohne Vertex aufzurufen. Fehlt es, stoppt der Ablauf mit `GOOGLE_AUTH`, bevor ein Versuch oder Budget verbraucht wird.
+- **Wiederherstellung:** Genau ein bestätigter lokaler Anmeldefehler ohne Provider-Quittung darf serverseitig als nicht versendet markiert und seine 30-Cent-Reservierung zurückgenommen werden. Andere unbekannte oder möglicherweise versendete Versuche bleiben unverändert gesperrt.

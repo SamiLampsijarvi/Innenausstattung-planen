@@ -5,6 +5,7 @@ import { hashTestPhoto } from "@/lib/ai/image-generation/test-runner";
 import { MAXIMUM_VERTEX_SOURCE_BYTES } from "@/lib/ai/image-generation/test-limits";
 import { isTrustedImageTestOrigin } from "@/lib/ai/image-generation/test-origin";
 import { createVertexImageProvider } from "@/lib/ai/image-generation/vertex-provider.server";
+import { assertGoogleAuthReady } from "@/lib/ai/image-generation/google-auth-preflight.server";
 import { safeTestErrorCode } from "@/lib/ai/image-generation/safe-test-error";
 import { correctCandidateOrientation, normalizeImageOrientation } from "@/lib/ai/image-generation/image-orientation.server";
 
@@ -148,6 +149,8 @@ async function generate(session: { id: string; secret: string }, client: Supabas
     const mime = source.mime as "image/jpeg" | "image/png" | "image/webp";
     const normalizedSource = await normalizeImageOrientation(bytes, mime);
     if (normalizedSource.bytes.length > MAXIMUM_VERTEX_SOURCE_BYTES) throw new Error("Das aufrecht vorbereitete Testfoto ist größer als 7 MB.");
+    stage = "Google-Anmeldung prüfen";
+    await assertGoogleAuthReady(process.env.GOOGLE_CLOUD_PROJECT);
     stage = "Kostenreservierung";
     const reservation = await call(client, "guest_image_test_reserve", { target_session: session.id, target_secret_hash: session.secret, request_id: requestId });
     stage = "Versandfreigabe";

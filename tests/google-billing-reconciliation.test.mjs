@@ -35,6 +35,16 @@ test("three completed campaign attempts reconcile together with a 90-cent ceilin
   ], { activeAttempt: false }).kind, "manual-review");
 });
 
+test("one carried stale attempt and three campaign attempts reconcile within 120 cents", () => {
+  const result = selectReconciliation([
+    { status: "discarded", startedAt: "2026-09-15T10:00:00Z", campaignBillingCarry: true },
+    { status: "succeeded", startedAt: "2026-09-16T10:00:00Z" },
+    { status: "discarded", startedAt: "2026-09-16T10:01:00Z" },
+    { status: "succeeded", startedAt: "2026-09-16T10:02:00Z" },
+  ], { activeAttempt: false });
+  assert.deepEqual(result, { kind: "batch", maximumCents: 120, startedAt: "2026-09-15T10:00:00Z" });
+});
+
 test("EUR values round upward and foreign or incomplete data is rejected", () => {
   assert.equal(ceilingEuroToCents("0.120001"), 13);
   assert.equal(parseBigQueryCost({ jobComplete: true, rows: [{ f: [{ v: "EUR" }, { v: "0.12" }] }] }), 12);
